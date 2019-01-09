@@ -2,6 +2,7 @@ package com.fh.service.order.orderinfo;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.fh.common.constant.ConfigCenterKeys;
 import com.fh.common.constant.MsgOfTmpCode;
 import com.fh.common.constant_enum.*;
 import com.fh.controller.wxpublicnum.wxpushinfo.WeixinUtil;
@@ -9,6 +10,8 @@ import com.fh.dao.DaoSupport;
 import com.fh.entity.Page;
 import com.fh.entity.app.order.*;
 import com.fh.entity.app.transitcenter.AppTransitCenter;
+import com.fh.entity.configcenter.GoldPriceDetail;
+import com.fh.entity.configcenter.SpecialPriceDetail;
 import com.fh.entity.customer.CusInfo;
 import com.fh.entity.delivery.BaiduCoord;
 import com.fh.entity.delivery.UserDeliveryMan;
@@ -728,35 +731,44 @@ public class OrderInfoService {
 			Integer num = appOrderDetailsResData.getNum();// 行李数量
 			String remark = appOrderDetailsResData.getRemark();// 行李数详情
 			String mailingway = appOrderDetailsResData.getMailingway();// 寄件方式
+			String channel = appOrderDetailsResData.getChannel();
+
+			// 获取城市信息
+			OrderAddress orderAddress = (OrderAddress) dao.findForObject("orderAddressMapper.findByOrderid", appOrderDetailsResData.getId());
 
 			// 保费
 			OrderInsureInfo orderInsureInfo = orderInsureInfoService.getByOrderId(appOrderDetailsResData.getId());
 			prem = INSURE_TYPE.getPrem(orderInsureInfo.getInsurecode()).getPremium() * num;
 
-			if(StringUtils.isBlank(remark)){
-				extramoney = (float) (num*49-49);//第一件行李免费
+			if(channel.contains(ConfigCenterKeys.SERVER_TYPE_SC)){
+                // 起步价格
+                Float startingmoney = 0f;
+
+                // 价格计算配置
+                String specialPrice = configCenterService.getConfig(orderAddress.getSrccityid(), ConfigCenterKeys.SPECIAL_PRICE_DETAIL);
+			    if(StringUtils.isNotBlank(specialPrice)) {
+                    SpecialPriceDetail specialPriceDetail = (SpecialPriceDetail) JSONObject.parseObject(specialPrice, SpecialPriceDetail.class);
+                    startingmoney = specialPriceDetail.getStartingmoney();
+                }
+
+				extramoney = (float) (num * startingmoney - startingmoney);//第一件行李免费
 				basemoney = totalmoney - prem - extramoney - cutmoney;
 				lugBaseCost.put("基础运费", basemoney + "");
 			}else{
-				String[] split =remark.split("\\|");
-				for (int j = 0; j < split.length; j++) {
-					String bag = split[j];
-					if(j==0 && !"0".equals(bag) && StringUtils.isNotBlank(bag)){
-						basemoney+=69*Integer.parseInt(bag);
-						lugBaseCost.put("普通行李", "69*" + bag);
-					}
-					if(j==1 && !"0".equals(bag) && StringUtils.isNotBlank(bag)){
-						basemoney+=49*Integer.parseInt(bag);
-						lugBaseCost.put("小件行李", "49*" + bag);
-					}
-					if(j==2 && !"0".equals(bag) && StringUtils.isNotBlank(bag)){
-						basemoney+=99*Integer.parseInt(bag);
-						lugBaseCost.put("特殊行李", "99*" + bag);
-					}
-				}
+			    // 基础运费
+                Float basemoney_ = 0f;
+
+                // 价格计算配置
+                String goldPrice = configCenterService.getConfig(orderAddress.getSrccityid(), ConfigCenterKeys.GOLD_PRICE_DETAIL);
+                if(StringUtils.isNotBlank(goldPrice)) {
+    				GoldPriceDetail goldPriceDetail = (GoldPriceDetail) JSONObject.parseObject(goldPrice, GoldPriceDetail.class);
+                    basemoney_ = goldPriceDetail.getBasemoney();
+                }
+
+				basemoney += basemoney_ * num;
+				lugBaseCost.put("普通行李", basemoney_ + "*" + num);
 				extramoney= totalmoney - basemoney - prem - cutmoney;
 			}
-
 
 			OrderPriceDetatils orderPriceDetatils = new OrderPriceDetatils();
 			orderPriceDetatils.setLugBaseCostMap(lugBaseCost);

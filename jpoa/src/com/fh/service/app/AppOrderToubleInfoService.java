@@ -1,30 +1,20 @@
 package com.fh.service.app;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
-
-import com.fh.service.auxiliary.push.PushInfoService;
-import org.apache.commons.beanutils.BeanUtils;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.time.DateUtils;
-import org.apache.shiro.SecurityUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import com.fh.common.constant_enum.PROCESSSTATUS_TYPE;
-import com.fh.common.constant_enum.TOUBLE_CODE;
 import com.fh.dao.DaoSupport;
 import com.fh.entity.Page;
-import com.fh.entity.app.order.AppOrderToubleReqData;
-import com.fh.entity.order.OrderOverTime;
-import com.fh.entity.order.ProblemNotes;
 import com.fh.entity.order.ProblemOrder;
 import com.fh.entity.system.User;
+import com.fh.service.auxiliary.push.PushInfoService;
 import com.fh.util.Const;
 import com.fh.util.DateUtil;
 import com.fh.util.ExceptionUtil;
 import com.fh.util.PageData;
+import org.apache.shiro.SecurityUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public class AppOrderToubleInfoService {
@@ -38,8 +28,21 @@ public class AppOrderToubleInfoService {
      * @history 2018年12月10日
      */
 	public void feedback(ProblemOrder problemOrder) throws Exception{
-	    problemOrder.setProcessstatus(PROCESSSTATUS_TYPE.UNSOLVED.getValue());
-	    dao.save("ProblemOrderMapper.insert", problemOrder);
+	    // 反馈信息相同不能保存
+	    synchronized (problemOrder.getFeedbackdesc()) {
+            // 查询反馈信息是否相同，如果相同则不保存
+            ExceptionUtil.isTrue(checkFeedBackDescRepe(problemOrder) == null, "反馈信息重复保存");
+
+            problemOrder.setProcessstatus(PROCESSSTATUS_TYPE.UNSOLVED.getValue());
+            dao.save("ProblemOrderMapper.insert", problemOrder);
+        }
+
+
+    }
+
+    /* 检查是否相同描述的反馈信息 */
+    private ProblemOrder checkFeedBackDescRepe(ProblemOrder problemOrder) throws Exception {
+        return (ProblemOrder) dao.findForObject("ProblemOrderMapper.checkFeedbackdescRepe", problemOrder);
     }
 	
 	/**

@@ -125,6 +125,18 @@
 		AND otii.processstatus = 'UNSOLVED'
 	</select>
 
+	<!-- 检查反馈信息是否重复 -->
+	<select id="checkFeedbackdescRepe" resultType="ProblemOrder" parameterType="ProblemOrder" useCache="false">
+		SELECT
+			*
+		FROM
+			order_trouble_info otii
+		WHERE 1=1
+		AND otii.orderid = #{orderid}
+		AND otii.feedbackdesc = #{feedbackdesc}
+		LIMIT 1
+	</select>
+
 </mapper>
 
 

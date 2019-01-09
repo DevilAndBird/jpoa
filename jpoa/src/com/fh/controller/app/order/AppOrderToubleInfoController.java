@@ -1,13 +1,5 @@
 package com.fh.controller.app.order;
 
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
-
 import com.fh.common.constant_enum.APP_RESPONSE_CODE;
 import com.fh.controller.base.BaseController;
 import com.fh.entity.app.AppRequestBean;
@@ -20,6 +12,13 @@ import com.fh.service.order.orderinfo.OrderMainService;
 import com.fh.util.ExceptionUtil;
 import com.fh.util.RulesCheckedException;
 import com.google.gson.Gson;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import java.util.List;
 /**
  * 
  * 项目名称：jpoa   
@@ -71,7 +70,7 @@ public class AppOrderToubleInfoController extends BaseController {
 		} catch (RulesCheckedException e) {
 			logger.error("问题反馈，校验异常:" + e.getMessage());
 			rtBean.setCode(APP_RESPONSE_CODE.CHECK.getValue());
-			rtBean.setMsg("问题反馈，校验异常s");
+			rtBean.setMsg("问题反馈，校验异常:" + e.getMessage());
 			return new Gson().toJson(rtBean);
     	} catch (Exception e) {
     	    logger.error("问题反馈，非预期异常:" + e.getLocalizedMessage());

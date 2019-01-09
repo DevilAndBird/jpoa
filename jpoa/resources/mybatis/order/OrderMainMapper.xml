@@ -1479,7 +1479,9 @@
 			AND om.id = oa.orderid
 			/*AND om.status != 'WAITPAY'*/<!-- 不查询待支付订单 -->
             AND exists (SELECT 1 FROM order_pay_info opi WHERE opi.orderid=om.id AND (opi.type = 'MONTH' OR opi.status = 'PREPAID'))
-			AND om.status != 'CANCELLED' <!-- 退款订单 -->
+			AND om.status != 'RELEASEOVER'
+			AND om.status !='DELIVERYOVER'
+		    AND om.status != 'CANCELLED'<!-- 不要查询已经完成的订单 已经送达/已经释放 -->
 			AND om.isvalid = 'Y' <!-- 查询有效订单 -->
 			<!-- AND (date( om.taketime) = curdate() OR DATE_FORMAT(om.taketime,'%Y-%m-%d %H:%i:%S') = timestamp(adddate(date(sysdate()),1))) --><!-- 当天单必须分配完成，包括当天凌晨 -->
 			AND oa.srcprovid = #{loginperson_provid}<!-- 当前省份 -->
