@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="OrderSenderReceiverMapper">
+
+	<!-- 
+		新增订单收寄人信息
+		陈玉石
+		2018年3月4日15:31:28 
+	-->
+	<insert id="insert" parameterType="OrderSenderReceiver">
+		insert into order_sender_receiver(orderid,sendername,senderphone,receivername,receiverphone,
+			senderidno,receiveridno,isreceiverself,addtime,realname,realphone)
+		values (
+			#{orderid}, #{sendername},#{senderphone},#{receivername},#{receiverphone},#{senderidno},
+			#{receiveridno},#{isreceiverself},now(),#{realname},#{realphone}
+			)
+	</insert>
+	
+	<!-- 
+		根据订单号查询收寄人
+		陈玉石
+		2018年3月4日15:47:58
+	 -->
+	<select id="findByOrderid" resultType="OrderSenderReceiver" parameterType="Integer" useCache="false">
+		SELECT 
+		  *
+		FROM 
+			order_sender_receiver
+		WHERE 1=1
+		AND orderid =#{orderid}
+		order by id desc
+		limit 1
+	</select>
+	
+   <update id="updateSenderReceiver" parameterType="pd">
+   		UPDATE
+   			order_main om,
+   			order_sender_receiver osr
+   		SET
+   			<if test="senderidno != null">
+   				senderidno = #{senderidno},
+   			</if>
+   			<if test="sendername != null and sendername != ''">
+   				sendername = #{sendername},
+   			</if>
+   			<if test="senderphone != null and senderphone != ''">
+   				senderphone = #{senderphone},
+   			</if>
+   			<if test="receiveridno != null">
+   				receiveridno = #{receiveridno},
+   			</if>
+			<if test="receivername != null and receivername != ''">
+   				receivername = #{receivername},
+   			</if>
+   			<if test="receiverphone != null and receiverphone != ''">
+   				receiverphone = #{receiverphone}
+   			</if>
+   		WHERE 1=1
+   			AND om.id = osr.orderid
+   			AND om.orderno = #{orderno}
+   </update>
+</mapper>
+

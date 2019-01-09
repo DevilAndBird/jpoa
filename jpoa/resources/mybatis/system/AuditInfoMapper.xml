@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="auditInfoMapper">
+
+	<cache type="org.mybatis.caches.ehcache.LoggingEhcache" />
+
+	<insert id="addaim">
+		insert into audit_info(
+		workid,
+		auditby,
+		auditusername,
+		auditime,
+		status,
+		statusname,
+		notes,
+		stepid,
+		stepname,
+		level
+		)values(
+		#{workid},
+		#{auditby},
+		#{auditusername},
+		#{auditime},
+		#{status},
+		#{statusname},
+		#{notes},
+		#{stepid},
+		#{stepname},
+		#{level}
+		)
+	</insert>
+
+	<select id="auditlist" resultType="ai">
+		select * from audit_info
+		where
+		auditby=#{auditby}
+		and status=1
+	</select>
+
+	<select id="findlastaudit" resultType="ai">
+		select * from audit_info
+		where workid = ${pd.workid}
+		and level = ${pd.level}
+	</select>
+
+	<update id="update">
+		update audit_info set
+		auditime=now(),
+		status=#{status},
+		statusname=#{statusname},
+		notes=#{notes}
+		where auditby
+		=#{auditby}
+		and workid=#{workid}
+	</update>
+
+	<select id="judgementend" resultType="ai">
+		select * from audit_info
+		where auditby =#{auditby}
+		and workid=#{workid}
+		and id = (select max(id) from audit_info
+		where workid=#{workid})
+	</select>
+	
+	<select id="ailistPage" parameterType="page" resultType="pd" useCache="false">
+		select * from audit_info
+		where workid=#{pd.workid}
+	</select>
+	
+
+
+</mapper>

@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="OrderBaggageMapper">
+
+	<!-- 根据行李QR码查询行李信息 zhangjj -->
+	<select id="findBybagid" resultType="OrderBaggage" parameterType="String" useCache="false">
+		SELECT 
+			ob.id,
+			ob.baggageid,
+			ob.orderid 
+		FROM 
+			order_baggage ob 
+		WHERE 1=1
+		AND ob.baggageid =#{baggageid}
+		ORDER BY ob.id desc
+		limit 1	  
+	</select>
+	
+	<insert id="insertQR" parameterType="OrderBaggage">
+		insert into order_baggage(
+		   orderid,
+		   baggageid,
+		   addtime)
+		values (
+			#{orderid},
+			#{baggageid},
+			now())
+	</insert>
+	
+	<insert id="insertQRCode" parameterType="pd">
+	   <selectKey keyProperty="id" resultType="int">
+			select
+			LAST_INSERT_ID()
+		</selectKey>
+			insert into qr_code(
+		   qrcode,
+		   isvalid)
+		values (
+			(select SUBSTRING(unix_timestamp(now()),5))+(select CEILING(RAND()*100000)),
+	       'N')
+	</insert>
+
+    <!-- 根据订单id查询出   zhangjj -->
+	<select id="findByOrderid" resultType="OrderBaggage" parameterType="Integer" useCache="false">
+		SELECT 
+			ob.id,
+			om.orderno,
+			ob.baggageid,
+			ob.orderid,
+			ob.imgurl
+		FROM 
+			order_baggage ob,
+			order_main om
+		WHERE 1=1
+		AND ob.orderid = om.id 
+		AND ob.orderid = #{orderid}
+	</select>
+	
+	<!-- 
+		根据QR码查询行李信息
+	 -->
+	<select id="findByBeggageid" resultType="OrderBaggage" parameterType="pd" useCache="false">
+		SELECT 
+			ob.id,
+			ob.orderid,
+			ob.baggageid,
+			ob.imgurl
+		FROM 
+			order_baggage ob
+		WHERE ob.baggageid =#{baggageid}
+	</select>
+	
+	<!-- 
+		检查关联QR是否超出行李数
+		zhangjj
+	 -->
+	<select id="checkLinkQRUltralimit" resultType="Integer" parameterType="Integer" useCache="false">
+		SELECT 
+			om.num - (SELECT COUNT(*) FROM order_baggage ob WHERE ob.orderid = #{orderid}) result
+	    FROM
+	    	order_main om
+	    WHERE 1=1
+	    AND om.id = #{orderid}
+	</select>
+	
+	<!-- 
+		检查QR信息是否存在
+		zhangjj
+	 -->
+	<select id="checkQRInfoExist" resultType="pd" parameterType="pd" useCache="false">
+		SELECT 
+			*
+	    FROM
+	    	order_baggage ob
+	    WHERE 1=1
+	    AND ob.orderid = #{orderid}
+	    AND ob.baggageid = #{baggageid}
+	    ORDER BY ob.id desc
+	    limit 1
+	</select>
+	
+	<!-- 
+		上传图片路径
+		zhangjj
+	 -->
+	<update id="updateImgurl" parameterType="orderBaggage">
+		UPDATE 
+			order_baggage
+		SET 
+			imgurl = #{imgurl}
+		WHERE 1=1
+		AND orderid =#{orderid} 
+		AND baggageid =#{baggageid}
+	</update>
+	
+	<!-- 根据订单id和QR码跟新订单是否扫描件 -->
+	<update id="updateOrderBaggageIsScan" parameterType="pd">
+		UPDATE
+			order_baggage
+		SET
+			isscan = #{isscan}
+		WHERE 1=1
+		<if test="orderid != null and orderid != ''">
+			and orderid =#{orderid}
+		</if>
+		<if test="baggageid != null and baggageid != ''">
+			and baggageid =#{baggageid}
+		</if>
+	</update>
+	
+	<update id="updateIsScanByOrderid" parameterType="pd">
+		update order_baggage 
+	    set
+			isscan = #{isscan}
+		where
+			orderid = #{orderid}
+	</update>
+	
+	<!-- 删除关联QR码 zhangjj -->
+	<delete id="deleteLinkQR" parameterType="pd">
+		DELETE FROM order_baggage
+		WHERE 1=1 
+		AND orderid = #{orderid}
+		AND baggageid = #{baggageid}
+	</delete>
+
+
+	<!-- qr + 图片保存 -->
+	<insert id="insertQRAndImgUrl" parameterType="OrderBaggage">
+		insert into order_baggage(
+		   orderid,
+		   baggageid,
+		   imgurl,
+		   addtime)
+		values (
+			#{orderid},
+			#{baggageid},
+			#{imgurl},
+			now())
+	</insert>
+</mapper>
+

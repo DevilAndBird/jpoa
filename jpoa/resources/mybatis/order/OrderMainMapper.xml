@@ -1,0 +1,1822 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="OrderMainMapper">
+	<!-- 表名 -->
+	<sql id="tableName">
+		order_main omain,
+		order_sender_receiver sendrec,
+		order_address address,
+		order_insure_info insure
+	</sql>
+	
+	<!-- 字段 -->
+	<sql id="Field">
+		omain.id,
+		omain.orderno,
+		omain.actualmoney,
+		omain.num,
+		omain.mailingway,			
+		omain.neadinvoice,		
+		omain.channel,	
+		date_format(omain.taketime,'%Y-%m-%d %H:%i') taketime,
+		date_format(omain.sendtime,'%Y-%m-%d %H:%i') sendtime,						
+		sendrec.sendername,
+		sendrec.senderphone,	
+		sendrec.receivername,
+		sendrec.receiverphone,	
+		sendrec.realname,	
+		sendrec.realphone,
+		address.srcaddrtype,
+		address.scrlandmark,
+		address.srcaddress,
+		address.destaddrtype,
+		address.destlandmark,							
+		address.destaddress,	
+		address.remark,		
+		insure.insurecode,
+		(SELECT bc.remark FROM base_config bc WHERE bc.codetype ='orderStatus' AND bc.code = omain.status) orderstatusType
+	</sql>
+		
+	<!-- 新增 -->
+	<insert id="insert" parameterType="OrderMainSpec">
+		<selectKey keyProperty="id" resultType="int">
+			select
+			LAST_INSERT_ID()
+		</selectKey>
+		INSERT INTO order_main (
+			orderno,
+			fetchcode,
+			cusid,
+			type,
+			status,
+			totalmoney,
+			cutmoney,
+			actualmoney,
+			num,
+			channel,
+			flightno,
+			mailingway,
+			backway,
+			taketime,
+			sendtime,
+			addtime,
+			modifytime,
+			isvalid,
+			remark)
+		VALUES (
+		    #{orderno},
+		    #{fetchcode},
+		    #{cusid},
+		    #{type},
+		    #{status},
+		    #{totalmoney},
+		    if(isnull(#{cutmoney}),0,#{cutmoney}),
+		    #{actualmoney},
+			#{num},
+			#{channel},
+			#{flightno},
+			#{mailingway},
+			#{backway},
+			#{taketime},
+			#{sendtime},
+			now(),
+			now(),
+			'Y',
+			#{remark});
+	</insert>
+
+	<!-- 根据id查询订单 木桐 2018年3月4日19:49:45 -->
+	<select id="getById" resultType="pd" parameterType="Integer" useCache="false">
+		SELECT
+			om.*,
+			opi.status paystatus
+		FROM
+			order_main om,
+			order_pay_info opi
+		WHERE 1=1
+		AND om.id = opi.orderid
+		AND om.id =#{id}
+		LIMIT 1
+	</select>
+
+	<!-- 确定取消，修改订单状态为已派件 木桐 2018年3月4日19:49:54 -->
+	<update id="updateCencleStatus" parameterType="pd">
+		update order_main
+		set
+		status = #{status},
+		modifytime = now()
+		where 1=1
+		and id = #{id}
+	</update>
+	
+	<!-- 
+		支付订单
+		陈玉石
+		2018年3月7日22:33:02
+	-->
+	<update id="payOrder" parameterType="pd">
+		update order_main
+			set
+				status = #{status},
+				modifytime = now()
+			where 1=1
+				and orderno = #{orderno}
+	</update>
+
+	<select id="orderMainlistPage" resultType="pd" parameterType="page" useCache="false">
+		SELECT
+		om.id,
+		om.orderno,
+		om.channel,
+		(select bc.codename from base_config bc where om.channel = bc.code and bc.codetype='ORDER_CHANNEL' ) channeldesc,
+		opi.status paystatus,
+		(select bc.codename from base_config bc where opi.status = bc.code and bc.codetype='ORDERPAYSTUTAS') paydesc,
+		om.type,
+		(select bc.codename from base_config bc where om.type = bc.code and bc.codetype='orderType' ) typedesc,
+		om.status,
+		(select bc.codename from base_config bc where om.status = bc.code and bc.codetype='orderStatus') statusDesc,
+		IFNULL(om.totalmoney,0) totalmoney,
+		IFNULL(om.cutmoney,0) cutmoney,
+		IFNULL(om.totalmoney,0) - IFNULL(om.cutmoney,0) actualmoney,
+		om.num,
+		om.porderno,
+		date_format(om.addtime,'%Y-%m-%d %H:%i') addtime,
+		om.flightno,
+		ci.name cusname,
+		ci.mobile cusmobile,
+		osr.sendername,
+		osr.senderphone,
+		oaddr.srcprovname,
+		oaddr.srccityname,
+		oaddr.srcdistrictname,
+		oaddr.srcaddress,
+		oaddr.destprovname,
+		oaddr.destcityname,
+		oaddr.destdistrictname,
+		oaddr.destaddress,
+		oaddr.scrlandmark,
+		oaddr.destlandmark,
+		date_format(om.taketime,'%Y-%m-%d %H:%i') taketime,
+		date_format(om.sendtime,'%Y-%m-%d %H:%i') sendtime
+		FROM
+		order_main om,
+		order_address oaddr,
+		order_sender_receiver osr,
+		cus_info ci,
+		order_pay_info opi
+		WHERE 1=1
+		AND ci.id = om.cusid
+		AND om.id = oaddr.orderid
+		AND om.id = osr.orderid
+		AND opi.orderid = om.id
+		<if test="pd.cusid != null and pd.cusid != ''">
+			and om.cusid =#{pd.cusid}
+		</if>
+		<if test="pd.orderno != null and pd.orderno != ''">
+			and om.orderno like "%"#{pd.orderno}
+		</if>
+		<if test="pd.porderno != null and pd.porderno != ''">
+			and om.porderno=#{pd.porderno}
+		</if>
+		<if test="pd.name != null and pd.name != ''">
+			and ci.name like '%${pd.name}%'
+		</if>
+		<if test="pd.mobile != null and pd.mobile != ''">
+			and ci.mobile like '%${pd.mobile}%'
+		</if>
+		<if test="pd.status != null and pd.status != ''">
+			and om.status =#{pd.status}
+		</if>
+		<if test="pd.starttime != null and pd.starttime != ''">
+			and om.addtime &gt;= #{pd.starttime}
+		</if>
+		<if test="pd.endtime != null and pd.endtime != ''">
+			and om.addtime &lt;= #{pd.endtime}
+		</if>
+		<if test="pd.baggageid != null and pd.baggageid != ''">
+			and om.id = (select oba.orderid from order_baggage oba where oba.baggageid =#{pd.baggageid} limit 1 )
+		</if>
+		<if test="pd.paystatus != null and pd.paystatus != ''">
+			and opi.status = #{pd.paystatus}
+		</if>
+		AND oaddr.srccityid = #{pd.loginperson_cityid}
+		/*AND om.status != 'WAITPAY'*/<!-- 不查询待支付订单 -->
+		AND exists (SELECT 1 FROM order_pay_info opi WHERE opi.orderid=om.id AND (opi.type = 'MONTH' OR opi.status = 'PREPAID'))
+		AND om.isvalid = 'Y'
+		order by om.id desc
+	</select>
+
+
+	<select id="findOrderDetail" resultType="pd" parameterType="Integer" useCache="false">
+		SELECT
+			ci.name cusname,
+			ci.mobile cusmobile,
+			om.orderno,
+			om.porderno,
+			om.channel,
+			om.addtime,
+			om.type,
+			date_format(om.sendtime,'%Y-%m-%d %H:%i:%s') sendtime,
+			date_format(om.taketime,'%Y-%m-%d %H:%i:%s') taketime,
+			(select bc.codename from base_config bc where om.type = bc.code) typedesc,
+			om.status,
+			(select bc.codename from base_config bc where om.status = bc.code) statusDesc,
+			om.totalmoney,
+			om.cutmoney,
+			om.actualmoney,
+			om.num,
+			osr.sendername,
+			osr.senderphone,
+			osr.receivername,
+			osr.receiverphone,
+			oaddr.srcprovname,
+			oaddr.srcdistrictname,
+			oaddr.srcaddress,
+			oaddr.destprovname,
+			oaddr.destcityname,
+			oaddr.destdistrictname,
+			oaddr.destaddress,
+			oaddr.srccityname
+		FROM
+			order_main om,
+			order_address oaddr,
+			order_sender_receiver osr,
+			cus_info ci
+		WHERE 1=1
+		AND ci.id = om.cusid
+		AND om.id = oaddr.orderid
+		AND om.id = osr.orderid
+		AND om.id = #{orderid}
+	</select>
+	
+	<!--  -->
+ 	<select id="findOrderInfoDetail" resultType="pd" parameterType="pd" useCache="false">
+		SELECT
+			om.id,
+			date_format(om.sendtime,'%Y-%m-%d %H:%i') sendtime,
+			date_format(om.taketime,'%Y-%m-%d %H:%i') taketime,
+			om.type,
+			(select bc.codename from base_config bc where bc.code = om.type and bc.codetype='orderType' ) typedesc, 
+			ci.name,
+			ci.mobile,
+			oa.srcprovid,
+			oa.srccityid,
+			oa.srcprovname,
+			oa.srccityname					
+		FROM		
+			order_main om,
+			cus_info ci,
+			order_address oa		
+		WHERE 1 = 1
+		AND	ci.id = om.cusid
+		AND	om.id = oa.orderid
+			<if test="id != null and id != ''">
+				and om.id =#{id}
+			</if>
+			order by om.id desc
+	</select> 
+	
+	<!-- 进行中、已完成、未开始订单动作 -->
+ 	<select id="findRoleType" parameterType="page" resultType="pd" useCache="false">							
+			SELECT
+				om.orderno,
+				oro.roletype,
+				(SELECT codename from base_config bc where bc.code = oro.roletype) roletypes,
+				oro.destaddrdesc
+			FROM
+				order_role oro,
+				order_main om
+			WHERE 1=1
+			AND om.id = oro.orderid
+			AND oro.roleid = #{userid}
+			AND oro.isfinish = #{isfinish}
+			AND date_format(oro.addtime,'%Y-%m-%d') = date_format(now(),'%Y-%m-%d') 			
+	</select> 
+	
+	<!-- 查询openid -->
+ 	<select id="findOpenidByOrderid" parameterType="Integer" resultType="pd" useCache="false">							
+		select ci.openid,om.orderno, ci.mobile mobile from order_main om,cus_info ci where 1=1 
+		and om.cusid = ci.id and om.id = #{id}
+	</select> 
+	
+	<!-- 查询openid -->
+ 	<select id="findOpenidByAppOrderno" parameterType="pd" resultType="pd" useCache="false">							
+		select ci.openid,om.orderno from order_main om,cus_info ci,order_role ore  where 1=1 
+		and om.cusid = ci.id and om.id = ore.orderid  
+		and om.orderno = #{orderno} and ore.roletype = #{roletype}
+		and 
+	</select> 
+
+   
+
+	<!-- 确定取件，修改订单状态为已取件 陈玉石 2018年3月3日20:03:06 -->
+	<update id="updateTakenStatus" parameterType="pd">
+		update order_main
+		set
+		status = #{status},
+		modifytime = now()
+		where 1=1
+		and
+		id = #{id}
+	</update>
+
+	<!-- 确定派件，修改订单状态为已派件 陈玉石 2018年3月3日20:03:03 -->
+	<update id="updateSentStatus" parameterType="pd">
+		update order_main
+		set
+		status = #{status},
+		modifytime = now()
+		where 1=1
+		and
+		id = #{id}
+	</update>
+	
+	<!-- app订单列表查询' zhangjj -->
+	<select id="findAppOrderMainList" resultType="AppOrderResData" 	parameterType="AppOrderReqData" useCache="false">
+		SELECT
+			<!-- 订单编码 -->
+			omain.id,
+			<!-- 订单编码 -->
+			omain.orderno,
+			<!-- 类型:机-酒、酒-机 -->
+			omain.type,
+			<!-- 订单状态 -->
+			omain.status,
+			<!-- 行李数 -->
+			omain.num,
+			<!-- 取件时间 -->
+	    	DATE_FORMAT(omain.taketime,'%Y-%m-%d %H:%i:%s') taketime,
+			<!-- 送件时间 -->
+			DATE_FORMAT(omain.sendtime,'%Y-%m-%d %H:%i:%s') sendtime,
+			<!-- 客户用户名 -->
+			cus.name cusname,
+			<!-- 客户用户名拼音 -->
+			cus.namespell,
+			<!-- 客户用户名拼音首字母缩写 -->
+			cus.namespellinitial,
+			<!-- 航班号 -->
+			omain.flightno,
+			<!-- 取派员登陆id -->
+			orderrole.roleid,
+			<!-- 行驶状态 -->
+			orderrole.travelstatus,
+			<!-- 动作类型 -->
+			orderrole.roletype,
+			<!-- 是否完成 -->
+			orderrole.isfinish,
+			<!-- 出发地类型 -->
+			orderrole.srctype,
+			<!-- 出发地id -->
+			orderrole.srcaddress,
+			<!-- 出发地简称 -->
+			orderrole.srcaddrname,
+			<!-- 出发地详细地址 -->
+			orderrole.srcaddrdesc,
+			<!-- 目的地类型 -->
+			orderrole.desttype,
+			<!-- 目的地id -->
+			orderrole.destaddress,
+			<!-- 目的名名称 -->
+			orderrole.destaddrname,
+			<!-- 目的名详细地址 -->
+			orderrole.destaddrdesc,
+			<!-- 角色姓名-->
+			( select au.name from app_user au where au.id = orderrole.roleid ) rolename,
+			<!-- 达到时间 -->
+			orderrole.arrivedtime
+		FROM
+			order_main omain,
+			cus_info cus,
+			order_role orderrole
+		WHERE 1=1
+			AND omain.cusid = cus.id
+			AND omain.id = orderrole.orderid
+		<if test=" type != null and type != ''">
+			and omain.type = #{type}
+		</if>
+		<if test=" status!= null and status!= ''">
+			and omain.status = #{status}
+		</if>
+		<if test=" namespellinitial != null and namespellinitial != ''">
+			and cus.namespellinitial like '%${namespellinitial}%'
+		</if>
+		<if test=" roleid != null and roleid != ''">
+			and orderrole.roleid = #{roleid}
+		</if>
+		<if test=" roletype != null and roletype != ''">
+			and orderrole.roletype = #{roletype}
+		</if>
+		<if test=" isfinish != null and isfinish != ''">
+			and orderrole.isfinish = #{isfinish}
+		</if>
+		<if test="desttype != null and desttype != ''">
+			and orderrole.desttype = #{desttype}
+		</if>
+		<if test="destaddress != null and destaddress != ''">
+			and orderrole.destaddress = #{destaddress}
+		</if>
+		<if test="srctype != null and srctype != ''">
+			and orderrole.srctype = #{srctype}
+		</if>
+		<if test="srcaddress != null and srcaddress != ''">
+			and orderrole.srcaddress = #{srcaddress}
+		</if>
+		<if test="orderroleList != null and orderroleList.size() > 0 ">
+			and orderrole.roletype  in
+			<foreach collection="orderroleList" item="item" index="index"
+				open="(" separator="," close=")">
+				#{item}
+			</foreach>
+		</if>
+<!-- 		AND omain.status != 'CANCELLED' tangqm 临时删除 --> 
+		AND omain.isvalid = 'Y'
+		ORDER BY omain.id DESC
+	</select>
+	
+	<select id="findAppOrderNumTaskList" resultType="AppOrderNumResData" 	parameterType="AppOrderReqData" useCache="false">
+	 select task.taskNum,send.sendNum,going.goingNum,finish.finishNum from (SELECT
+	    count(1) taskNum
+		FROM
+			order_main omain,
+			cus_info cus,
+			order_role orderrole,
+			order_sender_receiver osr
+		WHERE 1=1
+			AND omain.cusid = cus.id
+			AND omain.id = orderrole.orderid
+			AND osr.orderid = omain.id
+<!-- 		  AND DATE_FORMAT(orderrole.arrivedtime,'%Y-%m-%d') = DATE_FORMAT(now(),'%Y-%m-%d') -->
+			AND orderrole.isshow = "Y"
+			AND orderrole.roletype in ('ROLE_HOTEL_TASK','ROLE_AIRPORT_TASK','ROLE_TRANSIT_TASK')
+			AND orderrole.isfinish = 'UNFINISHED'
+		  AND omain.status != 'CANCELLED'
+			and orderrole.roleid = #{roleid} 
+		  AND omain.isvalid = 'Y') as task,
+		(SELECT
+	    count(1) sendNum
+		FROM
+			order_main omain,
+			cus_info cus,
+			order_role orderrole,
+			order_sender_receiver osr
+		WHERE 1=1
+			AND omain.cusid = cus.id
+			AND omain.id = orderrole.orderid
+			AND osr.orderid = omain.id
+		    
+		     AND DATE_FORMAT(orderrole.arrivedtime,'%Y-%m-%d') &gt;= DATE_FORMAT(now(),'%Y-%m-%d')
+			AND orderrole.isshow = "Y"
+			and orderrole.roleid = #{roleid}
+			AND orderrole.roletype in ('ROLE_HOTEL_SEND','ROLE_AIRPORT_SEND','ROLE_TRANSIT_SEND')
+			AND orderrole.isfinish = 'UNFINISHED'
+		  AND omain.status != 'CANCELLED'
+		  AND omain.isvalid = 'Y') as send,
+		(SELECT
+	    count(1) goingNum
+		FROM
+			order_main omain,
+			cus_info cus,
+			order_role orderrole,
+			order_sender_receiver osr
+		WHERE 1=1
+			AND omain.cusid = cus.id
+			AND omain.id = orderrole.orderid
+			AND osr.orderid = omain.id
+<!-- 		  AND DATE_FORMAT(orderrole.arrivedtime,'%Y-%m-%d') &gt;= DATE_FORMAT(now(),'%Y-%m-%d') -->
+			AND orderrole.isshow = "Y"
+			AND orderrole.isfinish = 'ONGOING'
+			and orderrole.roleid = #{roleid} 
+		  AND omain.status != 'CANCELLED'
+		  AND omain.isvalid = 'Y') as going,
+		 (SELECT
+	    count(1) finishNum
+		FROM
+			order_main omain,
+			cus_info cus,
+			order_role orderrole,
+			order_sender_receiver osr
+		WHERE 1=1
+			AND omain.cusid = cus.id
+			AND omain.id = orderrole.orderid
+			AND osr.orderid = omain.id
+			AND orderrole.isshow = "Y"
+			and orderrole.roleid = #{roleid} 
+			AND orderrole.isfinish = 'FINISHED'
+			and date(CURDATE()) &gt;=  DATE_SUB(orderrole.arrivedtime, INTERVAL 7 DAY) 
+		  AND omain.status != 'CANCELLED'
+		  AND omain.isvalid = 'Y') as finish
+	</select>
+	
+	<!-- app订单列表查询' zhangjj -->
+	<select id="findAppOrderTaskList" resultType="AppOrderResData" 	parameterType="AppOrderReqData" useCache="false">
+		SELECT
+			<!-- 订单编码 -->
+			omain.id,
+			<!-- 订单编码 -->
+			omain.orderno,
+			<!-- 类型:机-酒、酒-机 -->
+			omain.type,
+			<!-- 渠道-->
+			omain.channel,
+			<!-- 订单状态 -->
+			omain.status,
+			<!-- 行李数 -->
+			omain.num,
+			<!-- 取件时间 -->
+	    	DATE_FORMAT(omain.taketime,'%H:%i') taketime,
+			<!-- 送件时间 -->
+			DATE_FORMAT(omain.sendtime,'%H:%i') sendtime,
+			<!-- 航班号 -->
+			omain.flightno,
+			<!-- 寄件方式 -->
+			omain.mailingway,
+			<!-- 领取方式 -->
+			omain.backway,
+			<!-- 客户用户名 -->
+			cus.name cusname,
+			<!-- 客户用户名拼音 -->
+			cus.namespell,
+			<!-- 客户用户名拼音首字母缩写 -->
+			cus.namespellinitial,
+			<!-- 取派员登陆id -->
+			orderrole.roleid,
+			<!-- 行驶状态 -->
+			orderrole.travelstatus,
+			<!-- 动作类型 -->
+			orderrole.roletype,
+			<!-- 是否完成 -->
+			orderrole.isfinish,
+			<!-- 出发地类型 -->
+			orderrole.srctype,
+			<!-- 出发地id -->
+			orderrole.srcaddress,
+			<!-- 出发地简称 -->
+			IFNULL(orderrole.srcaddrname,'酒店/住宅') srcaddrname,
+			<!-- 出发地详细地址 -->
+			orderrole.srcaddrdesc,
+			<!-- 目的地类型 -->
+			orderrole.desttype,
+			<!-- 目的地id -->
+			orderrole.destaddress,
+			<!-- 目的名名称 -->
+			orderrole.destaddrname,
+			<!-- 目的名详细地址 -->
+			orderrole.destaddrdesc,
+			orderrole.destgps destGps,
+			<!-- 角色姓名-->
+			( select au.name from app_user au where au.id = orderrole.roleid ) rolename,
+			<!-- 最迟达到时间 -->
+			UNIX_TIMESTAMP(orderrole.arrivedtime) arrivedtime,
+			<!-- 当前时间 -->
+			UNIX_TIMESTAMP(now()) currentstamp,
+			CASE 
+			WHEN (date(orderrole.arrivedtime) &lt;= curdate() OR DATE_FORMAT(orderrole.arrivedtime,'%Y-%m-%d %H:%i:%S') = timestamp(adddate(date(sysdate()),1)))  THEN 'Y'
+			ELSE 'N'
+			END isnight, 
+			<!-- 寄件人联系号码-->
+			osr.senderphone,
+			<!-- 收件人联系号码-->
+			osr.receiverphone
+		FROM
+			order_main omain,
+			cus_info cus,
+			order_role orderrole,
+			order_sender_receiver osr
+		WHERE 1=1
+			AND omain.cusid = cus.id
+			AND omain.id = orderrole.orderid
+			AND osr.orderid = omain.id
+			AND orderrole.isshow = "Y"
+		<if test=" type != null and type != ''">
+			and omain.type = #{type}
+		</if>
+		<if test=" status!= null and status!= ''">
+			and omain.status = #{status}
+		</if>
+		<if test=" namespellinitial != null and namespellinitial != ''">
+			and cus.namespellinitial like '%${namespellinitial}%'
+		</if>
+		<if test=" roleid != null and roleid != ''">
+			and orderrole.roleid = #{roleid}
+		</if>
+		<if test="srctype != null and srctype != ''">
+			and orderrole.srctype = #{srctype}
+		</if>
+		<if test="srcaddress != null and srcaddress != ''">
+			and orderrole.srcaddress = #{srcaddress}
+		</if>
+		<if test="desttype != null and desttype != ''">
+			and orderrole.desttype = #{desttype}
+		</if>
+		<if test="destaddress != null and destaddress != ''">
+			and orderrole.destaddress = #{destaddress}
+		</if>
+<!-- 		<if test="roletype == 'ROLE_HOTEL_TASK'  or roletype == 'ROLE_AIRPORT_TASK' ">TODO 缺少集散中心 -->
+        <!-- 			AND (date(orderrole.arrivedtime) = curdate() OR DATE_FORMAT(orderrole.arrivedtime,'%Y-%m-%d %H:%i:%S') = timestamp(adddate(date(sysdate()),1)))当天单必须分配完成，包括当天凌晨 -->
+        <!-- 		</if> -->
+		<if test="roletype == 'ROLE_HOTEL_SEND' or roletype == 'ROLE_AIRPORT_SEND' "><!-- TODO 缺少集散中心 -->
+			and DATE_FORMAT(orderrole.arrivedtime,'%Y-%m-%d')  &gt;= DATE_FORMAT(now(),'%Y-%m-%d')
+		</if>
+		<if test="orderroleList != null and orderroleList.size() > 0 ">
+			and orderrole.roletype  in
+			<foreach collection="orderroleList" item="item" index="index"
+				open="(" separator="," close=")">
+				#{item}
+			</foreach>
+		</if>
+		<if test=" isfinish != null and isfinish != ''">
+			and orderrole.isfinish = #{isfinish}
+		</if>
+		<if test="isfinish == 'FINISHED' ">
+		 and date(CURDATE()) &gt;=  DATE_SUB(orderrole.arrivedtime, INTERVAL 7 DAY) 
+		</if>
+		<if test="isfinishList != null and isfinishList.size() > 0 ">
+			and orderrole.isfinish  in
+			<foreach collection="isfinishList" item="item" index="index"
+				open="(" separator="," close=")">
+				#{item}
+			</foreach>
+		</if>
+        /*AND om.status != 'WAITPAY'*/<!-- 不查询待支付订单 -->
+        AND exists (SELECT 1 FROM order_pay_info opi WHERE opi.orderid=omain.id AND (opi.type = 'MONTH' OR opi.status = 'PREPAID'))
+		AND omain.status != 'CANCELLED'<!-- 订单取消不查询 -->
+		AND omain.isvalid = 'Y'
+		ORDER BY orderrole.arrivedtime
+	</select>
+	
+	<!-- app地图模式列表查询 tangqm -->
+	<select id="findAppMapTaskList" resultType="AppOrderResData" parameterType="AppOrderReqData" useCache="false">
+		select * from (SELECT
+			<!-- 订单编码 -->
+			omain.id,
+			<!-- 订单编码 -->
+			omain.orderno,
+			<!-- 类型:机-酒、酒-机 -->
+			omain.type,
+			<!-- 订单状态 -->
+			omain.status,
+			<!-- 行李数 -->
+			omain.num,
+			<!-- 取件时间 -->
+	    	DATE_FORMAT(omain.taketime,'%H:%i') taketime,
+			<!-- 送件时间 -->
+			DATE_FORMAT(omain.sendtime,'%H:%i') sendtime,
+			<!-- 航班号 -->
+			omain.flightno,
+			<!-- 寄件方式 -->
+			omain.mailingway,
+			<!-- 领取方式 -->
+			omain.backway,
+			<!-- 客户用户名 -->
+			cus.name cusname,
+			<!-- 客户用户名拼音 -->
+			cus.namespell,
+			<!-- 客户用户名拼音首字母缩写 -->
+			cus.namespellinitial,
+			<!-- 取派员登陆id -->
+			orderrole.roleid,
+			<!-- 行驶状态 -->
+			orderrole.travelstatus,
+			<!-- 动作类型 -->
+			orderrole.roletype,
+			<!-- 是否完成 -->
+			orderrole.isfinish,
+			<!-- 出发地类型 -->
+			orderrole.srctype,
+			<!-- 出发地id -->
+			orderrole.srcaddress,
+			<!-- 出发地简称 -->
+			IFNULL(orderrole.srcaddrname,'酒店/住宅') srcaddrname,
+			<!-- 出发地详细地址 -->
+			orderrole.srcaddrdesc,
+			<!-- 目的地类型 -->
+			orderrole.desttype,
+			<!-- 目的地id -->
+			orderrole.destaddress,
+			<!-- 目的名名称 -->
+			orderrole.destaddrname,
+			<!-- 目的名详细地址 -->
+			orderrole.destaddrdesc,
+			<!-- 目的地gps -->
+			orderrole.destgps destGps,
+			<!-- 角色姓名-->
+			( select au.name from app_user au where au.id = orderrole.roleid ) rolename,
+			<!-- 最迟达到时间 -->
+			UNIX_TIMESTAMP(orderrole.arrivedtime) arrivedtime,
+			<!-- 当前时间 -->
+			UNIX_TIMESTAMP(now()) currentstamp,
+			<!-- 寄件人联系号码-->
+			osr.senderphone,
+			<!-- 收件人联系号码-->
+			osr.receiverphone
+		FROM
+			order_main omain,
+			cus_info cus,
+			order_role orderrole,
+			order_sender_receiver osr
+		WHERE 1=1
+		AND omain.cusid = cus.id
+		AND omain.id = orderrole.orderid
+		and osr.orderid = omain.id
+		AND orderrole.isshow = "Y"
+		AND orderrole.roletype in ('ROLE_HOTEL_TASK','ROLE_AIRPORT_TASK','ROLE_TRANSIT_TASK')
+		AND orderrole.isfinish in ('UNFINISHED','ONGOING')
+		AND omain.status != 'CANCELLED'
+		AND (date(orderrole.arrivedtime) = curdate() OR DATE_FORMAT(orderrole.arrivedtime,'%Y-%m-%d %H:%i:%S') = timestamp(adddate(date(sysdate()),1)))<!-- 当天单必须分配完成，包括当天凌晨 -->
+		and orderrole.roleid = #{roleid} 
+		AND omain.isvalid = 'Y'
+		union all
+		SELECT
+			<!-- 订单编码 -->
+			omain.id,
+			<!-- 订单编码 -->
+			omain.orderno,
+			<!-- 类型:机-酒、酒-机 -->
+			omain.type,
+			<!-- 订单状态 -->
+			omain.status,
+			<!-- 行李数 -->
+			omain.num,
+			<!-- 取件时间 -->
+	    	DATE_FORMAT(omain.taketime,'%H:%i') taketime,
+			<!-- 送件时间 -->
+			DATE_FORMAT(omain.sendtime,'%H:%i') sendtime,
+			<!-- 航班号 -->
+			omain.flightno,
+			<!-- 寄件方式 -->
+			omain.mailingway,
+			<!-- 领取方式 -->
+			omain.backway,
+			<!-- 客户用户名 -->
+			cus.name cusname,
+			<!-- 客户用户名拼音 -->
+			cus.namespell,
+			<!-- 客户用户名拼音首字母缩写 -->
+			cus.namespellinitial,
+			<!-- 取派员登陆id -->
+			orderrole.roleid,
+			<!-- 行驶状态 -->
+			orderrole.travelstatus,
+			<!-- 动作类型 -->
+			orderrole.roletype,
+			<!-- 是否完成 -->
+			orderrole.isfinish,
+			<!-- 出发地类型 -->
+			orderrole.srctype,
+			<!-- 出发地id -->
+			orderrole.srcaddress,
+			<!-- 出发地简称 -->
+			IFNULL(orderrole.srcaddrname,'酒店/住宅') srcaddrname,
+			<!-- 出发地详细地址 -->
+			orderrole.srcaddrdesc,
+			<!-- 目的地类型 -->
+			orderrole.desttype,
+			<!-- 目的地id -->
+			orderrole.destaddress,
+			<!-- 目的名名称 -->
+			orderrole.destaddrname,
+			<!-- 目的名详细地址 -->
+			orderrole.destaddrdesc,
+			<!-- 目的地gps -->
+			orderrole.destgps destGps,
+			<!-- 角色姓名-->
+			( select au.name from app_user au where au.id = orderrole.roleid ) rolename,
+			<!-- 最迟达到时间 -->
+			UNIX_TIMESTAMP(orderrole.arrivedtime) arrivedtime,
+			<!-- 当前时间 -->
+			UNIX_TIMESTAMP(now()) currentstamp,
+			<!-- 寄件人联系号码-->
+			osr.senderphone,
+			<!-- 收件人联系号码-->
+			osr.receiverphone
+		FROM
+			order_main omain,
+			cus_info cus,
+			order_role orderrole,
+			order_sender_receiver osr
+		WHERE 1=1
+		AND omain.cusid = cus.id
+		AND omain.id = orderrole.orderid
+		and osr.orderid = omain.id
+		AND orderrole.isshow = "Y"
+		AND (date(orderrole.arrivedtime) = curdate() OR DATE_FORMAT(orderrole.arrivedtime,'%Y-%m-%d %H:%i:%S') = timestamp(adddate(date(sysdate()),1)))<!-- 当天单必须分配完成，包括当天凌晨 -->
+		AND orderrole.roletype in ('ROLE_HOTEL_SEND','ROLE_AIRPORT_SEND','ROLE_TRANSIT_SEND')
+		AND orderrole.isfinish in ('UNFINISHED','ONGOING')
+		AND omain.status != 'CANCELLED'
+		and orderrole.roleid = #{roleid} 
+		AND omain.isvalid = 'Y'
+		) as map
+		ORDER BY map.roletype,map.destaddress,map.arrivedtime
+	</select>
+
+
+	<!-- app订单列表查询 zhangjj -->
+	<select id="findAppOrderDetails" resultType="AppOrderDetailsResData" parameterType="AppOrderDetailsReqData" useCache="false">
+		SELECT
+			omain.id,
+			<!-- 订单编码 -->
+			omain.channel,
+			omain.orderno,
+			<!-- 类型:机-酒、酒-机 -->
+			omain.type,
+			<!-- 订单状态 -->
+			omain.status,
+			<!-- 订单描述 -->
+			(select bc.codename from base_config bc where omain.status = bc.code and bc.codetype='orderStatus') statusDesc,
+			<!-- 航班号 -->
+			omain.flightno,
+			<!-- 行李数 -->
+			omain.num,
+			<!-- 客户号 -->
+			omain.cusid,
+			<!-- 寄件方式 -->
+            omain.mailingway,
+			<!-- 收件方式 -->
+            omain.backway,
+            <!-- 取件时间 -->
+			DATE_FORMAT(omain.taketime,'%Y-%m-%d %H:%i:%s') taketime ,
+			<!-- 派送时间 -->
+			DATE_FORMAT(omain.sendtime,'%Y-%m-%d %H:%i:%s') sendtime,
+			omain.cutmoney,
+			<!-- 实际支付金额 -->
+			omain.actualmoney,
+			omain.totalmoney,
+			omain.remark,
+			<!-- 寄件人姓名-->
+			osr.sendername,
+			<!-- 寄件人联系号码-->
+			osr.senderphone,
+			<!-- 收件人姓名-->
+			osr.receivername,
+			<!-- 收件人联系号码-->
+			osr.receiverphone
+		FROM
+			order_main omain,
+			order_sender_receiver osr
+		WHERE 1=1 and osr.orderid = omain.id
+		<if test=" orderid != null and orderid != ''">
+			and omain.id = #{orderid}
+		</if>
+		<if test=" orderno != null and orderno != ''">
+			and omain.orderno  LIKE '%${orderno}'
+		</if>
+		<if test=" fetchcode != null and fetchcode != ''">
+			and omain.fetchcode = #{fetchcode}
+		</if>
+		<if test=" baggageid != null and baggageid != ''">
+			and omain.id = (SELECT oBaggage.orderid FROM order_baggage oBaggage WHERE oBaggage.baggageid = #{baggageid})
+		</if>
+		<!-- AND omain.status != 'CANCELLED' -->
+		AND omain.isvalid = 'Y'
+		limit 1
+	</select>
+
+	<!-- 
+	     根据订单id更新订单状
+	  zhangjj
+	-->
+	<update id="updateStatusByOrderid" parameterType="pd">
+		update
+			order_main omain
+		set
+			status = #{status},
+			modifytime = now()
+		where
+			omain.id = #{orderid}
+	</update>
+	
+	<!-- 根据订单编码更新订单状态 zhangjj -->
+	<update id="updateStatusByOrderno" parameterType="pd">
+		update
+			order_main omain
+		set
+			status = #{status},
+			modifytime = now()
+		where
+			omain.orderno = #{orderno}
+	</update>
+	
+	<!-- 更新订单状态 -->
+	<update id="updateOrderStatus" parameterType="pd">
+		update order_main omain set status = #{status}, modifytime = now()
+		where 1=1
+		<if test="orderid != null and orderid != ''">
+			and omain.id = #{orderid}
+		</if>
+		<if test="orderno != null and orderno != ''">
+			and omain.orderno = #{orderno}
+		</if>
+		<if test="orderidList != null and orderidList.size() > 0 ">
+			and omain.id in
+			<foreach collection="orderidList" item="item" index="index"
+				open="(" separator="," close=")">
+				#{item}
+			</foreach>
+		</if>
+		<if test="ordernoList != null and ordernoList.size() > 0 ">
+			and omain.orderno in
+			<foreach collection="ordernoList" item="item" index="index"
+				open="(" separator="," close=")">
+				#{item}
+			</foreach>
+		</if>
+	</update>
+
+	<select id="findIsExistsOrder" resultType="pd" parameterType="pd" useCache="false">
+		SELECT
+			om.*,
+			ci.*
+		FROM
+			order_main om,
+			cus_info ci
+		WHERE 1=1
+		AND om.cusid = ci.id
+		<if test="orderno != null and orderno != ''">
+			AND om.orderno =#{orderno}
+		</if>
+	</select>
+
+	<!-- app订单列表查询根据QR码 zhangjj -->
+	<select id="findAppOrderBaggageid" resultType="AppUnloadScanResData" parameterType="AppUnloadScanReqData" useCache="false">
+		SELECT 
+			<!-- QR码 -->
+			distinct oBaggage.baggageid,
+			<!-- 订单主键 -->
+			omain.id,
+			<!-- 订单编码 -->
+			omain.orderno,
+			<!-- 类型:机-酒、酒-机 -->
+			omain.type,
+			<!-- 订单状态 -->
+			omain.status,
+			<!-- 行李数 -->
+			omain.num,
+			<!-- 客户名称 -->
+			cus.name,
+			<!-- 客户用户名拼音 -->
+			cus.namespell,
+			<!-- 客户用户名拼音首字母缩写 -->
+			cus.namespellinitial,
+			<!-- 出发地类型 -->
+			orderrole.srctype,
+			<!-- 出发地 -->
+			orderrole.srcaddress,
+			orderrole.srcaddrname,
+			orderrole.srcaddrdesc,
+			orderrole.desttype,
+			orderrole.destaddress,
+			orderrole.destaddrname,
+			orderrole.destaddrdesc
+		FROM
+			order_main omain,
+			cus_info cus,
+			order_role orderrole,
+			order_baggage oBaggage
+		WHERE 1=1
+		AND omain.cusid = cus.id
+		AND omain.id = orderrole.orderid
+		AND omain.id = oBaggage.orderid
+		<if test=" type != null and type != ''">
+			and omain.type = #{type}
+		</if>
+		<if test=" status!= null and status!= ''">
+			and omain.status = #{status}
+		</if>
+		<if test=" roleid != null and roleid != ''">
+			and orderrole.roleid = #{roleid}
+		</if>
+		<if test=" roletype != null and roletype != ''">
+			and orderrole.roletype = #{roletype}
+		</if>
+		<if test=" isfinish != null and isfinish != ''">
+			and orderrole.isfinish = #{isfinish}
+		</if>
+		<if test=" desttype != null and desttype != ''">
+			and orderrole.desttype = #{desttype}
+		</if>
+		<if test=" destaddress != null and destaddress != ''">
+			and orderrole.destaddress = #{destaddress}
+		</if>
+		<if test=" baggageid != null and baggageid != ''">
+			and oBaggage.baggageid = #{baggageid}
+			LIMIT 1
+		</if>
+	</select>
+
+	<!-- app订单列表查询根据QR码 -->
+	<select id="checkOrderBaggageIsScan" resultType="pd"
+		parameterType="pd" useCache="false">
+		SELECT
+		*
+		FROM
+		order_main omain,
+		order_baggage oBaggage
+		WHERE omain.id =
+		oBaggage.orderid
+		<if test=" orderid!= null and orderid!= ''">
+			and omain.id = #{orderid}
+		</if>
+		<if test=" status!= null and status!= ''">
+			and omain.status = #{status}
+		</if>
+		<if test=" isscan!= null and isscan!= ''">
+			and oBaggage.isscan = #{isscan}
+		</if>
+	</select>
+
+	<update id="saveSignUrl" parameterType="pd">
+		update order_main omain
+		set
+		signurl = #{signurl},
+		signname = #{signname},
+		modifytime = now()
+		where
+		omain.id = #{id}
+	</update>
+
+	<!-- 
+		订单动作查询
+		zhangjj
+	 -->
+	<select id="orderRoleTypeListPage" resultType="pd" parameterType="Integer" useCache="false">
+		SELECT
+			ore.id,
+			ore.roleid,
+			appUser.name,
+			appUser.mobile,
+			appUser.type usertype,
+			(select codename from base_config bc where bc.codetype = 'APPUSERTYPE' and bc.code = appUser.type) usertypeDesc,
+			ore.roletype,
+			(select codename from base_config bc where bc.codetype = 'ROLETYPE' and bc.code = ore.roletype) roletypename,
+			ore.isfinish,
+			(select codename from base_config bc where bc.codetype = 'ISFINISH' and bc.code = ore.isfinish) isfinishDesc,
+        	ore.srcaddress,
+        	ore.srcaddrname,
+        	ore.srcaddrdesc,
+        	ore.destaddress,
+        	ore.destaddrname,
+        	ore.destaddrdesc,
+        	date_format(ore.arrivedtime,'%Y-%m-%d %H:%i') arrivedtime,
+        	date_format(ore.actionfinishtime,'%Y-%m-%d %H:%i') actionfinishtime,
+        	date_format(ore.addtime,'%Y-%m-%d %H:%i') addtime
+		FROM 
+			order_role ore,
+			app_user appUser
+		WHERE 1=1
+		AND ore.orderid = #{id}
+		AND ore.roleid = appUser.id
+		ORDER BY ore.actionfinishtime,ore.id asc
+	</select>
+	
+	<!-- 查询一批次订单行李总数 zhangjj -->
+	<select id="countBatchBagNum" resultType="Integer" parameterType="pd" useCache="false">
+		SELECT
+			SUM(omain.NUM)
+		FROM
+			order_main omain,
+			order_role orderrole
+		WHERE omain.id = orderrole.orderid
+			AND orderrole.roleid = #{roleid}
+			AND orderrole.roletype = #{roletype}
+			AND orderrole.isfinish = #{isfinish}
+			AND orderrole.desttype = #{desttype}
+			AND orderrole.destaddress = #{destaddress}
+	</select>
+	
+	<!-- 
+		 app分组查询派件员
+		 zhangjj
+	 -->
+	<select id="findGroupbyDman" resultType="pd" 	parameterType="pd" useCache="false">
+		SELECT
+			<!-- 取派员姓名 -->
+			udman.name,
+			<!-- 取派员行李总数 -->
+			SUM(omain.num)
+		FROM
+			order_main omain,
+			order_role orderrole,
+			user_delivery_man udman
+		WHERE 1=1
+			  AND omain.id = orderrole.orderid
+			  AND orderrole.roleid = udman.id
+		<if test=" roleid != null and roleid != ''">
+			and orderrole.roletype = #{roletype}
+		</if>
+		<if test=" roletype != null and roletype != ''">
+			and orderrole.roletype = #{roletype}
+		</if>
+		<if test=" isfinish != null and isfinish != ''">
+			and orderrole.isfinish = #{isfinish}
+		</if>
+		GROUP BY orderrole.roleid
+	</select>
+	
+	
+	<!-- 
+		   集散中心市内件'
+		 zhangjj
+     -->
+	<select id="findOrderListByCityScope" resultType="TransitOrderResData" parameterType="pd" useCache="false">
+		SELECT
+			udm.userid dmanid,
+			udm.name dmanname,
+			SUM(omain.num) bagnum
+		FROM
+			order_main omain,
+			order_role orderrole,
+			user_delivery_man udm
+		WHERE 1=1
+			AND omain.id = orderrole.orderid
+			AND orderrole.roleid = udm.userid
+			AND orderrole.roletype = 'ROLE_HOTEL_SEND'
+			<!-- 是否完成（进行中/已完成） -->
+			AND orderrole.isfinish = #{isfinish}
+			<!-- 集散中心id -->
+			AND orderrole.srcaddress = #{srcaddress}
+		GROUP BY orderrole.roleid
+	</select>
+	
+	<!-- 
+		集散中心订单列表查询'
+	 	zhangjj
+	-->
+	<select id="findOrderListByCounterCenterScope" resultType="TransitOrderResData" parameterType="pd" useCache="false">
+		SELECT
+			orderrole.destaddress counterserviceid,
+			orderrole.destaddrname countercentername,
+			SUM(omain.num) bagnum
+		FROM
+			order_main omain,
+			order_role orderrole
+		WHERE 1=1
+			AND omain.id = orderrole.orderid
+			AND orderrole.roletype = 'ROLE_AIRPORT_SEND'
+			<!-- 是否完成（进行中/已完成） -->
+			AND orderrole.isfinish = #{isfinish}
+			<!-- 集散中心id -->
+			AND orderrole.srcaddress = #{srcaddress}
+		GROUP BY orderrole.destaddress
+	</select>
+	
+	<!-- 
+		检查订单状态是**
+		zhangjj
+	 -->
+	<select id="checkOrderStatus" parameterType="pd" resultType="Integer">
+		SELECT
+			count(*)
+		FROM
+			order_main omain
+		WHERE 1=1
+			AND omain.id = #{orderid}
+			AND omain.status = #{status}
+			ORDER BY omain.id desc
+			LIMIT 1
+	</select>
+	
+	<!-- 
+		检查订单状态是**
+		zhangjj
+	 -->
+	<select id="checkOrderStatusByOrderid" parameterType="pd" resultType="pd">
+		SELECT
+			*
+		FROM
+			order_main omain
+		WHERE 1=1
+		AND omain.id = #{orderid}
+		AND omain.status = #{status}
+	</select>
+	
+	<!-- 
+		检查订单状态是**
+		zhangjj
+	 -->
+	<select id="checkOrderStatusByOrderidList" parameterType="pd" resultType="pd">
+		SELECT
+			*
+		FROM
+			order_main omain
+		WHERE 1=1
+		AND omain.id in
+		<foreach collection="orderidList" item="item" index="index"	open="(" separator="," close=")">
+			#{item}
+		</foreach>
+		AND omain.status = #{status}
+	</select>
+	
+	<!-- 
+		检查QR码是否被扫描了
+	 -->
+	<select id="checkQRIsScan" resultType="pd" parameterType="pd" useCache="false">
+		SELECT
+			*
+		FROM
+			order_main omain,
+			order_baggage oBaggage
+		WHERE 1=1
+			AND omain.id = oBaggage.orderid
+			AND omain.id = #{orderid}
+			AND oBaggage.isscan = #{isscan}
+	</select>
+	
+	<!-- 查询订单列表-->
+	<select id="queryOrderListByCusId" resultType="H5OrderInfoBean" parameterType="pd" useCache="false">
+		SELECT
+			<include refid="Field"></include>		
+		FROM
+			<include refid="tableName"></include>
+		WHERE 1=1 
+		AND omain.id = sendrec.orderid
+		AND omain.id = address.orderid
+		AND omain.id = insure.orderid
+		AND omain.isvalid = #{isvalid}		
+		AND omain.cusid = #{cusid}				
+	<!-- 	AND omain.status != 'CANCELLED'	 -->	
+		order by omain.addtime desc
+	</select>
+
+	<!-- 查询未支付订单列表-->
+	<select id="queryWaitpayOrderListByCusId" resultType="H5OrderInfoBean" parameterType="pd" useCache="false">
+		SELECT
+		omain.id,
+		omain.orderno,
+		omain.actualmoney,
+		omain.num,
+		omain.mailingway,
+		omain.neadinvoice,
+		omain.channel,
+		date_format(omain.taketime,'%Y-%m-%d %H:%i') taketime,
+		date_format(omain.sendtime,'%Y-%m-%d %H:%i') sendtime,
+		sendrec.sendername,
+		sendrec.senderphone,
+		sendrec.receivername,
+		sendrec.receiverphone,
+		sendrec.realname,
+		sendrec.realphone,
+		address.srcaddrtype,
+		address.scrlandmark,
+		address.srcaddress,
+		address.destaddrtype,
+		address.destlandmark,
+		address.destaddress,
+		address.remark,
+		insure.insurecode,
+		'WAITPAY' orderstatusType
+		FROM
+		order_main omain,
+		order_sender_receiver sendrec,
+		order_address address,
+		order_insure_info insure,
+		order_pay_info opi
+		WHERE 1=1
+		AND omain.id = sendrec.orderid
+		AND omain.id = address.orderid
+		AND omain.id = insure.orderid
+		AND omain.id  = opi.orderid
+		AND omain.isvalid = #{isvalid}
+		AND omain.cusid = #{cusid}
+		AND opi.status = 'WAITPAY'
+		order by omain.addtime desc
+	</select>
+	
+	<!-- 查询退款订单列表-->
+	<select id="queryRefundOrderListByCusId" resultType="H5OrderInfoBean" parameterType="pd" useCache="false">
+		SELECT
+			<include refid="Field"></include>		
+		FROM
+			<include refid="tableName"></include>
+		WHERE 1=1 
+		AND omain.id = sendrec.orderid
+		AND omain.id = address.orderid
+		AND omain.id = insure.orderid
+		AND omain.isvalid = #{isvalid}		
+		AND omain.cusid = #{cusid}	
+		AND omain.status = 'CANCELLED'			
+		order by omain.addtime desc	
+	</select>	
+	
+	<!-- 查询已完成订单列表-->
+	<select id="queryFinishOrderListByCusId" resultType="H5OrderInfoBean" parameterType="pd" useCache="false">
+		SELECT
+			<include refid="Field"></include>		
+		FROM
+			<include refid="tableName"></include>
+		WHERE 1=1 
+		AND omain.id = sendrec.orderid
+		AND omain.id = address.orderid
+		AND omain.id = insure.orderid
+		AND omain.isvalid = #{isvalid}		
+		AND omain.cusid = #{cusid}	
+		AND omain.status IN (SELECT code FROM base_config WHERE codetype = 'orderStatus' AND remark = 'END')
+		order by omain.addtime desc	
+	</select>	
+		
+	<!-- 查询进行中订单列表-->
+	<select id="queryOngoingOrderListByCusId" resultType="H5OrderInfoBean" parameterType="pd" useCache="false">
+		SELECT
+			<include refid="Field"></include>		
+		FROM
+			<include refid="tableName"></include>
+		WHERE 1=1 
+		AND omain.id = sendrec.orderid
+		AND omain.id = address.orderid
+		AND omain.id = insure.orderid
+		AND omain.isvalid = #{isvalid}		
+		AND omain.cusid = #{cusid}	
+		AND omain.status IN (SELECT code FROM base_config WHERE codetype = 'orderStatus' AND remark = 'ONGOING')
+		AND omain.status != 'CANCELLED'
+		order by omain.addtime desc
+	</select>		
+		
+	<!-- 删除订单 -->
+	<update id="updateIsvalidByid" parameterType="pd">
+		UPDATE 
+			order_main
+		SET
+			isvalid = #{isvalid},
+			modifytime = now()
+		WHERE 1=1		
+		AND id = #{orderid}
+	</update>
+	
+	<!-- 更改订单状态根据订单id -->
+	<update id="updateStatusByid" parameterType="pd">
+		UPDATE 
+			order_main
+		SET
+			status = #{status},
+			modifytime = now()
+		WHERE 1=1
+		AND id = #{id}
+	</update>
+
+	<!-- 查询订单status状态 -->
+	<select id="getOrderStatusByOrderid" parameterType="pd" resultType="String">
+		SELECT
+			opi.status
+		FROM
+			order_main omain,
+			order_pay_info opi
+		WHERE 1=1
+		AND omain.id = opi.orderid
+		AND omain.id = #{orderid}		
+	</select>
+	
+	<!-- 查询订单neadinvoice是否需发票 -->
+	<select id="getOrderNeadinvoiceByOrderid" parameterType="pd" resultType="String">
+		SELECT
+			omain.neadinvoice
+		FROM
+			order_main omain
+		WHERE 1=1
+		AND omain.id = #{orderid}		
+	</select>	
+		
+	<!-- 更改订单neadinvoice根据订单id -->
+	<update id="updateInvoiceNeadinvoice" parameterType="pd">
+		UPDATE 
+			order_main
+		SET
+			neadinvoice = #{neadinvoice}			
+		WHERE 1=1
+		AND id = #{orderid}
+	</update>
+	
+	<!--查询集散中心寄存件 -->
+	<select id="findAppOrderMainJicunList" resultType="AppOrderJicunResData" 	parameterType="AppOrderJicunReqData" useCache="false">
+			SELECT 
+				distinct om.orderno,
+				om.id,
+				om.num,
+				oro.roletype,
+				UNIX_TIMESTAMP(oro.arrivedtime) arrivedtime
+			FROM 
+				order_main om,
+				order_role oro
+			WHERE 1=1
+			AND oro.destaddress = #{destaddress}
+			AND om.id = oro.orderid
+			AND oro.roletype = 'ROLE_TRANSIT_TASK'
+			AND oro.desttype = 'TRANSITCERTER'
+			AND DATE_FORMAT(oro.arrivedtime,'%Y-%m-%d') >=  DATE_FORMAT(date_add(NOW(),interval 1.8333333 day),'%Y-%m-%d')
+	</select>
+	
+	<!-- 查询集散中心已完成件 -->
+	<select id="findAppOrderMainFinishList" resultType="AppOrderFinishResData" 	parameterType="AppOrderFinishReqData" useCache="false">
+			SELECT 
+				distinct om.orderno,
+				om.id,
+				om.num,
+				oro.roletype,	 
+				au.name
+			FROM 
+				order_main om,
+				order_role oro,
+				app_user au
+			WHERE 1=1
+			AND oro.destaddress = #{destaddress}
+			AND om.id = oro.orderid
+			AND oro.roleid = au.id
+			AND (oro.roletype = 'ROLE_TRANSIT_TASK' or oro.roletype = 'ROLE_TRANSIT_SEND')
+			AND oro.desttype = 'TRANSITCERTER'
+			AND oro.isfinish = 'FINISHED'
+	</select>
+	
+	<!-- 待人工分配信息查询 -->
+	<select id="findWaitmanualAlloc" parameterType="pd" resultType="pd" useCache="false">
+		SELECT
+			om.id,
+			om.channel,
+			om.mailingway,
+			(SELECT codename FROM base_config bc WHERE bc.codetype ='MAILING_WAY' AND bc.code = om.mailingway) mailingwayDesc,
+			om.backway,
+			(SELECT codename FROM base_config bc WHERE bc.codetype ='MAILING_WAY' AND bc.code = om.backway) backwayDesc,
+			om.orderno,
+			right(om.orderno, 4) ordernosuffix,
+			om.type,
+			(SELECT codename FROM base_config bc WHERE bc.codetype ='orderType' AND bc.code = om.type) ordertypedesc,
+			om.taketime,
+			date_format(om.taketime,'%m-%d %H:%i') taketimetime,
+			om.sendtime,
+			date_format(om.sendtime,'%m-%d %H:%i') sendtimetime,
+			om.num,
+			oa.srcaddrtype,
+			oa.srcprovid,
+			oa.srccityid,
+			oa.srcdistrictid,
+			oa.srcprovname,
+			oa.srccityname,
+			oa.srcdistrictname,
+			oa.srcaddress,
+			oa.scrlandmark,
+			oa.destaddrtype,
+			oa.destprovid,
+			oa.destcityid,
+			oa.destdistrictid,
+			oa.destprovname,
+			oa.destcityname,
+			oa.destdistrictname,
+			oa.destaddress,
+			oa.destlandmark,
+			oa.srcgps,
+			oa.destgps,
+			ci.name cusname,
+			ci.mobile cusmobile,
+			case<!-- 机场是否收件特殊处理 -->
+				when oa.srcaddrtype != 'AIRPORTCOUNTER' then ''
+				when (oa.srcaddrtype = 'AIRPORTCOUNTER' and (SELECT count(1) = 1 FROM order_role ora WHERE 1=1 AND ora.orderid = om.id AND ora.roletype = 'ROLE_AIRPORT_TASKED' ORDER BY ora.id desc LIMIT 1)) then 'Y' 
+				else 'N' 
+			end airport_tasked_flag
+		FROM
+			order_main om,
+			cus_info ci,
+			order_address oa
+		WHERE 1=1
+			AND not exists ( select 1 from autoallot_log log where log.orderid = om.id and log.type IN ('MANUAL_ALLOT_SUCC','AUTO_ALLOT_SUCCESS'))
+			AND om.cusid = ci.id
+			AND om.id = oa.orderid
+			/*AND om.status != 'WAITPAY'*/<!-- 不查询待支付订单 -->
+            AND exists (SELECT 1 FROM order_pay_info opi WHERE opi.orderid=om.id AND (opi.type = 'MONTH' OR opi.status = 'PREPAID'))
+			AND om.status != 'CANCELLED' <!-- 退款订单 -->
+			AND om.isvalid = 'Y' <!-- 查询有效订单 -->
+			<!-- AND (date( om.taketime) = curdate() OR DATE_FORMAT(om.taketime,'%Y-%m-%d %H:%i:%S') = timestamp(adddate(date(sysdate()),1))) --><!-- 当天单必须分配完成，包括当天凌晨 -->
+			AND oa.srcprovid = #{loginperson_provid}<!-- 当前省份 -->
+			AND oa.srccityid = #{loginperson_cityid}<!-- 当前城市 -->
+		    <if test="orderno != null and orderno != ''">
+				AND om.orderno like '%${orderno}%'
+			</if>
+			<if test="mobile != null and mobile != ''">
+				AND ci.mobile = #{mobile}
+			</if>
+			<if test="orderid != null and orderid != ''">
+				AND om.id = #{orderid}
+			</if>
+	</select>
+	
+	<!-- 订单分配信息查询 -->
+	<select id="findOrderAllocinfo" parameterType="pd" resultType="pd" useCache="false">
+		SELECT
+			om.id,
+			om.mailingway,
+			(SELECT codename FROM base_config bc WHERE bc.codetype ='MAILING_WAY' AND bc.code = om.mailingway) mailingwayDesc,
+			om.backway,
+			(SELECT codename FROM base_config bc WHERE bc.codetype ='MAILING_WAY' AND bc.code = om.backway) backwayDesc,
+			om.orderno,
+			right(om.orderno, 4) ordernosuffix,
+			om.type,
+			(SELECT codename FROM base_config bc WHERE bc.codetype ='orderType' AND bc.code = om.type) ordertypedesc,
+			om.taketime,
+			date_format(om.taketime,'%m-%d %H:%i') taketimetime,
+			om.sendtime,
+			date_format(om.sendtime,'%m-%d %H:%i') sendtimetime,
+			om.num,
+			oa.srcaddrtype,
+			oa.srcprovid,
+			oa.srccityid,
+			oa.srcdistrictid,
+			oa.srcprovname,
+			oa.srccityname,
+			oa.srcdistrictname,
+			oa.srcaddress,
+			oa.scrlandmark,
+			oa.destaddrtype,
+			oa.destprovid,
+			oa.destcityid,
+			oa.destdistrictid,
+			oa.destprovname,
+			oa.destcityname,
+			oa.destdistrictname,
+			oa.destaddress,
+			oa.destlandmark,
+			oa.srcgps,
+			oa.destgps,
+			ci.name cusname,
+			ci.mobile cusmobile
+		FROM
+			order_main om,
+			cus_info ci,
+			order_address oa
+		WHERE 1=1
+			AND om.cusid = ci.id
+			AND om.id = oa.orderid
+			AND om.id = #{orderid}
+	</select>
+	
+	<!-- 自动分配信息查询 -->
+	<select id="findAutoAllotlist" parameterType="pd" resultType="pd" useCache="false">
+		SELECT
+			om.id,
+			om.channel,
+			om.mailingway,
+			(SELECT codename FROM base_config bc WHERE bc.codetype ='MAILING_WAY' AND bc.code = om.mailingway) mailingwayDesc,
+			om.backway,
+			(SELECT codename FROM base_config bc WHERE bc.codetype ='MAILING_WAY' AND bc.code = om.backway) backwayDesc,
+			om.orderno,
+			right(om.orderno, 4) ordernosuffix,
+			om.type,
+			(SELECT codename FROM base_config bc WHERE bc.codetype ='orderType' AND bc.code = om.type) ordertypedesc,
+			om.taketime,
+			date_format(om.taketime,'%m-%d %H:%i') taketimetime,
+			om.sendtime,
+			date_format(om.sendtime,'%m-%d %H:%i') sendtimetime,
+			om.num,
+			oa.srcaddrtype,
+			oa.srcprovid,
+			oa.srccityid,
+			oa.srcdistrictid,
+			oa.srcprovname,
+			oa.srccityname,
+			oa.srcdistrictname,
+			oa.srcaddress,
+			oa.scrlandmark,
+			oa.srcgps,
+			oa.destaddrtype,
+			oa.destprovid,
+			oa.destcityid,
+			oa.destdistrictid,
+			oa.destprovname,
+			oa.destcityname,
+			oa.destdistrictname,
+			oa.destaddress,
+			oa.destlandmark,
+			oa.destgps,
+			ci.name cusname,
+			ci.mobile cusmobile,
+			case<!-- 机场是否收件特殊处理 -->
+				when oa.srcaddrtype != 'AIRPORTCOUNTER' then ''
+				when (oa.srcaddrtype = 'AIRPORTCOUNTER' and (SELECT count(1) = 1 FROM order_role ora WHERE 1=1 AND ora.orderid = om.id AND ora.roletype = 'ROLE_AIRPORT_TASKED' ORDER BY ora.id desc LIMIT 1)) then 'Y' 
+				else 'N' 
+			end airport_tasked_flag
+		FROM
+			order_main om,
+			cus_info ci,
+			order_address oa
+		WHERE 1=1
+			AND om.id in (SELECT
+							DISTINCT al.orderid
+						  FROM
+							autoallot_log al
+						  WHERE 1=1
+							AND (al.type = 'AUTO_ALLOT_SUCCESS' OR al.type = 'MANUAL_ALLOT_SUCC')
+						  )
+			AND om.cusid = ci.id
+			AND om.id = oa.orderid
+            /*AND om.status != 'WAITPAY'*/<!-- 不查询待支付订单 -->
+            AND exists (SELECT 1 FROM order_pay_info opi WHERE opi.orderid=om.id AND (opi.type = 'MONTH' OR opi.status = 'PREPAID'))
+		    AND om.status != 'RELEASEOVER'
+			AND om.status !='DELIVERYOVER'
+			AND om.status != 'CANCELLED'<!-- 不要查询已经完成的订单 已经送达/已经释放 -->
+			AND om.isvalid = 'Y' <!-- 查询有效订单 -->
+			<!-- AND (date( om.taketime) = curdate() OR DATE_FORMAT(om.taketime,'%Y-%m-%d %H:%i:%S') = timestamp(adddate(date(sysdate()),1))) --><!-- 当天单必须分配完成，包括当天凌晨 -->
+			AND oa.srcprovid = #{loginperson_provid}<!-- 当前省份 -->
+			AND oa.srccityid = #{loginperson_cityid}<!-- 当前城市 -->
+		    <if test="orderno != null and orderno != ''">
+				AND om.orderno like '%${orderno}%'
+			</if>
+			<if test="mobile != null and mobile != ''">
+				AND ci.mobile = #{mobile}
+			</if>
+			<!-- <if test="countdown != null and countdown != ''"> 待人工分配取件时间
+				AND (SELECT TIMESTAMPDIFF(Minute, CURTIME(), om.tasktime) as daysum)&lt;#{countdown}
+			</if> -->
+			<if test="orderid != null and orderid != ''">
+				AND om.id = #{orderid}
+			</if>
+			ORDER BY om.channel desc, om.taketime, om.sendtime
+	</select>
+	
+	<!-- 根据订单号查询订单信息和客户信息 -->
+	<select id="findorderandcus" parameterType="Integer" resultType="pd" useCache="false">
+		SELECT
+			om.id,
+			om.mailingway,
+			(SELECT codename FROM base_config bc WHERE bc.codetype ='MAILING_WAY' AND bc.code = om.mailingway) mailingwayDesc,
+			om.backway,
+			(SELECT codename FROM base_config bc WHERE bc.codetype ='MAILING_WAY' AND bc.code = om.backway) backwayDesc,
+			om.orderno,
+			right(om.orderno, 4) ordernosuffix,
+			om.type,
+			(SELECT codename FROM base_config bc WHERE bc.codetype ='orderType' AND bc.code = om.type) ordertypedesc,
+			om.num,
+			ci.name cusname,
+			ci.mobile cusmobile
+		FROM
+			order_main om,
+			cus_info ci
+		WHERE 1=1
+		AND om.cusid = ci.id
+		AND om.id = #{orderid}
+	</select>
+	
+	<select id="getH5OrderInfo" resultType="H5OrderInfo" parameterType="pd" useCache="false">
+		SELECT
+			om.orderno,
+			date_format(om.addtime,'%Y年%m月%d日 %H时%i分') addtime,
+			om.status,
+			(select codename from base_config bc where bc.codetype='orderStatus' and bc.code = om.status) statuscodename
+		FROM
+			order_main om
+		WHERE 1=1 
+			<if test="orderid != null and orderid != ''">
+				AND om.id = #{orderid}
+			</if>
+			<if test=" baggageid != null and baggageid != ''">
+				and om.id = (SELECT oBaggage.orderid FROM order_baggage oBaggage WHERE oBaggage.baggageid = #{baggageid} limit 1)
+			</if>
+	</select>
+	
+	
+	<!--查询机场柜台寄存件 -->
+	<select id="findAppOrderAirportHosting" resultType="AppOrderAirportResData" 	parameterType="AppOrderAirportReqData" useCache="false">
+			SELECT 
+				distinct om.orderno,
+				ci.name,
+				ci.mobile,		
+				om.id,
+				om.num,
+				om.channel,
+				UNIX_TIMESTAMP(om.sendtime) sendtime
+			FROM 
+				order_main om,
+				order_address ad,
+				cus_info ci
+			WHERE 1=1
+			AND ad.destaddressid = #{airportid} 
+			AND (ad.srcaddrtype = 'AIRPORTCOUNTER' OR ad.destaddrtype = 'AIRPORTCOUNTER')
+			AND om.id = ad.orderid
+			AND om.cusid = ci.id
+			AND DATE_FORMAT(om.sendtime,'%Y-%m-%d') >=  DATE_FORMAT(date_add(NOW(),interval 1.8333333 day),'%Y-%m-%d')
+	</select>
+	
+	<!-- 查询机场柜台已完成件 -->
+	<select id="findAppOrderAirportFinish" resultType="AppOrderAirportResData" 	parameterType="AppOrderAirportReqData" useCache="false">
+			SELECT 
+				distinct om.orderno,
+				ci.name,
+				ci.mobile,		
+				om.id,
+				om.num,
+				om.channel,
+				UNIX_TIMESTAMP(om.modifytime) modifytime
+			FROM 
+				order_main om,
+				order_address ad,
+				cus_info ci
+			WHERE 1=1
+			AND ad.destaddressid = #{airportid} 
+			AND ad.destaddrtype = 'AIRPORTCOUNTER'
+			AND om.id = ad.orderid
+			AND om.cusid = ci.id
+			AND om.status = 'RELEASEOVER'
+	</select>
+	<!--查询机场柜台待取件 -->
+	<select id="findAppOrderAirportTake" resultType="AppOrderAirportResData" 	parameterType="AppOrderAirportReqData" useCache="false">
+			SELECT 
+				distinct om.orderno,
+				ci.name,
+				ci.mobile,		
+				om.id,
+				om.num,
+				om.channel,
+				UNIX_TIMESTAMP(om.taketime) taketime
+			FROM 
+				order_main om,
+				order_address ad,
+				cus_info ci
+			WHERE 1=1
+			AND ad.srcaddressid = #{airportid} 
+			AND ad.srcaddrtype = 'AIRPORTCOUNTER'
+			AND om.id = ad.orderid
+			AND om.cusid = ci.id
+			AND om.status = 'WAITPICK'
+			AND om.isvalid = 'Y'
+			AND DATE_FORMAT(om.taketime,'%Y-%m-%d') =  DATE_FORMAT(NOW(),'%Y-%m-%d')
+	</select>
+	
+	<!-- 查询机场柜台待派件 -->
+	<select id="findAppOrderAirportSend" resultType="AppOrderAirportResData" 	parameterType="AppOrderAirportReqData" useCache="false">
+			SELECT 
+				distinct om.orderno,
+				ci.name,
+				ci.mobile,		
+				om.id,
+				om.num,
+				om.channel,
+				UNIX_TIMESTAMP(om.sendtime) sendtime
+			FROM 
+				order_main om,
+				order_address ad,
+				cus_info ci
+			WHERE 1=1
+			AND ad.destaddressid = #{airportid}
+			AND ad.destaddrtype = 'AIRPORTCOUNTER'
+			AND om.status = 'UNLOAD'
+			AND om.id = ad.orderid
+			AND om.cusid = ci.id
+			AND DATE_FORMAT(om.sendtime,'%Y-%m-%d') = DATE_FORMAT(NOW(),'%Y-%m-%d')
+	</select>
+	
+	<!-- 待支付 -->
+	<select id="findAppOrderAirportWaitPay" resultType="AppOrderAirportResData" parameterType="AppOrderAirportReqData" useCache="false">
+			SELECT 
+				distinct om.orderno,
+				ci.name,
+				ci.mobile,		
+				om.id,
+				om.num,
+				om.channel,
+				UNIX_TIMESTAMP(om.taketime) taketime
+			FROM
+				order_main om,
+				order_address ad,
+				cus_info ci,
+				order_pay_info opi
+			WHERE 1=1
+			AND ad.srcaddressid = #{airportid} 
+			AND ad.srcaddrtype = 'AIRPORTCOUNTER'
+			AND om.id = ad.orderid
+			AND om.cusid = ci.id
+			AND opi.orderid = om.id
+			AND opi.status = 'WAITPAY'
+			AND om.isvalid = 'Y'
+			AND DATE_FORMAT(om.taketime,'%Y-%m-%d') >=  DATE_FORMAT(NOW(),'%Y-%m-%d')
+	</select>
+	
+	<!-- 更改寄件时间 -->
+	<update id="updatetaketime" parameterType="pd">
+		UPDATE
+			order_main om
+		SET
+			om.taketime = #{taketime}
+		WHERE 1=1
+			AND om.id = #{orderid}
+	</update>
+	
+	<!-- 更改寄件时间 -->
+	<update id="updatesendtime" parameterType="pd">
+		UPDATE
+			order_main om
+		SET
+			om.sendtime = #{sendtime}
+		WHERE 1=1
+			AND om.id = #{orderid}
+	</update>
+	
+	<!-- 订单更新寄收时间-->
+	<update id="updateTaketimeOrSendTime">
+		UPDATE
+			order_main om
+		SET
+			<if test="taketime !=null and taketime != ''">
+				om.taketime = #{taketime},
+			</if>
+			<if test="sendtime !=null and sendtime != ''">
+				om.sendtime = #{sendtime},
+			</if>
+			om.id = #{id}
+		WHERE om.id = #{id}
+	</update>
+</mapper>
+

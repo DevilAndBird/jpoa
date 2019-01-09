@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="OrderInvoiceInfoMapper">
+	<resultMap id="BaseResultMap" type="OrderInvoiceInfo" >
+    <id column="id" property="id"/>
+    <result column="orderid" property="orderid"/>
+    <result column="addtime" property="addtime"/>
+    <result column="title" property="title"/>
+    <result column="taxno" property="taxno"/>
+    <result column="invoicetype" property="invoicetype"/>
+    <result column="status" property="status"/>
+    <result column="invoicetime" property="invoicetime"/>
+    <result column="serialno" property="serialno"/>
+    <result column="email" property="email"/>
+  </resultMap>
+  
+  	<!-- 申请发票-->
+    <insert id="addInvoice" parameterType="OrderInvoiceInfo" >
+    	INSERT INTO order_invoice_info (
+	    	orderid,
+	    	addtime, 
+	        title,
+	        taxno,
+	        invoicetype, 
+	        status,
+	        invoicetime,
+	        serialno, 
+	        email,
+	        money,
+	        content,
+	        notes,
+	        banktype,
+	        bankno,
+	        sendname,
+	        sendphone,
+	        sendaddr,
+	        housenum)
+	    VALUES (
+	    	#{orderid},
+	    	now(), 
+	        #{title},
+	        #{taxno},
+	        #{invoicetype}, 
+	        #{status},
+	        now(),
+	        #{serialno}, 
+	        #{email},
+	        #{money},
+	        #{content},
+	        #{notes},
+	        #{banktype},
+	        #{bankno},
+	        #{sendname},
+	        #{sendphone},
+	        #{sendaddr},
+	        #{housenum})
+    </insert>
+  
+    <!-- 查询发票详情  -->
+	<select id="queryInvoiceByOrderId" parameterType="Integer" resultType="OrderInvoiceInfo">
+		SELECT
+			*
+		FROM
+			order_invoice_info
+		WHERE 1=1
+		AND orderid = #{orderid}		
+		LIMIT 1
+	</select>
+	
+	<!-- 更改发票email -->
+	<update id="updateInvoiceEmailById" parameterType="pd">
+		UPDATE 
+			order_invoice_info
+		SET
+			title = #{title},
+			taxno = #{taxno},
+			sendname = #{sendname},
+			sendphone = #{sendphone},
+			sendaddr = #{sendaddr},	
+			housenum = #{housenum}		
+		WHERE 1=1
+		AND id = #{id}
+	</update>
+	
+	<!-- 发票列表查询  -->
+	<select id="orderInvoicelistPage" resultType="pd" parameterType="page" useCache="false" >
+	    SELECT 
+	    	ci.name cusname,
+	    	ci.mobile,
+	    	oi.invoicetype,
+	    	(SELECT codename FROM base_config bc WHERE bc.codetype='INVOICE_INVOICETYPE' AND oi.invoicetype = bc.code) invoicetypedesc,
+	    	oi.title,
+	    	oi.taxno,
+	    	oi.email,
+	    	oi.money,
+	    	oi.addtime,
+	    	oi.sendname,
+	    	oi.sendphone,
+	    	oi.sendaddr,
+	    	oi.housenum,
+	    	om.orderno
+	    FROM 
+	    	order_invoice_info oi,
+	    	cus_info ci,
+	    	order_main om
+	    where 1=1
+	      AND oi.orderid = om.id
+	      AND om.cusid = ci.id
+		  <if test="pd.title !=null and pd.title != ''"> 
+			AND oi.title like CONCAT('%',#{pd.title},'%') 
+		  </if> 
+		  <if test="pd.sendname !=null and pd.sendname != ''"> 
+			AND oi.sendname like CONCAT('%',#{pd.sendname},'%') 
+		  </if>
+		  <if test="pd.sendphone !=null and pd.sendphone != ''"> 
+			AND oi.sendphone like CONCAT('%',#{pd.sendphone},'%') 
+		  </if>
+		  <if test="pd.mobile !=null and pd.mobile != ''"> 
+			AND ci.mobile like CONCAT('%',#{pd.mobile},'%') 
+		  </if>
+		  <if test="pd.cusname !=null and pd.cusname != ''"> 
+			AND ci.name like CONCAT('%',#{pd.cusname},'%') 
+		  </if>
+		  <if test="pd.starttime !=null and pd.starttime != '' and pd.endtime != null and pd.endtime != ''"> 
+			AND date(oi.addtime) between #{pd.starttime} and #{pd.endtime}
+		  </if>
+		  order by oi.id desc
+	</select>
+	
+	<!-- 发票列表查询  -->
+	<select id="queryOrderInvoiceList" resultType="pd" parameterType="pd" useCache="false" >
+	    SELECT 
+	    	om.orderno,
+	    	ci.name cusname,
+	    	ci.mobile,
+	    	oi.invoicetype,
+	    	(SELECT codename FROM base_config bc WHERE bc.codetype='INVOICE_INVOICETYPE' AND oi.invoicetype = bc.code) invoicetypedesc,
+	    	oi.title,
+	    	oi.taxno,
+	    	oi.email,
+	    	oi.money,
+	    	oi.addtime,
+	    	oi.sendname,
+	    	oi.sendphone,
+	    	oi.sendaddr,
+	    	oi.housenum
+	    FROM 
+	    	order_invoice_info oi,
+	    	cus_info ci,
+	    	order_main om
+	    where 1=1
+	      AND oi.orderid = om.id
+	      AND om.cusid = ci.id
+		  <if test="title !=null and title != ''"> 
+			AND oi.title like CONCAT('%',#{title},'%') 
+		  </if> 
+		  <if test="sendname !=null and sendname != ''"> 
+			AND oi.sendname like CONCAT('%',#{sendname},'%') 
+		  </if>
+		  <if test="sendphone !=null and sendphone != ''"> 
+			AND oi.sendphone like CONCAT('%',#{sendphone},'%') 
+		  </if>
+		  <if test="mobile !=null and mobile != ''"> 
+			AND ci.mobile like CONCAT('%',#{mobile},'%') 
+		  </if>
+		  <if test="cusname !=null and cusname != ''"> 
+			AND ci.name like CONCAT('%',#{cusname},'%') 
+		  </if>
+		  <if test="starttime !=null and starttime != '' and endtime != null and endtime != ''"> 
+			AND date(oi.addtime) between #{starttime} and #{endtime}
+		  </if>
+		  order by oi.id desc
+	</select>
+	
+	<insert id="insertInvoice" parameterType="pd" >
+	    insert into order_invoice_info (cusid, cusname,amt, title, taxno,email, status,companyname,addtime,mobile)
+	    values (#{modelcusid},#{modelcusname},#{modelamt}, #{modeltitle},#{modeltaxno}, #{modelemail}, #{status},#{modelcompanyname},now(),#{modelmobile})
+	</insert>
+	
+	<!-- 审核发票  -->
+	<select id="checkInfo" resultType="OrderInvoiceInfo" parameterType="pd" useCache="false" >
+	    select * from order_invoice_info where cusid = #{modelcusid} and cusname = #{modelcusname} and mobile = #{modelmobile} 
+	    and amt = #{modelamt} and title = #{modeltitle} and taxno = #{modeltaxno} and email = #{modelemail} and companyname = #{modelcompanyname} 
+	</select>
+
+</mapper>
+

@@ -1,0 +1,73 @@
+.bodywaitallotedit {
+	font-weight:bold;	
+}
+
+.tdimg {
+	width: 50px;
+}
+
+.tablefillorderinfo{
+	margin-left:10px;
+	width: 1000px;
+}
+
+.addrdesc {
+	width: 370px;
+}
+
+#divdmanlist{
+	max-height: 250px;
+	overflow-y:auto;
+}
+
+h4{
+	margin-top:20px;
+	margin-left:30px;
+	margin-bottom: 10px;
+}
+
+#divactiveallot{
+	margin-left:70px;
+}
+
+#divaddivedtime{
+	margin-top:10px;
+	margin-left:70px;
+	
+}
+
+#inputaddrivedtime{
+	width:220px;
+	height: 30px;
+}
+
+#divbutton{
+	margin-top : 30px;
+	margin-right : 40px;
+	
+}
+
+#btnallotactivefinish{
+	margin-right:70px;
+	float: right;
+	margin-bottom: 10px;
+}
+#btnsaveactive{
+	margin-right:10px;
+	float: right;
+	margin-bottom: 10px;
+}
+
+#divlookaction{
+	max-height: 250px;
+	overflow-y:auto;
+}
+
+hr{
+	width: 90%;
+	margin-left:5%; 
+}
+
+.imgorderallotpath {
+	float: right;
+}

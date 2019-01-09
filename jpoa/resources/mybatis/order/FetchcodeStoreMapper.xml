@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="FetchcodeStoreMapper">
+	
+	<!-- 查询一个未被使用的提取码 -->
+	<select id="findFetchcode" resultType="String" useCache="false">
+		SELECT 
+			fs.fetchcode
+		FROM
+			fetchcode_store fs
+		WHERE 1=1
+			AND fs.isvalid = 'Y'
+        	ORDER BY fs.id desc
+        	LIMIT 1
+	</select>
+	
+	<!-- 批量增加提取码  -->
+    <insert id="saveFetchcode" parameterType="FetchcodeStore">
+	    INSERT INTO fetchcode_store
+	    	(fetchcode,
+	    	 isvalid)
+	    values 
+	    	(#{fetchcode},
+	    	 'Y')
+    	 <selectKey resultType="java.lang.Integer" order="AFTER" keyProperty="id"> 
+			SELECT LAST_INSERT_ID() 
+		 </selectKey> 
+    </insert>
+    
+    <!-- 修改提取码为失效 -->
+	<update id="updateIsvalid_INVALID" parameterType="String">
+		UPDATE 
+			fetchcode_store 
+		SET
+			isvalid = 'N'
+		WHERE fetchcode = #{fetchcode}
+	</update>
+</mapper>

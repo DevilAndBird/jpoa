@@ -1,0 +1,877 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="OrderRoleMapper">
+
+	<!-- 
+		根据userid和时间查询对应的订单信息
+		陈玉石
+		2018年3月3日17:00:59 
+	-->
+	<select id="queryOrderListByUserId" resultType="OrderMainSpec"
+		parameterType="pd" useCache="false">
+		select s.* 
+			from order_role t
+				left join order_main s
+					on t.orderid=s.id
+			where 
+				t.roleid = #{roleid} and
+				t.addtime > #{timeParam}
+	</select>
+	
+   <!-- 	
+              连续分配时查询是否抵达集散中心
+   -->
+	<select id="findTransitArrived" resultType="OrderRole" parameterType="pd" useCache="false">
+		SELECT 
+			* 
+		FROM
+		 	order_role ore 
+		WHERE 1=1 
+			AND ore.orderid = #{id} 
+			AND ore.roletype = 'ROLE_ARRIVE_TRANSIT'
+			AND ore.destaddress = #{destaddress}
+            AND ore.desttype = 'TRANSITCERTER' 
+	</select>
+	
+	<insert id="insert" parameterType="OrderRole">
+		<selectKey keyProperty="id" resultType="int">
+			select
+			LAST_INSERT_ID()
+		</selectKey>
+		insert into order_role (
+			orderid, 
+			roleid,
+			roletype,
+			isfinish,
+			actionfinishtime,
+			isshow,
+			srctype,
+			srcaddress,
+			srcaddrname,
+			srcaddrdesc,
+			srcgps,
+			desttype,
+			destaddress,
+			destaddrname,
+			destaddrdesc,
+			destgps,
+			addtime,
+			arrivedtime)
+		values (
+			#{orderid},
+			#{roleid},
+			#{roletype},
+			#{isfinish},
+			#{actionfinishtime},
+			#{isshow},
+			#{srctype},
+			#{srcaddress},
+			#{srcaddrname},
+			#{srcaddrdesc},
+			#{srcgps},
+			#{desttype},
+			#{destaddress},
+			#{destaddrname},
+			#{destaddrdesc},
+			#{destgps},
+			now(),
+			#{arrivedtime})
+	</insert>
+
+	<select id="orderUserDeliveryList" resultType="pd"
+		parameterType="page" useCache="false">
+		select  oud.roleid  from order_role oud  where  1=1
+		<if test="pd.id != null and pd.id != ''">
+			and oud.orderid =#{pd.id}
+		</if>
+	</select>
+
+    <delete id="delete" parameterType="OrderRole">  
+        delete from order_role  where orderid= #{orderid}  and roletype = #{roletype}
+	</delete>
+	
+	<select id="findOrderRoleByRoleType" resultType="Integer" parameterType="pd" useCache="false">
+		SELECT 
+			ora.roleid
+		FROM 
+		    order_role ora
+		WHERE 1=1
+		    AND ora.orderid = #{orderid}
+		    AND ora.roletype = #{roletype}
+		    AND ora.isfinish = #{isfinish}
+		   	<if test="desttype != null and desttype != ''">
+		   		AND ora.desttype = #{desttype}
+		    </if>
+		    <if test="destaddress != null and destaddress != ''">
+		    	AND ora.destaddress = #{destaddress}
+		    </if>
+		    ORDER BY ora.id desc
+		    limit 1
+	</select>
+	
+	<!-- 
+		根据订单id、动作类型、动作是否完成情况查询角色id
+		zhangjj
+	 -->
+	<select id="findRoleid" resultType="Integer" parameterType="pd" useCache="false">
+		SELECT 
+			ora.roleid
+		FROM 
+		    order_role ora
+		WHERE 1=1
+		    AND ora.orderid = #{orderid}
+		    AND ora.roletype = #{roletype}
+		    AND ora.isfinish = #{isfinish}
+		    ORDER BY ora.id desc
+		    limit 1
+	</select>
+	
+	<!-- 
+		检查动作
+		zhangjj
+	 -->
+	<select id="checkactive" resultType="pd" parameterType="pd" useCache="false">
+		SELECT 
+			*
+		FROM 
+		    order_role ora
+		WHERE 1=1
+		    AND ora.orderid = #{orderid}
+		    AND ora.roleid = #{roleid}
+		    AND ora.roletype = #{roletype}
+		    AND ora.isfinish = #{isfinish}
+		    ORDER BY ora.id desc
+		    limit 1
+	</select>
+	
+	<!-- 
+		查询订单需要去往的集散中心
+		zhangjj
+	 -->
+	<select id="findOrderGoToTransitList" resultType="OrderRole" parameterType="Integer" useCache="false">
+		SELECT 
+			*
+		FROM 
+		    order_role ora
+		WHERE 1=1
+	    AND ora.orderid = #{orderid}
+	    AND ora.roletype = 'ROLE_TRANSIT_SEND'
+	</select>
+	
+	<!-- 
+		查询订单需要最近去往的集散中心/去往机场
+		zhangjj
+	 -->
+	<select id="findRoleHotelTaskNextRoleType" resultType="OrderRole" parameterType="Integer" useCache="false">
+		SELECT 
+			*
+		FROM 
+		    order_role ora
+		WHERE 1=1
+	    AND ora.orderid = #{orderid}
+	    AND (ora.roletype = 'ROLE_TRANSIT_SEND' OR ora.roletype = 'ROLE_AIRPORT_SEND')
+	    AND ora.isfinish = 'UNFINISHED'
+	    LIMIT 1
+	</select>
+	
+	<!-- 
+		查询下一个未开始动作
+		zhangjj
+	 -->
+	<select id="findNextUnFinishRole" resultType="OrderRole" parameterType="Integer" useCache="false">
+		SELECT 
+			*
+		FROM 
+		    order_role ora
+		WHERE 1=1
+	    AND ora.orderid = #{orderid}
+	    AND ora.isfinish = 'UNFINISHED'
+	    LIMIT 1
+	</select>
+	
+	<select id="findOrderRoleById" resultType="pd" parameterType="appOrderReqData" useCache="false">
+		SELECT 
+			*
+		FROM 
+		    order_role ora
+		WHERE 1=1
+		AND ora.roletype = #{roletype} 
+	    AND ora.orderid = #{id}
+	    AND ora.count = 1
+	</select>
+	
+	<!-- 
+		根据角色动作是否完成更新
+		zhangjj
+	 -->
+	<update id="updateByid" parameterType="pd" >
+		UPDATE
+			order_role orole
+		SET
+			orole.isfinish = #{isfinish}
+		WHERE 1=1
+		AND orole.id = #{id}
+	</update>
+	
+	<update id="updateCountById" parameterType="Integer" >
+		UPDATE
+			order_role orole
+		SET
+			orole.count = 1
+		WHERE 1=1 AND orole.orderid = #{id} and orole.roletype = #{roletype}
+	</update>
+	
+	<!-- 
+		切换任务列表显示
+		tangqm
+	 -->
+	<update id="updateIsShow" parameterType="pd" >
+	update  order_role as q1 join order_role as 
+	q2 on (q1.roleid=#{roleid} and q1.orderid = #{orderid} and  q2.roleid = #{roleid} and q2.orderid = #{orderid})
+    set q1.isshow=transhow(q1.isshow),q2.isshow =transhow(q2.isshow);
+	</update>
+	
+	<!-- 
+		根据角色动作是否完成更新
+		zhangjj
+	 -->
+	<update id="updateIsfinish" parameterType="pd" >
+			UPDATE
+			order_role orole
+		SET
+			orole.isfinish = #{isfinish},
+			orole.actionfinishtime = now()
+		WHERE 1=1
+		AND orole.orderid = #{orderid}
+		AND orole.roleid = #{roleid}
+		AND orole.roletype = #{roletype}
+		<if test="destaddress != null and destaddress != ''">
+			and orole.destaddress=#{destaddress}
+		</if>
+		<if test="desttype != null and desttype != ''">
+			and orole.desttype = #{desttype}
+		</if>
+	</update>
+	
+	<!-- 
+		确认发车
+		tangqm
+	 -->
+	<update id="updateOrderRoleState" parameterType="pd" >
+			UPDATE
+			order_role orole
+		SET
+			orole.isfinish = #{isfinish},
+			orole.actionfinishtime = now()
+		WHERE 1=1
+		AND orole.roleid = #{roleid}
+		AND orole.roletype = #{roletype}
+	    AND orole.orderid in
+			<foreach collection="orderid" item="item" index="index"
+				open="(" separator="," close=")">
+				#{item}
+			</foreach>
+	</update>
+	
+	<!-- 
+		根据角色动作是否完成更新
+		zhangjj
+	 -->
+	<update id="updateIsfinishByOrderidAndRoleType" parameterType="OrderRole" >
+		UPDATE
+			order_role orole
+		SET
+			orole.isfinish = #{isfinish},
+			orole.actionfinishtime = now()
+		WHERE 1=1
+			AND orole.orderid = #{orderid}
+			AND orole.roletype = #{roletype}
+			AND orole.desttype = #{desttype}
+			AND orole.destaddress = #{destaddress}
+			AND orole.roleid = #{roleid}
+	</update>
+	
+	<!-- 
+		根据角色动作是否完成更新
+		zhangjj
+	 -->
+	<update id="updateFINISHED" parameterType="OrderRole" >
+		UPDATE
+			order_role orole
+		SET
+			orole.isfinish = 'FINISHED',
+			orole.actionfinishtime = now()
+		WHERE 1=1
+			AND orole.orderid = #{orderid}
+			AND orole.roleid = #{roleid}
+			AND orole.roletype = #{roletype}
+			AND orole.isfinish = 'ONGOING'
+	</update>
+	
+	<!-- 
+		根据角色动作是否完成更新
+		zhangjj
+	 -->
+	<update id="updateByIsfinish" parameterType="pd" >
+		UPDATE
+			order_role orole
+		SET
+			orole.isfinish = 'ONGOING'
+		WHERE 1=1
+			AND orole.isfinish = 'UNFINISHED'
+			AND orole.orderid = #{orderid}
+	</update>
+	
+	<!-- 
+		更新去机场取件下个动作变成进行中
+		zhangjj
+	 -->
+	<update id="updateRoleAirportTSendNext_ISFINISH" parameterType="Integer" >
+		UPDATE
+			order_role orole
+		SET
+			orole.isfinish = 'ONGOING'
+		WHERE 1=1
+			AND orole.orderid = #{orderid}
+			AND (orole.roletype = 'ROLE_TRANSIT_SEND' OR orole.roletype = 'ROLE_HOTEL_SEND')
+	</update>
+	
+	<!-- 判断订单动作是否存在  zhangjj -->
+	<select id="checkActiveIsExist" resultType="pd" parameterType="pd" useCache="false">
+		SELECT 
+			*
+		FROM 
+		    order_role ora
+		WHERE 1=1
+		    AND ora.orderid = #{orderid}
+		    AND ora.roletype = #{roletype}
+		    ORDER BY ora.id desc
+		    LIMIT 1
+	</select>
+	
+	<select id="checkRefund" resultType="pd" parameterType="pd" useCache="false">
+		SELECT 
+			*
+		FROM 
+		    order_role ore,order_main om
+		WHERE 1=1
+		    AND om.orderno = #{orderno}
+				AND ore.orderid = om.id
+				AND ore.isfinish in ('ONGOING','FINISHED')
+	</select>
+	
+	<!-- 删除订单角色动作 -->
+	<delete id="delectOrderRoleByid" parameterType="java.lang.Integer">  
+        delete from order_role  where id = #{id}
+	</delete>
+	
+	<!-- 删除订单角色动作 -->
+	<delete id="delectOrderRoleByOrderidAndRoleid" parameterType="pd">  
+        DELETE 
+        FROM
+        	order_role
+        WHERE 1=1
+       	 AND orderid = #{orderid}
+       	 AND roleid = #{roleid}
+	</delete>
+	
+	<!-- 
+		取出订单上一个的动作节点
+		zhangjj
+	-->
+	<select id="findDescLimit1ByOrderid" resultType="pd" parameterType="Integer" useCache="false">
+		SELECT
+			id,
+			orderid, 
+			roleid,
+			roletype,
+			isfinish,
+			srctype,
+			srcaddress,
+			srcaddrname,
+			srcaddrdesc,
+			desttype,
+			destaddress,
+			destaddrname,
+			destaddrdesc
+		FROM 
+		    order_role ora
+		WHERE 1=1
+		AND ora.orderid = #{orderid}
+		ORDER BY ora.id desc
+		limit 1    
+	</select>
+	
+	<select id="findRoleidByOrderid" resultType="pd" parameterType="pd" useCache="false">
+		SELECT
+			id,
+			orderid, 
+			roleid,
+			roletype,
+			isfinish,
+			srctype,
+			srcaddress,
+			srcaddrname,
+			srcaddrdesc,
+			desttype,
+			destaddress,
+			destaddrname,
+			destaddrdesc
+		FROM 
+		    order_role ora
+		WHERE 1=1
+		<if test="orderid !=null and orderid != ''" >
+		AND ora.orderid = #{orderid}			
+		</if>
+		<if test="taskid !=null and taskid != ''" >
+		AND ora.id = #{taskid}			
+		</if>
+		limit 1    
+	</select>
+	<select id="findRoleidByOrderid_Refund" resultType="pd" parameterType="Integer" useCache="false">
+		SELECT
+			id,
+			orderid, 
+			roleid,
+			roletype,
+			isfinish,
+			srctype,
+			srcaddress,
+			srcaddrname,
+			srcaddrdesc,
+			desttype,
+			destaddress,
+			destaddrname,
+			destaddrdesc
+		FROM 
+		    order_role ora
+		WHERE 1=1
+		AND ora.orderid = #{orderid}			
+		limit 1    
+	</select>
+	
+	<!-- 
+		批量更新行驶状态，即将到达
+		zhangjj
+	 -->
+	<update id="updateTravelstatus" parameterType="pd" >
+		UPDATE
+			order_role oro
+		SET
+			oro.travelstatus = #{travelstatus}
+		WHERE 1=1
+		    AND oro.roleid = #{roleid}
+		    AND oro.roletype = #{roletype}
+		    AND oro.isfinish = #{isfinish}
+			AND oro.desttype = #{desttype}
+			AND oro.destaddress = #{destaddress}
+	</update>
+	
+	<!-- 取派员到达列表查询 zhangjj -->
+	<select id="findDMANListByDest" resultType="UserDeliveryResData" parameterType="userDeliveryReqData" useCache="false">
+	    SELECT 
+	    	DISTINCT 
+			oro.roleid userid,
+			oro.travelstatus,
+			(select codename from base_config bc where bc.codetype = 'TASKMAINDRIVERSTATUS' and bc.code = oro.travelstatus) travelstatusDesc,
+			udm.id,
+			udm.name drivername,
+			udm.mobile drivermobile,
+			udm.platenumber
+		FROM
+			order_role oro,
+			user_delivery_man udm
+		WHERE 1=1  
+		AND oro.roleid = udm.userid
+		AND oro.desttype = #{desttype}
+		AND oro.destaddress = #{destaddress}
+		AND oro.isfinish = 'ONGOING'
+		AND oro.travelstatus in ('ARRIVING','ARRIVED')
+	</select>
+	
+	<!-- 取派员 -->
+	<update id="updateChangeDman" parameterType="pd">
+		UPDATE
+			order_role
+		SET 
+			roleid = #{roleid}
+		WHERE id = #{id}
+	</update>
+	
+	<!-- 查询订单状态-->
+	<select id="queryStatusByOrderId" resultType="OrderRole" parameterType="pd" useCache="false">
+		SELECT
+			au.name,
+			au.mobile,
+			ore.roletype,
+			ore.desttype,
+			ore.isfinish,
+			ore.destaddrname,
+			(select codename from base_config bc where bc.codetype='ROLETYPE' and bc.code = ore.roletype) roletypecodename,
+			date_format(ore.actionfinishtime,'%Y年%m月%d日 %H时%i分') actionfinishtime
+		FROM
+			order_role ore,
+			app_user au
+		WHERE 1 = 1
+		AND ore.roleid = au.id 
+		<if test="orderid != null and orderid != ''">
+			AND orderid = #{orderid} 
+		</if>
+		<if test=" baggageid != null and baggageid != ''">
+			AND orderid = (SELECT oBaggage.orderid FROM order_baggage oBaggage WHERE oBaggage.baggageid = #{baggageid} limit 1)
+		</if>
+		AND ore.desttype !='TRANSITCERTER'
+		AND ore.isfinish in ('ONGOING','FINISHED')	
+	</select>
+	
+	<!-- 
+		下个角色动作绑定
+		去酒店取，下个动作是去集散中心送、去机场送
+		去集散中心取，下个动作可能是 去集散中心送、去酒店送、去机场送
+		去机场取，下个动作可能是  去集散中心送、去酒店送
+	 -->
+	<select id="findNextBindRoleAction" parameterType="pd" resultType="orderRole" useCache="false">
+		SELECT 
+			ora.orderid, 
+			ora.roleid,
+			ora.roletype,
+			ora.isfinish,
+			ora.srctype,
+			ora.srcaddress,
+			ora.srcaddrname,
+			ora.srcaddrdesc,
+			ora.desttype,
+			ora.destaddress,
+			ora.destaddrname,
+			ora.destaddrdesc,
+			UNIX_TIMESTAMP(ora.arrivedtime) arrivedtime
+		FROM 
+		    order_role ora
+		WHERE 1=1
+		    AND ora.orderid = #{orderid}
+		   	AND ora.roleid = #{roleid}
+		    AND ora.isfinish = 'UNFINISHED'
+		    AND ora.roletype like '%SEND'
+		    ORDER BY ora.id desc
+		    LIMIT 1
+	</select>
+	
+	<!-- 根据id查询 zhangjj -->
+	<select id="findById" resultType="OrderRole" parameterType="Integer" useCache="false">
+		SELECT
+			*
+		FROM
+			order_role
+		WHERE 1=1 
+			AND id = #{orderroleid} 
+	</select>
+	
+	<!-- 统计交接行李数/交接订单数 zhangjj -->
+	<select id="statisticsOrdernumAndLugNum" resultType="Map" parameterType="OrderRole" useCache="false">
+		SELECT
+			count(om.id) ORDER_NUM,
+			sum(om.num) LUG_NUM
+		FROM
+			order_main om,
+			order_role oro
+		WHERE 1=1
+		    AND om.id = oro.orderid
+			AND oro.roleid = #{roleid}
+			AND oro.roletype = #{roletype}
+			AND oro.isfinish = #{isfinish}
+			AND oro.desttype = #{desttype}
+			AND oro.destaddress = #{destaddress}
+	</select>
+	
+	<!-- 目的地为住宅和酒店的取件地址_热力部署 zhangjj -->
+	<select id="findTaskAddress_HOTELOROTHER" parameterType="pd" resultType="pd" useCache="false">
+		SELECT
+			DISTINCT oro.destaddrdesc,
+			oro.destgps
+		FROM
+			order_main om,
+			order_role oro
+		WHERE 1=1
+			AND om.id = oro.orderid
+			AND om.status != 'CANCELLED'
+			AND om.isvalid = 'Y'
+			AND oro.desttype in ('HOTEL','RESIDENCE')
+			AND oro.roletype  = 'ROLE_HOTEL_TASK'
+			AND oro.isfinish in ('UNFINISHED','ONGOING')
+			AND date(oro.arrivedtime) = curdate()
+			<if test="dmanuserid !=null and dmanuserid != ''" >
+				AND oro.roleid = #{dmanuserid}
+			</if>
+	</select>
+	
+	<!-- 目的地为住宅和酒店的送件地址_热力部署 zhangjj -->
+	<select id="findSendAddress_HOTELOROTHER" parameterType="pd"  resultType="pd" useCache="false">
+		SELECT
+			DISTINCT oro.destaddrdesc,
+			oro.destgps
+		FROM
+			order_main om,
+			order_role oro
+		WHERE 1=1
+			AND om.id = oro.orderid
+			AND om.status != 'CANCELLED'
+			AND om.isvalid = 'Y'
+			AND oro.desttype in ('HOTEL','RESIDENCE')
+			AND oro.roletype = 'ROLE_HOTEL_SEND'
+			AND oro.isfinish in ('UNFINISHED','ONGOING')
+			AND date(oro.arrivedtime) = curdate()
+			<if test="dmanuserid !=null and dmanuserid != ''" >
+				AND oro.roleid = #{dmanuserid}
+			</if>
+	</select>
+	
+	<!-- 集散中心任务订单数查询_热力部署  zhangjj  -->
+	<select id="transitSend" resultType="pd" parameterType="pd"  useCache="false">
+		SELECT
+			 oro.destaddress,
+			 oro.destaddrname,
+			 count(oro.destaddress) send_count  
+		FROM
+			order_main om,
+			order_role oro
+		WHERE 1=1
+			AND om.id = oro.orderid
+			AND om.status != 'CANCELLED'
+			AND om.isvalid = 'Y'
+			AND oro.desttype = 'TRANSITCERTER'
+			AND oro.roletype = 'ROLE_TRANSIT_SEND'
+			AND oro.isfinish in ('UNFINISHED','ONGOING')
+			AND date(oro.arrivedtime) = curdate()
+			<if test="dmanuserid !=null and dmanuserid != ''" >
+				AND oro.roleid = #{dmanuserid}
+			</if>
+			GROUP BY oro.destaddress
+	</select>
+	
+	<!-- 机场任务订单数查询_热力部署  zhangjj -->
+	<select id="transitTask" resultType="pd" parameterType="pd"  useCache="false">
+		SELECT
+			 oro.destaddress,
+			 oro.destaddrname,
+			 count(oro.destaddress) task_count
+		FROM
+			order_main om,
+			order_role oro
+		WHERE 1=1
+			AND om.id = oro.orderid
+			AND om.status != 'CANCELLED'
+			AND om.isvalid = 'Y'
+			AND oro.desttype = 'TRANSITCERTER'
+			AND oro.roletype = 'ROLE_TRANSIT_TASK'
+			AND oro.isfinish in ('UNFINISHED','ONGOING')
+			AND date(oro.arrivedtime) = curdate()
+			<if test="dmanuserid !=null and dmanuserid != ''" >
+				AND oro.roleid = #{dmanuserid}
+			</if>
+			GROUP BY oro.destaddress
+	</select>
+	
+	<!-- 机场任务订单数查询_热力部署  zhangjj -->
+	<select id="counterTask" resultType="pd" parameterType="pd" useCache="false">
+		SELECT
+			 oro.destaddress,
+			 oro.destaddrname,
+			 count(oro.destaddress) task_count
+		FROM
+			order_main om,
+			order_role oro
+		WHERE 1=1
+			AND om.id = oro.orderid
+			AND om.status != 'CANCELLED'
+			AND om.isvalid = 'Y'
+			AND oro.desttype = 'SERVICECERTER'
+			AND oro.roletype = 'ROLE_AIRPORT_TASK'
+			AND oro.isfinish in ('UNFINISHED','ONGOING')
+			AND date(oro.arrivedtime) = curdate()
+			<if test="dmanuserid !=null and dmanuserid != ''" >
+				AND oro.roleid = #{dmanuserid}
+			</if>
+			GROUP BY oro.destaddress
+	</select>
+	
+	<!-- 机场任务订单数查询_热力部署  zhangjj -->
+	<select id="counterSend" resultType="pd" parameterType="pd"  useCache="false">
+		SELECT
+			 oro.destaddress,
+			 oro.destaddrname,
+			 count(oro.destaddress) send_count  
+		FROM
+			order_main om,
+			order_role oro
+		WHERE 1=1
+			AND om.id = oro.orderid
+			AND om.status != 'CANCELLED'
+			AND om.isvalid = 'Y'
+			AND oro.desttype = 'SERVICECERTER'
+			AND oro.roletype = 'ROLE_AIRPORT_SEND'
+			AND oro.isfinish in ('UNFINISHED','ONGOING')
+			AND date(oro.arrivedtime) = curdate()
+		     <if test="dmanuserid !=null and dmanuserid != ''" >
+				AND oro.roleid = #{dmanuserid}
+			</if>
+			GROUP BY oro.destaddress
+	</select>
+	
+	<!-- 查询一个取派员未开始(进行中)or已完成的订单信息 zhangjj -->
+	<select id="findDmanTodayOrderInfo" parameterType="pd" resultType="pd" useCache="false"><!-- //TODOX taketime -->
+		SELECT
+			DISTINCT oro.orderid, om.*,
+			case<!-- 机场是否收件特殊处理 -->
+				when (SELECT oa.srcaddrtype !='AIRPORTCOUNTER' FROM order_address oa WHERE oa.orderid= om.id) then ''
+				when ((SELECT oa.srcaddrtype ='AIRPORTCOUNTER' FROM order_address oa WHERE oa.orderid= om.id) and (SELECT count(1) = 1 FROM order_role ora WHERE 1=1 AND ora.orderid = om.id AND ora.roletype = 'ROLE_AIRPORT_TASKED' ORDER BY ora.id desc LIMIT 1)) then 'Y' 
+				else 'N' 
+			end airport_tasked_flag
+		FROM
+			order_main om,
+			order_role oro
+		WHERE 1=1
+			AND om.id = oro.orderid
+			AND om.status != 'CANCELLED'
+			AND om.isvalid = 'Y'
+			AND om.orderno like '%${orderno}%'
+			AND oro.roleid = #{dmanuserid}
+			<if test="isfinishFlag == 'FINISHED'">
+				 and not EXISTS ( select 1 from order_role oee where oee.orderid = om.id and oro.roleid = #{dmanuserid} and oee.isfinish in ('UNFINISHED', 'ONGOING') )
+				AND (date( om.taketime) = curdate() OR DATE_FORMAT(om.taketime,'%Y-%m-%d %H:%i:%S') = timestamp(adddate(date(sysdate()),1)))
+			</if>
+			<if test="isfinishFlag != 'FINISHED'">
+				AND oro.isfinish in('UNFINISHED', 'ONGOING')
+			</if>
+			<if test="countdown != null and countdown != ''">
+				AND (select TIMESTAMPDIFF(Minute, CURTIME(), oro.arrivedtime) as daysum)&lt;#{countdown}
+			</if>
+	</select>
+	
+	<!-- 查询取派员下一个订单下的取件 zhangjj -->
+	<select id="findDmanOrderTask" parameterType="pd" resultType="pd" useCache="false">
+		SELECT 
+			oro.*
+		FROM
+			order_role oro
+		WHERE 1=1
+			AND oro.roleid = #{dmanuserid}
+			AND oro.orderid = #{orderid}
+			AND oro.roletype like '%TASK'
+			<!-- 特殊处理 已完成 -->
+			<if test="isfinishList !=null and isfinishList.size >0">
+				AND oro.isfinish in
+				<foreach collection="isfinishList" item="item" index="index"
+					open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+		ORDER BY oro.id DESC
+		LIMIT 1
+	</select>
+	
+	<!-- 查询取派员下一个订单下的送件 zhangjj -->
+	<select id="findDmanOrderSend" parameterType="pd" resultType="pd" useCache="false">
+		SELECT 
+			oro.*
+		FROM
+			order_role oro
+		WHERE 1=1
+			AND oro.roleid = #{dmanuserid}
+			AND oro.orderid = #{orderid}
+			AND oro.roletype like '%SEND'
+			<!-- 特殊处理 已完成 -->
+			<if test="isfinishList !=null and isfinishList.size >0">
+				AND oro.isfinish in
+				<foreach collection="isfinishList" item="item" index="index"
+					open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+		ORDER BY oro.id DESC
+		LIMIT 1
+	</select>
+	
+	<!-- 查询一个订单中转集散后下个取派员id -->
+	<select id="findOrderTransitLaterUseridInfo" parameterType="pd" resultType="Integer" useCache="false">
+		SELECT
+			oro.roleid
+		FROM 
+			order_role oro 
+		WHERE 1=1
+			AND oro.orderid = #{orderid}
+			AND oro.roletype = 'ROLE_TRANSIT_TASK'
+			AND oro.desttype = 'TRANSITCERTER'
+			AND oro.destaddress = #{destaddress}
+			ORDER BY oro.id desc
+			LIMIT 1
+	</select>
+	
+	<!-- 更新动作目的地地址  zjj -->
+	<update id="updatedestbyid" parameterType="pd">
+		UPDATE
+			order_role oro
+		SET
+			oro.roletype = #{roletype},
+			oro.desttype = #{desttype},
+			oro.destaddress = #{address},
+			oro.destaddrname= #{addrname},
+			oro.destaddrdesc = #{addrdesc},
+			oro.destgps = #{destgps}
+		WHERE 1=1
+			AND oro.id = #{id}
+	</update>
+	
+	<!-- 更新最迟到达时间 zjj -->
+	<update id="updatearrivedtimebyid" parameterType="pd">
+		UPDATE
+			order_role oro
+		SET
+			oro.arrivedtime = #{arrivedtime}
+		WHERE 1=1
+			AND oro.id = #{id}
+	</update>
+	
+	<!-- 改派取派员 zjj -->
+	<update id="ichangedman" parameterType="pd">
+		UPDATE
+			order_role oro
+		SET
+			oro.roleid = #{roleid}
+		WHERE 1=1
+			AND oro.id in (#{taskid},#{sendid})
+			AND oro.isfinish != 'FINISHED'
+	</update>
+	
+	<!-- 查看取派员路径 zhangjj -->
+	<select id="findOrderPath" parameterType="Integer" resultType="pd" useCache="false">
+		SELECT
+			DISTINCT oro.destaddrdesc
+		FROM
+			order_role oro
+		where 1=1
+			AND oro.orderid = #{orderid}
+	</select>
+	
+	<!-- 订单途径路径 zhangjj -->
+	<select id="orderPathWay" parameterType="Integer" resultType="pd" useCache="false">
+		SELECT
+			oro.*
+		FROM
+			order_role oro
+		where 1=1
+			AND oro.orderid = #{orderid}
+	</select>
+	
+	<!-- 查看订单关联的取派员  zhangjj -->
+	<select id="findOrderlinkdman" parameterType="Integer" resultType="pd" useCache="false">
+		SELECT
+			DISTINCT oro.roleid
+		FROM
+			order_role oro
+		WHERE 1=1
+		 AND oro.orderid = #{orderid}
+		 AND (oro.roletype like '%TASK' OR oro.roletype like '%SEND')
+	</select>
+		
+</mapper>
+

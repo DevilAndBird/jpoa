@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="CusInfoMapper">
+  	
+  	<!-- 
+  		新增客户信息
+  		陈玉石
+  		2018年3月4日16:56:11 
+  	-->
+  	<insert id="insert" parameterType="CusInfo">
+		<selectKey keyProperty="id" resultType="int">
+			select
+			LAST_INSERT_ID()
+		</selectKey>
+  		insert into cus_info(
+  		  name,
+  		  namespell,
+  		  namespellinitial,
+  		  idno,
+  		  mobile,
+	      provid,
+	      cityid,
+	      districtid,
+	      address,
+	      channel,
+	      money,
+	      taxtitle,
+	      taxno,
+	      recdid,
+	      email,
+	      addtime,
+	      isvalid,
+	      openid)
+	     values (
+	      #{name},
+	      #{namespell},
+	      #{namespellinitial},
+	      #{idno},
+	      #{mobile}, 
+		  #{provid},
+		  #{cityid},
+		  #{districtid},
+		  #{address},
+		  #{channel},
+		  #{money},
+		  #{taxtitle},
+	      #{taxno},
+	      #{recdid},
+	      #{email},
+	      now(),
+	      'Y',
+	      #{openid})
+  	</insert>
+  	
+	<!-- 客户充值记录列表查询  -->
+	<select id="cusInfolistPage" resultType="pd" parameterType="page" useCache="false" >
+	    SELECT
+			id,
+			name,
+			idno,
+			mobile,
+			password,
+			provid,
+			cityid,
+			districtid,
+			address,
+			channel,
+			money,
+			taxtitle,
+			taxno,
+			recdid,
+			email,
+			lastlogintime,
+			createdby,
+			isvalid,
+			addtime
+		FROM
+			cus_info
+		where 1=1
+		<if test="pd.name != null and pd.name != ''">
+            and name =#{pd.name}
+        </if>
+	    <if test="pd.mobile != null and pd.mobile != ''">
+            and mobile =#{pd.mobile}
+        </if>
+        <if test="pd.isInvite == 1">
+            and recdid is not null
+        </if>
+        <if test="pd.isInvite == 2">
+            and recdid is null
+        </if>
+        <if test="pd.cusid != null and pd.cusid != ''">
+            and id =#{pd.cusid}
+        </if>
+        ORDER BY id desc
+	</select>
+	
+	<update id="updateCusInfo" parameterType="pd">
+		UPDATE cus_info
+			SET isvalid = #{isvalid}
+			WHERE 1=1
+			<if test="cusid != null and cusid != ''">
+            	and id =#{cusid}
+        	</if>
+	</update>
+	
+	<update id="updateCusInfoByCusid" parameterType="pd">
+		UPDATE cus_info SET 
+		    name = #{name},
+		    idno = #{idno},
+		    mobile = #{mobile}
+			WHERE 1=1 and openid =#{openid}
+	</update>
+	
+	<!-- 根据ID获取客户对象 zhangjj -->  
+	<select id="getById" resultType="CusInfo" parameterType="Integer" useCache="false" >
+	    SELECT
+			*
+		FROM
+			cus_info
+		where 1=1
+       		AND id =#{id}
+	</select>
+	
+		<!-- 
+		修改金额
+		陈玉石
+		2018年3月4日16:30:02
+	 -->
+	<update id="updateFinalmoney" parameterType="pd">
+		update 
+			cus_info
+		set
+			money = #{money}
+		where
+			id = #{id}
+	</update>
+	
+	<!-- 查询客户信息openid  -->
+	<select id="findByOpenid" resultType="CusInfo" parameterType="String" useCache="false" >
+	     SELECT
+			*
+		FROM
+			cus_info
+		WHERE 1=1
+			AND openid = #{openid}
+			order by id desc
+			limit 1
+	</select>
+
+	<!-- 一个手机确保只有一个用户 -->
+	<select id="findByMobile" resultType="CusInfo" parameterType="String" useCache="false">
+		 SELECT
+			*
+		FROM
+			cus_info
+		WHERE 1=1
+			AND mobile = #{mobile}
+			order by id desc
+			LIMIT 1
+	</select>
+
+	<!-- 根据Id更改客户信息除手机号外 -->
+	<update id="updateNameAndIdnoById" parameterType="CusInfo">
+		UPDATE cus_info
+		SET name = #{name},
+		SET mobile = #{mobile}
+		WHERE 1=1
+			and id =#{id}
+	</update>
+	
+</mapper>

@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="UserPickerInfoMapper">
+    <!-- 机场取派员_页面查询 -->
+	<select id="findUserPickerlistPage" parameterType="page" resultType="pd" useCache="false">
+		SELECT
+	    	upi.id,
+	    	upi.userid,
+	    	upi.name,
+	    	upi.idno,
+	    	upi.mobile,
+	    	upi.airportname,
+	    	upi.airportcode,
+	    	upi.isvalid,
+			(select codename from base_config bc where bc.codetype = 'ISVALID' and bc.code = upi.isvalid) isvalidDesc,
+			upi.addtime,
+			upi.modifytime
+		FROM
+			user_picker_info upi
+		where 1=1
+		<if test="pd.userid != null and pd.userid != '' and pd.userid != '-1'">
+           and upi.userid = #{pd.userid}
+        </if>
+		<if test="pd.airportcode != null and pd.airportcode != '' and pd.airportcode != '-1'">
+           and upi.airportcode = #{pd.airportcode}
+        </if>
+        ORDER BY upi.modifytime,upi.addtime desc
+	</select>
+	
+	<!-- 修改集散中心 -->
+	<update id="updateUserPickerInfoById" parameterType="pd">
+		update 
+			user_picker_info 
+		set
+			name = #{name},
+		    idno = #{idno},
+			mobile = #{mobile},
+			isvalid = #{isvalid},
+			modifytime = now()
+		where id = #{id}
+	</update>
+	
+	<!-- 新增机场取件员 -->
+    <insert id="savePicker" parameterType="pd">
+	    insert into user_picker_info
+	    	(userid,
+	    	 name,
+	    	 idno,
+	    	 mobile,
+	    	 airportcode,
+	    	 isvalid,
+	         createdby,
+	    	 addtime,
+	    	 modifiedby,
+	    	 modifytime)
+	    values 
+	    	(#{userid},
+	    	 #{name},
+	    	 #{idno},
+	    	 #{mobile},
+	    	 #{airportcode},
+	    	 'Y',
+	    	 #{createdby},
+	    	 now(),
+	    	 #{modifiedby},
+	    	 now())
+    </insert>
+    
+    <!-- 修改快递员信息 -->
+	<update id="updateUserPickerStatus" parameterType="pd">
+		update 
+			user_picker_info 
+		set
+			status = #{status},
+			modifytime = now()
+		where id = #{id}
+	</update>
+	
+</mapper>

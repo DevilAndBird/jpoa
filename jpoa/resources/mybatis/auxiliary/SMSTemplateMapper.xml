@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="SMSTemplateMapper" >
+  <resultMap id="SMSTemplate" type="SMSTemplate" >
+    <id column="id" property="id" />
+    <result column="status" property="status" />
+    <result column="title" property="title" />
+    <result column="explain" property="explain" />
+    <result column="addtime" property="addtime" />
+    <result column="updatetime" property="updatetime" />
+    <result column="updateby" property="updateby" />
+    <result column="template" property="template" />
+    <result column="smsname" property="smsname" />
+    <result column="smscode" property="smscode" />
+  </resultMap>
+  
+  <select id="queryBySmsCode" resultType="SMSTemplate" parameterType="pd" useCache="false">
+    select * from sms_template where smscode = #{smscode} 
+  </select>
+  
+  <select id="smsTemplatelistPage" resultType="pd" parameterType="page" useCache="false">
+    select * from sms_template where 1=1 
+	<if test="pd.smsname !=null and pd.smsname != ''">
+		and smsname like CONCAT('%',#{pd.smsname},'%') 
+	</if>
+	<if test="pd.status !=null and pd.status != '' and pd.status !='-1' ">
+		and status = #{pd.status}
+	</if>
+  </select>
+  
+  <!-- 根据smscode获取template -->
+  <select id="getBySmsCode" resultType="SMSTemplate" parameterType="pd">
+    select * from sms_template where smscode = #{smscode} 
+  </select>
+  
+  <!-- 删除  -->
+  <delete id="delTemplate" parameterType="pd">
+  	delete from sms_template where id = #{id}
+  </delete>
+  
+  <!-- 修改模板  -->
+  <update id="changeStatus" parameterType="pd" >
+  	update sms_template set `status` = #{statusV} where id = #{id} 
+  </update>
+  <!-- 核对   -->
+  <select id="checkCode" parameterType="pd" resultType="SMSTemplate">
+  	select * from sms_template where smscode = #{smscode}
+  </select>
+  
+  <!-- 根据id获取  -->
+  <select id="queryById" resultType="SMSTemplate" parameterType="pd" useCache="false">
+    select * from sms_template where id = #{id}
+  </select>
+  
+  <!-- 新增模板   -->
+  <insert id="insert" parameterType="SMSTemplate" >
+    insert into sms_template (`status`,`explain`, addtime, template,smsname,smscode)
+    values (#{status}, #{explain}, now(),#{template},#{smsname},#{smscode})
+  </insert>
+  
+  <!-- 修改模板  -->
+  <update id="changeTemplate" parameterType="pd" >
+    update sms_template
+    set 
+      `explain` = #{explain},
+      updatetime = now(),
+      updateby = #{updateby},
+      template = #{template},
+      smsname = #{smsname}
+    where id = #{id}
+  </update>
+  
+</mapper>

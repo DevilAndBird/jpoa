@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="AppUserMapper">
+	
+	<!-- 查询表单 -->
+	<select id="findAppUserlistPage" parameterType="page" resultType="pd" useCache="false">
+		select 
+			au.id,
+			au.name,
+			au.password,
+			au.type,
+			(select codename from base_config bc where bc.codetype = 'APPUSERTYPE' and bc.code = au.type) typeDesc,
+			au.mobile,
+			au.lastloginip,
+			au.lastlogintime,
+			au.isvalid,
+			(select codename from base_config bc where bc.codetype = 'ISVALID' and bc.code = au.isvalid) isvalidDesc,
+			au.createdby,
+			au.addtime,
+			au.modifiedby,
+			au.modifytime
+		from
+			app_user au
+		WHERE 1=1
+		<if test="pd.name != null and pd.name != ''">
+           AND au.name like '%${pd.name}%'
+        </if>
+		<if test="pd.mobile != null and pd.mobile != ''">
+           AND au.mobile like '%${pd.mobile}%'
+        </if>
+        <if test="pd.type != null and pd.type != '' and pd.type != '-1'">
+           AND au.type like '%${pd.type}%'
+        </if>
+        ORDER BY au.id desc
+	</select>
+	
+	<!-- 查询表单 -->
+	<select id="findByMobile" parameterType="String" resultType="pd" useCache="false">
+		select 
+			*
+		from
+			app_user au
+		WHERE 1=1
+			 AND au.mobile = #{mobile}
+		LIMIT 1
+	</select>
+	
+	<!-- 新增app_user  -->
+    <insert id="saveAppUser" parameterType="AppUser">
+	    insert into app_user
+	    	(name,
+	    	 password,
+	    	 type,
+	    	 mobile,
+	    	 lastloginip,
+	    	 lastlogintime,
+	    	 isvalid,
+	         createdby,
+	    	 addtime,
+	    	 modifiedby,
+	    	 modifytime)
+	    values 
+	    	(#{name},
+	    	 #{password},
+	    	 #{type},
+	    	 #{mobile},
+	    	 #{lastloginip},
+	    	 now(),
+	    	 'Y',
+	    	 #{createdby},
+	    	 now(),
+	    	 #{modifiedby},
+	    	 now())
+    	 <selectKey resultType="java.lang.Integer" order="AFTER" keyProperty="id"> 
+			SELECT LAST_INSERT_ID() 
+		 </selectKey> 
+    </insert>
+    
+    <!-- 修改角色登陆信息 -->
+	<update id="updateAppUserById" parameterType="pd">
+		update 
+			app_user 
+		set
+			name = #{name},
+			password = #{password},
+			mobile = #{mobile},
+			isvalid = #{isvalid},
+			modifytime = now()
+		where id = #{id}
+	</update>
+	
+	<!-- 根据手机号码和密码获取对象 -->
+	<select id="getByMobileAndPwd" parameterType="pd" resultType="AppUser">
+		select
+			*
+		from 
+			app_user
+		where
+			password = #{password} and
+			mobile = #{mobile}
+		order by id desc
+		limit 1
+	</select>
+	
+	<select id="findTheSameNumberAndName" parameterType="pd" resultType="AppUser">
+		select
+			*
+		from 
+			app_user
+		where
+			mobile = #{mobile} or name = #{name} 
+		limit 1
+	</select>
+	
+	<!--  推送信息人员  -->
+	<select id="pushInfoUserlistPage" resultType="pd" parameterType="page" useCache="false">
+		SELECT
+			id,
+			name,
+			type,
+			(SELECT codename from base_config bc where bc.codetype = 'APPUSERTYPE' AND au.type = bc.code) typename,
+			date_format(au.lastlogintime,'%Y-%m-%d %H:%i') lastlogintime				
+		FROM
+			app_user au
+		WHERE 1=1
+		AND isvalid = 'Y'	
+	</select>
+	
+	<!--  接收到推送信息人员  -->
+	<select id="pushInfoUserAllDmansum" resultType="Integer" useCache="false">
+		SELECT
+			au.id							
+		FROM
+			app_user au
+		WHERE 1=1
+			AND au.isvalid = 'Y'	
+	</select>
+	<!--  推送给取派员  -->
+	<select id="pushInfoUserAllDmanqu" resultType="Integer" useCache="false">
+		SELECT
+			au.id							
+		FROM
+			app_user au
+		WHERE 1=1
+			AND au.isvalid = 'Y'
+			AND au.type = 'DELIVERY_MAN'
+	</select>
+	<!--  推送给集散中心  -->
+	<select id="pushInfoUserAllDmanji" resultType="Integer" useCache="false">
+		SELECT
+			au.id							
+		FROM
+			app_user au
+		WHERE 1=1
+			AND au.isvalid = 'Y'	
+			AND au.type = 'TRANSIT_CENTER'
+	</select>
+	<!--  推送给机场柜台  -->
+	<select id="pushInfoUserAllDmangui" resultType="Integer" useCache="false">
+		SELECT
+			au.id							
+		FROM
+			app_user au
+		WHERE 1=1
+			AND au.isvalid = 'Y'
+			AND au.type = 'SERVICE_CENTER'	
+	</select>
+	
+	
+</mapper>

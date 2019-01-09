@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="QRCodeMapper">
+
+	<select id="findQRCodeLimitPage" resultType="String"	parameterType="Integer" useCache="false">
+    	select qrcode  from qr_code where isvalid = 'Y'  limit 0,200
+	</select>
+	
+	<update id="update" parameterType="pd">
+		update qr_code
+		set
+		isvalid = 'N'
+		where 1=1
+		and qrcode  in
+			<foreach collection="qrcodeList" item="item" index="index" 
+				open="(" separator="," close=")">
+				#{item}
+			</foreach>
+	</update>
+	
+</mapper>
+
+

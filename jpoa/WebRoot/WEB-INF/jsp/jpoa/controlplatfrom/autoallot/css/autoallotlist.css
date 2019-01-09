@@ -1,0 +1,36 @@
+.bodyautoallot {
+	font-weight:bold;	
+}
+
+.tableautoallot{
+	margin-top:20px;
+	width:500px;
+	height:70px;
+}
+
+.tdimg {
+	width: 50px;
+}
+
+.addrdesc {
+	width: 280px;
+}
+
+#divautoallotfindcondition{
+	height: 30px
+}
+
+#divAutoallotlist{
+	max-height: 800px;
+	overflow-y:auto;
+}
+
+input,select {
+	margin-top:5px;
+	width: 90px;
+}
+
+hr{
+	width: 90%;
+	margin-left:5%; 
+}
