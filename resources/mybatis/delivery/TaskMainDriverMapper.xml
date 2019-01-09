@@ -1,0 +1,255 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="TaskMainDriverMapper">
+	<!-- 班车司机任务列表查询 -->
+	<select id="findTaskMainDriverlistPage" resultType="pd"
+		parameterType="page" useCache="false">
+		select
+		tmd.id,
+		tmd.type,
+		(select codename from base_config bc where bc.codetype = 'TASKMAINDRIVERTYPE'
+		and bc.code = tmd.type) typeDesc,
+		(select name from transit_center tc where tc.id = tmd.srcaddr) srcaddr,
+		(select name from transit_center tc where tc.id = tmd.destaddr) destaddr,
+		tmd.depdatetime,
+		tmd.arrdatetime,
+		tmd.status,
+		(select codename from base_config bc where bc.codetype =
+		'TASKMAINDRIVERSTATUS' and bc.code = tmd.status) statusDesc,
+		tmd.provid,
+		(select name from area_prov ap where ap.id = tmd.provid) provDesc,
+		tmd.cityid,
+		(select name from area_city ac where ac.id = tmd.cityid) cityDesc,
+		tmd.driverid,
+		tmd.addtime,
+		udm.name,
+		udm.mobile
+		from
+		task_main_driver tmd,
+		user_delivery_man udm
+		where tmd.driverid = udm.userid
+		<if test="pd.provid !=null and pd.provid != '' and pd.provid !='-1'">
+			and tmd.provid = #{pd.provid}
+		</if>
+		<if test="pd.cityid !=null and pd.cityid != '' and pd.cityid !='-1'">
+			and tmd.cityid = #{pd.cityid}
+		</if>
+		<if test="pd.driverid !=null and pd.driverid != '' and pd.driverid !='-1'">
+			and tmd.driverid = #{pd.driverid}
+		</if>
+		<if test="pd.status !=null and pd.status != '' and pd.status !='-1'">
+			and tmd.status = #{pd.status}
+		</if>
+		order by tmd.addtime desc
+	</select>
+
+	<!-- 取件员任务列表查询 -->
+	<select id="findTaskPickerDriverlistPage" resultType="pd"
+		parameterType="page" useCache="false">
+		select
+		tmd.id,
+		tmd.type,
+		(select codename from base_config bc where bc.codetype = 'TASKMAINDRIVERTYPE'
+		and bc.code = tmd.type) typeDesc,
+		tmd.srcaddr,
+		tmd.destaddr,
+		tmd.depdatetime,
+		tmd.arrdatetime,
+		tmd.status,
+		(select codename from base_config bc where bc.codetype =
+		'TASKMAINDRIVERSTATUS' and bc.code = tmd.status) statusDesc,
+		tmd.provid,
+		(select name from area_prov ap where ap.id = tmd.provid) provDesc,
+		tmd.cityid,
+		(select name from area_city ac where ac.id = tmd.cityid) cityDesc,
+		tmd.driverid,
+		tmd.addtime,
+		udi.name,
+		udi.mobile
+		from
+		task_picker_driver tmd,
+		user_picker_info udi
+		where tmd.driverid = udi.id
+		<if test="pd.provid !=null and pd.provid != '' and pd.provid !='-1'">
+			and tmd.provid = #{pd.provid}
+		</if>
+		<if test="pd.cityid !=null and pd.cityid != '' and pd.cityid !='-1'">
+			and tmd.cityid = #{pd.cityid}
+		</if>
+		<if test="pd.driverid !=null and pd.driverid != '' and pd.driverid !='-1'">
+			and tmd.driverid = #{pd.driverid}
+		</if>
+		<if test="pd.status !=null and pd.status != '' and pd.status !='-1'">
+			and tmd.status = #{pd.status}
+		</if>
+		order by tmd.addtime desc
+	</select>
+	<!-- 修改状态 -->
+	<update id="updateStatus" parameterType="pd">
+		update task_main_driver
+		set
+		status = #{statusTemp}
+		where id = #{id}
+	</update>
+	
+	<!-- 修改取件员状态 -->
+	<update id="updatePickerStatus" parameterType="pd">
+		update task_picker_driver
+		set
+		status = 'CANCEL'
+		where id = #{id}
+	</update>
+
+	<!-- 确认出发 陈玉石 2018年3月3日15:23:39 -->
+	<update id="confirmStart" parameterType="pd">
+		update task_main_driver
+		set
+		drivingstatus = #{status},
+		starttime = now()
+		where
+		userid = #{id}
+	</update>
+
+	<!-- 即将到达 陈玉石 2018年3月3日15:23:39 -->
+	<!-- 	tangqm 修改成取派员 -->
+	<update id="confirmArrive" parameterType="pd">
+		update user_delivery_man
+		set
+		drivingstatus = #{status}
+		where
+		userid = #{userid}
+	</update>
+
+	<!-- 班车司机任务审核 -->
+	<select id="checkInfo" resultType="TaskMainDriver"
+		parameterType="pd" useCache="false">
+		select * from task_main_driver where driverid = #{modelDriverid} and type =
+		#{modelType} and srcaddr = #{modelSrcaddr} and destaddr =
+		#{modelDestaddr}
+	</select>
+	
+		<!-- 班车司机任务审核 -->
+	<select id="findAlikeTransit" resultType="pd"
+		parameterType="pd" useCache="false">
+		select * from task_main_driver where provid = #{provid} and cityid =
+		#{cityid}
+		 and (srcaddr+destaddr = #{srcaddr}+#{destaddr} or  destaddr+srcaddr =
+		#{srcaddr}+#{destaddr} )
+	</select>
+
+	<!-- 获取班车司机的任务列表,要求加上时间和非取消状给，给app用户使用 -->
+	<select id="queryAppTasksByUserId" resultType="TaskMainDriver"
+		parameterType="pd" useCache="false">
+		select *
+		from task_main_driver
+		where
+		driverid = #{driverid} and
+		addtime > #{timeParam} and
+		status != 'CANCELLED'
+	</select>
+
+	<!-- 导出 -->
+	<select id="findAll" resultType="pd" parameterType="pd"
+		useCache="false">
+		select
+		tmd.id,
+		tmd.type,
+		(select codename from base_config bc where bc.codetype = 'TASKMAINDRIVERTYPE'
+		and bc.code = tmd.type) typeDesc,
+		tmd.srcaddr,
+		tmd.destaddr,
+		tmd.depdatetime,
+		tmd.arrdatetime,
+		tmd.status,
+		(select codename from base_config bc where bc.codetype =
+		'TASKMAINDRIVERSTATUS' and bc.code = tmd.status) statusDesc,
+		tmd.provid,
+		(select name from area_prov ap where ap.id = tmd.provid) provDesc,
+		tmd.cityid,
+		(select name from area_city ac where ac.id = tmd.cityid) cityDesc,
+		tmd.driverid,
+		tmd.addtime,
+		udi.name,
+		udi.mobile
+		from
+		task_main_driver tmd,
+		user_driver_info udi
+		where tmd.driverid = udi.id
+		<if test="provid !=null and provid != '' and provid !='-1'">
+			and tmd.provid = #{provid}
+		</if>
+		<if test="cityid !=null and cityid != '' and cityid !='-1'">
+			and tmd.cityid = #{cityid}
+		</if>
+		<if test="driverid !=null and driverid != '' and driverid !='-1'">
+			and tmd.driverid = #{driverid}
+		</if>
+		<if test="status !=null and status != '' and status !='-1'">
+			and tmd.status = #{status}
+		</if>
+		order by tmd.addtime desc
+	</select>
+
+	<!-- 添加任务 -->
+	<insert id="insertTask" parameterType="pd">
+		insert into task_main_driver
+		(type,
+		srcaddr,
+		destaddr,
+		depdatetime,
+		arrdatetime,
+		status,
+		provid,
+		cityid,
+		driverid,
+		createdby,
+		addtime
+		)
+		values
+		(#{type},
+		#{srcaddr},
+		#{destaddr},
+		#{depdatetime},
+		#{arrdatetime},
+		'NOTSTARTED',
+		#{provid},
+		#{cityid},
+		#{driverid},
+		#{createdby},
+		now()
+		)
+	</insert>
+	
+	<!-- 添加取件员任务 -->
+	<insert id="insertPickerTask" parameterType="pd">
+		insert into task_picker_driver
+		(type,
+		srcaddr,
+		destaddr,
+		depdatetime,
+		arrdatetime,
+		status,
+		provid,
+		cityid,
+		driverid,
+		createdby,
+		addtime
+		)
+		values
+		(#{type},
+		#{srcaddr},
+		#{destaddr},
+		#{depdatetime},
+		#{arrdatetime},
+		'NOTSTARTED',
+		#{provid},
+		#{cityid},
+		#{driverid},
+		#{createdby},
+		now()
+		)
+	</insert>
+	
+</mapper>
+
+

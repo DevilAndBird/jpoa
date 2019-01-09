@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="SysItemMapper">
+	<!-- 查询出所有的Sys_Item -->
+	<select id="listItemsPage" parameterType="page" useCache="false" resultType="SysItem">
+		select *
+		from sys_item
+		where 1=1
+	</select>
+	
+	<select id="listItemsByItemCode" parameterType="String" useCache="false" resultType="SysItem">
+		select *
+		from sys_item
+		where  itemcode = #{itemcode} order by itemvalue asc
+	</select>
+</mapper>

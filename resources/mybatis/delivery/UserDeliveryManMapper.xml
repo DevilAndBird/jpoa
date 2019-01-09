@@ -1,0 +1,343 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="UserDeliveryManMapper">
+	<!-- 快递员列表查询-页面 -->
+	<select id="findDeliveryManlistPage" resultType="pd" parameterType="page" useCache="false">
+		SELECT
+			udm.id,
+			udm.userid,
+			udm.name,
+			udm.idno,
+			udm.mobile,
+			udm.transitid,			
+			(select name from transit_center tc where tc.id = udm.transitid) transitidDesc,
+			udm.regionid,		
+			(select regionname from region_delivery_man rdm where rdm.id = udm.regionid) regionDesc,
+			udm.provid,
+			(select name from area_prov ap where ap.id = udm.provid) provDesc,
+			udm.cityid,
+			(select name from area_city ac where ac.id = udm.cityid) cityDesc,
+			udm.isvalid,
+			(select codename from base_config bc where bc.codetype = 'ISVALID' and bc.code = udm.isvalid) isvalidDesc,
+			udm.status,
+			(select codename from base_config bc where bc.codetype = 'DMANSTATUS' and bc.code = udm.status) statusDesc,
+			udm.addtime,
+			udm.modifytime,				
+			udm.attendance		
+		FROM
+			user_delivery_man udm
+		where 1=1
+		<if test="pd.name != null and pd.name != ''">
+			and udm.name like "%"#{pd.name}"%"
+		</if>
+		<if test="pd.mobile != null and pd.mobile != ''">
+			and udm.mobile like "%"#{pd.mobile}"%"
+		</if>
+		<if test="pd.userid != null and pd.userid != '' and pd.userid != '-1'">
+			and udm.userid = #{pd.userid}
+		</if>
+		<if test="pd.provid != null and pd.provid != '' and pd.provid != '-1'">
+			and udm.provid = #{pd.provid}
+		</if>
+		<if test="pd.cityid != null and pd.cityid != '' and pd.cityid != '-1'">
+			and udm.cityid = #{pd.cityid}
+		</if>
+		<if	test="pd.transitCenterid != null and pd.transitCenterid != '' and pd.transitCenterid != '-1'">
+			and udm.transitid = #{pd.transitCenterid}
+		</if>
+		AND udm.provid = #{pd.loginperson_provid}
+		AND udm.cityid = #{pd.loginperson_cityid}
+		ORDER BY udm.id desc
+	</select>
+
+	<!-- 
+		修改快递员信息根据id
+		zhangjj
+	 -->
+	<update id="updateUserDeliveryManById" parameterType="pd">
+		update
+		user_delivery_man
+		set
+		name = #{name},
+		idno = #{idno},
+		mobile = #{mobile},
+		regionid = #{regionid},
+		provid = #{provid},
+		cityid = #{cityid},
+		isvalid = #{isvalid},
+		modifytime = now()
+		where id = #{id}
+	</update>
+
+	<!-- 新增取派员 -->
+	<insert id="saveUserDeliveryMan" parameterType="pd">
+		insert into
+		user_delivery_man(
+		userid,
+		name,
+		idno,
+		mobile,
+		transitid,
+		regionid,
+		provid,
+		cityid,
+		isvalid,
+		status,
+		createdby,
+		addtime,
+		modifiedby,
+		modifytime,
+		platenumber,
+		attendance)
+		values (
+		#{userid},
+		#{name},
+		#{idno},
+		#{mobile},
+		#{transitid},
+		#{regionid},
+		#{provid},
+		#{cityid},
+		'Y',
+		'NORMALDISPATCH',
+		#{createdby},
+		now(),
+		#{modifiedby},
+		now(),
+		#{platenumber},
+		'WORK')
+	</insert>
+
+	<!-- 查询所有 -->
+	<select id="findAll" resultType="pd" parameterType="pd">
+		SELECT
+			*
+		FROM
+			user_delivery_man udm
+		WHERE 1=1
+		<if test="loginperson_provid != null and loginperson_provid != '' and loginperson_provid != '-1'">
+			and udm.provid = #{loginperson_provid}
+		</if>
+		<if test="loginperson_cityid != null and loginperson_cityid != '' and loginperson_cityid != '-1'">
+			and udm.cityid = #{loginperson_cityid}
+		</if>
+		<if test="regionid != null and regionid != '' and regionid != '-1'">
+			and udm.regionid = #{regionid}
+		</if>
+			AND udm.attendance = 'WORK'<!-- 取派员在岗状态 -->
+	</select>
+	
+	<!-- 查询所有 -->
+	<select id="findDmanByProvidAndCityid" resultType="pd" parameterType="pd">
+		select
+			*
+		from
+			user_delivery_man udm
+		WHERE 1=1
+			AND udm.provid = #{provid}
+			AND udm.cityid = #{cityid}
+			AND udm.attendance = 'WORK'<!-- 取派员在岗状态 -->
+	</select>
+
+		<!-- 查询取派员根据主键 -->
+	<select id="findDmanByid" resultType="UserDeliveryMan"  parameterType="pd" useCache="false">
+		SELECT
+			udm.id,
+			udm.userid,
+			udm.name,
+			udm.idno,
+			udm.mobile,
+			udm.platenumber
+		FROM
+			user_delivery_man udm
+		 WHERE
+		 	udm.id = #{id}
+	</select>
+	
+		<!-- 查询取派员根据主键 -->
+	<select id="findDmanByuserid" resultType="UserDeliveryMan"  parameterType="Integer" useCache="false">
+		SELECT
+			udm.id,
+			udm.userid,
+			udm.name,
+			udm.mobile,
+			udm.idno,
+			udm.mobile,
+			udm.platenumber,
+			(select rdm.regionname from region_delivery_man rdm where rdm.id = udm.regionid) regionname
+		FROM
+			user_delivery_man udm
+		 WHERE 1=1
+		 AND udm.userid = #{userid}
+	</select>
+	
+	<!-- 再加个省市条件 -->
+	
+	<!-- 
+		查询取派员根据Userid
+		zhangjj
+	 -->
+	<select id="findByUserid" resultType="pd"  parameterType="Integer" useCache="false">
+		SELECT
+			*
+		FROM
+			user_delivery_man udm
+		WHERE
+		 	udm.userid = #{userid}
+	</select>
+	
+	<!-- 修改取派员状态 -->
+	<update id="updateUserDeliveryStatusById" parameterType="pd">
+		update
+		user_delivery_man
+		set
+		status = #{status}
+		where userid = #{userid}
+	</update>
+	
+	<!-- 修改取派员行驶状态 -->
+	<update id="updateDrivingStatusByUserid" parameterType="pd">
+		UDDATE
+			user_delivery_man udm
+		SET
+			udm.drivingstatus = #{drivingstatus}
+		WHERE udm.userid = #{userid}
+	</update>
+	
+	<!-- 
+    	寄件收件地址位置
+     -->
+	<select id="findsrcaddessGps" resultType="OrderAddress"  parameterType="page" useCache="false">
+		SELECT
+			*			
+		FROM
+			order_address
+		WHERE 1=1
+		AND orderid=#{orderid}
+	</select>
+	
+	<select id="findRoleType" parameterType="page" resultType="pd" useCache="false">							
+			SELECT
+				oro.orderid,
+				oro.roletype,
+				(SELECT codename from base_config bc where bc.code = oro.roletype) roletypes,
+				oro.destaddrdesc
+			FROM
+				order_role oro
+			WHERE 1=1
+			AND oro.roleid = #{userid}
+			AND oro.isfinish = 'ONGOING'
+	</select>
+	
+    <!-- 
+    	取派员userid
+     -->
+	<select id="findDmanId" resultType="pd"  parameterType="pd" useCache="false">
+		SELECT
+			udm.userid
+		FROM
+			user_delivery_man udm
+		WHERE 1 = 1
+		AND udm.cityid = #{srccityid}
+	</select>
+	
+	<!-- 
+		修改取派员位置(gps) 根据id 
+		zhangjj
+	-->
+	<update id="updateCurrentgpsById" parameterType="pd">
+		UPDATE
+			user_delivery_man
+		SET
+			currentgps = #{currentgps}
+		WHERE id = #{id}
+	</update>
+	
+	<!-- 控制台_快递员列表查询_页面 -->
+	<select id="findDmanList_contralplatform" resultType="pd" parameterType="pd" useCache="false">
+		SELECT
+			udm.id,
+			udm.userid,
+			udm.name,
+			udm.mobile,
+			<!-- 待取件 -->
+			(SELECT 
+				count(*) 
+			FROM 
+				(SELECT
+						oro.destaddrdesc,
+						oro.roleid
+					FROM
+						order_main omain,
+						order_role oro
+					WHERE 1=1
+						AND omain.id = oro.orderid
+						AND omain.status != 'CANCELLED'
+						<!-- 如果是隔夜件，当天不选择配送，第二天选择配送，则第二天查询不出前一天乃至以前的订单信息 -->
+						AND (date(oro.arrivedtime) &lt;= curdate() OR DATE_FORMAT(oro.arrivedtime,'%Y-%m-%d %H:%i:%S') = timestamp(adddate(date(sysdate()),1))) <!-- 查询当天的待取的行李 注意第二天凌晨也是当天 -->
+						AND omain.isvalid = 'Y'
+						AND oro.isshow = 'Y'
+						AND oro.roletype  in ('ROLE_HOTEL_TASK','ROLE_AIRPORT_TASK', 'ROLE_TRANSIT_TASK')
+						AND oro.isfinish = 'UNFINISHED') waitPick
+			WHERE 1=1
+				AND waitPick.roleid = udm.userid) waitpick_Count,
+			<!-- 待派件 当天的派件 -->
+			(SELECT 
+				count(*) 
+			FROM 
+				(SELECT
+						oro.destaddrdesc,
+						oro.roleid
+					FROM
+						order_main omain,
+						order_role oro
+					WHERE 1=1
+						AND omain.id = oro.orderid
+						AND omain.status != 'CANCELLED'
+						AND (date(oro.arrivedtime) = curdate() OR DATE_FORMAT(oro.arrivedtime,'%Y-%m-%d %H:%i:%S') = timestamp(adddate(date(sysdate()),1))) <!-- 查询当天的待取的行李 注意第二天凌晨也是当天 -->
+						AND oro.isshow = 'Y'
+						AND oro.roletype  in ('ROLE_HOTEL_SEND','ROLE_AIRPORT_SEND', 'ROLE_TRANSIT_SEND')
+						AND oro.isfinish  in ('UNFINISHED')) waitSend
+					WHERE 1=1
+						AND waitSend.roleid = udm.userid) waitsend_count,
+			<!-- 已完成  -->			
+			(SELECT 
+				count(*) 
+			FROM 
+				(SELECT
+						oro.destaddrdesc,
+						oro.roleid
+					FROM
+						order_main omain,
+						order_role oro
+					WHERE 1=1
+						AND omain.id = oro.orderid
+						AND omain.status != 'CANCELLED'
+						AND date(oro.arrivedtime) = curdate()<!-- 查询当天的完成的行李 -->
+						AND oro.isshow = 'Y'
+						AND oro.roletype  in ('ROLE_HOTEL_SEND','ROLE_AIRPORT_SEND', 'ROLE_TRANSIT_SEND')
+						AND oro.isfinish = 'FINISHED') finished
+			WHERE 1=1
+				AND finished.roleid = udm.userid) finished_count					
+		FROM
+			user_delivery_man udm
+		WHERE 1=1
+		<if test="dmanname != null and dmanname != ''">
+			AND udm.name like "%"#{dmanname}"%"
+		</if>
+		<if test="dmanuserid != null and dmanuserid != ''">
+			AND udm.userid = #{dmanuserid}
+		</if>
+			AND udm.provid = #{loginperson_provid}
+			AND udm.cityid = #{loginperson_cityid}
+			AND udm.attendance = 'WORK' <!-- 取派员在岗状态 -->
+		ORDER BY udm.id desc
+	</select>
+	
+	<update id="updateAttendance" parameterType="pd">
+	   update  user_delivery_man  
+	   set attendance=#{attendance}
+	   where id = #{id}
+	</update>
+	
+</mapper>

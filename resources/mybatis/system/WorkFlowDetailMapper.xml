@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="workFlowDetailMapper">
+
+	<cache type="org.mybatis.caches.ehcache.LoggingEhcache" />
+
+
+	<select id="wfdlistPage" parameterType="page" resultType="pd"
+		useCache="false">
+		select * from workflow_detail
+		where wfiid=#{pd.wfiid}
+	</select>
+
+	<select id="listbywfiid" resultType="wfd" useCache="false">
+		select * from
+		workflow_detail
+		where wfiid=#{pd.wfiid}
+	</select>
+
+	<select id="wfdfindone" resultType="wfd" useCache="false">
+		select * from
+		workflow_detail
+		where id=#{id}
+	</select>
+
+	<insert id="addwfd" parameterType="pd">
+		insert into workflow_detail(
+		postid,
+		postname,
+		orders,
+		stepname,
+		wfiid
+		)values(
+		#{postid},
+		#{postname},
+		#{orders},
+		#{stepname},
+		#{wfiid}
+		)
+	</insert>
+
+	<update id="updatewfd">
+		update workflow_detail set
+		postid=#{postid},
+		postname= #{postname},
+		orders= #{orders},
+		stepname=#{stepname}
+		where id =
+		#{id}
+	</update>
+
+	<delete id="deletewfd" flushCache="false">
+		delete from workflow_detail
+		where id = #{id}
+	</delete>
+
+	<select id="orderslist" resultType="wfd">
+		select * from workflow_detail
+		where wfiid = #{wfiid}
+		and id > #{id}
+	</select>
+
+	<update id="updateorders">
+		update workflow_detail set
+		orders= #{orders},
+		stepname=#{stepname}
+		where id = #{id}
+	</update>
+
+	<select id="getnextorders" resultType="wfd">
+		select * from workflow_detail
+		where id =
+		(select max(id) FROM workflow_detail
+		where wfiid = #{wfiid})
+	</select>
+
+</mapper>

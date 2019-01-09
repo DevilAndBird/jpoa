@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="AutoAllotMapper">
+	<!-- 新增物流路线 -->
+	<insert id="insertHaulWay" parameterType="pd">
+		<selectKey resultType="java.lang.Integer" order="AFTER"
+			keyProperty="id">
+			SELECT LAST_INSERT_ID()
+		</selectKey>
+		insert into haul_way
+		(srcid,desid,provid,cityid,addtime) values
+		(${startTransit},${endTransit},${loginperson_provid},${loginperson_cityid},now())
+	</insert>
+	<!-- 新增物流路线明细 -->
+	<insert id="insertHaulWayDetail" parameterType="pd">
+		insert into haul_way_detail
+		(haulwayid,srcid,desid,timespan,addtime) values
+		(#{haulwayid},#{srcid},#{desid},#{timespan},now())
+		<selectKey resultType="java.lang.Integer" order="AFTER"
+			keyProperty="id">
+			SELECT LAST_INSERT_ID()
+		</selectKey>
+	</insert>
+	<insert id="insertAutoAllotLog" parameterType="pd">
+		<selectKey resultType="java.lang.Integer" order="AFTER"
+			keyProperty="id">
+			SELECT LAST_INSERT_ID()
+		</selectKey>
+		insert into autoallot_log
+		(orderid,type,remark,addtime) values
+		(#{orderid},#{type},#{remark},now())
+	</insert>
+   
+   <select id="haulwaylistPage" resultType="pd" parameterType="page" useCache="false">
+             select 
+				hw.id,
+				(select name from transit_center tc where tc.id = hw.srcid) srcDesc,
+				(select name from transit_center tc where tc.id = hw.desid) desDesc
+				from haul_way hw   
+             where hw.provid = #{pd.loginperson_provid}
+             and    hw.cityid = #{pd.loginperson_cityid}
+	</select>
+	
+   <select id="findPreviewMap" resultType="pd" parameterType="page" useCache="false">
+                select 
+				(select name from transit_center tc where tc.id = hwd.desid) tranDesc,
+				(select gps from transit_center tc where tc.id = hwd.desid) tranGps
+				from haul_way hw,haul_way_detail hwd   
+                where  hw.id = hwd.haulwayid and hw.id = #{id}
+	</select>
+
+    <!-- 删除主路线 -->
+	<delete id="deleteHualWay" parameterType="pd">
+		delete from 
+			haul_way  
+		where id = #{id}
+	</delete>
+	
+    <!-- 删除路线明细 -->
+	<delete id="deleteHualWayDetail" parameterType="pd">
+		delete from 
+			haul_way_detail  
+		where haulwayid = #{id}
+	</delete>
+	
+	<!-- 查询订单信息-->
+	 <select id="isExistRegion" resultType="pd" parameterType="AutoAllotParam" useCache="false">
+             select  *
+				from haul_way hw   
+             where hw.provid = #{provid}
+             and   hw.cityid = #{cityid}
+             and hw.srcid = #{srcTransitd}
+             and hw.desid =#{desTransitd}
+	</select>
+	
+	<!-- 查询订单信息-->
+	 <select id="findOrderinfo" resultType="AutoAllotParam" parameterType="pd" useCache="false">
+        select om.id orderid,
+        om.taketime,
+        om.sendtime,
+        oa.srcprovname,
+	    oa.srccityname,
+		oa.srcdistrictname,
+        oa.srcaddress,
+		oa.scrlandmark srcaddressname,
+		oa.srcaddressid,
+        oa.destprovname,
+		oa.destcityname,
+		oa.destdistrictname,
+        oa.destaddress,
+	    oa.destlandmark desaddressname,
+	    oa.destaddressid,
+		oa.srcprovid provid,
+		oa.srccityid cityid,
+		oa.srcaddrtype srcroletype,
+		oa.destaddrtype desroletype,
+		oa.srcgps src_gps,
+		oa.destgps dest_gps
+         from order_main om,order_address oa where om.id = oa.orderid
+         <if test="orderid != null and orderid != '' ">
+            and om.id = #{orderid}
+        </if>
+         <if test="orderno != null and orderno != '' ">
+            and om.orderno = #{orderno}
+        </if>
+	</select>
+	
+	<!-- 查询物流路线明细-->
+	 <select id="findHualWayDetail" resultType="HaulWayDetail" parameterType="AutoAllotParam" useCache="false">
+        select 
+				hwd.id,
+				hwd.srcid,
+				hwd.desid,
+				hwd.timespan
+				from haul_way_detail hwd  
+				where hwd.haulwayid = #{haulwayid}
+	</select>
+	
+	<!-- 查询所有取派员 -->
+	<select id="findRegionUDM" resultType="pd" parameterType="pd">
+		SELECT
+			udm.userid
+		FROM
+			user_delivery_man udm
+		WHERE 1=1
+		 and udm.regionid = #{regionid}
+		AND udm.attendance = 'WORK'<!-- 取派员在岗状态 -->
+	</select>
+	
+	<!-- 查询司机-->
+	<select id="findTaskMainDrvier" resultType="pd" parameterType="HaulWayDetail"
+		useCache="false">
+			   select 
+			 tmd.driverid
+			from  task_main_driver tmd
+			where 1=1 
+			and tmd.provid=#{provid}
+			and tmd.cityid=#{cityid}
+			and (tmd.srcaddr+tmd.destaddr=#{srcid}+#{desid} or tmd.destaddr+tmd.srcaddr=#{srcid}+#{desid} )						
+			limit 1
+	</select>
+	
+		<select id="findServiceCenter" resultType="pd"  parameterType="pd" useCache="false">
+		SELECT
+			csc.id,
+			csc.servicecentername,
+			csc.address,
+			csc.gps
+		FROM
+			counter_service_center csc
+		WHERE 1 = 1
+		and csc.regionid = #{regionid}
+		and csc.type = 'AIRPORT'
+	</select>
+	
+	
+	<!-- 	查询计算中心id -->
+	<select id="findTransitCenterByRegionid" parameterType="pd" resultType="pd" useCache="false">
+		select 
+			tc.id,
+			tc.name,
+			tc.provid,
+			tc.cityid,
+			tc.address,
+			tc.linkman,
+			tc.linkphone,
+			tc.isvalid
+		from
+			transit_center tc
+		WHERE tc.id = #{transitCenterid}
+	</select>
+	
+	<!-- 	查询计算中心id -->
+	<select id="findAutoAllotRule"   resultType="pd" useCache="false">
+		select 
+		* 
+		from config_rule cr where cr.ruletype = 'AutoAllot'
+	</select>
+	
+	<!-- 	查询所有待处理订单 -->
+	<select id="findAutoAllotOrder"   resultType="pd" useCache="false">
+		select 		
+		om.id orderid
+		from order_main om,autoallot_log al where om.id = al.orderid 
+		and DATE_FORMAT(om.taketime,"%y-%M-%d") = DATE_FORMAT(SYSDATE(),"%y-%M-%d") and al.type = 'CHECK'
+		and om.id not in (SELECT al.orderid from autoallot_log al where al.orderid = om.id and al.type in ('AUTO_ALLOT_SUCCESS','MANUAL_ALLOT_SUCC','AGAINALLOT'))
+		union all
+		SELECT om.id orderid from order_main om where not exists (SELECT 1 from autoallot_log al where al.orderid = om.id) and om.`status` = 'PREPAID'
+	</select>
+	
+	<select id="regionDeliveryManList" resultType="pd" parameterType="pd" useCache="false" >
+            SELECT
+	    	rdm.id,
+	    	rtc.transitid,
+	    	rdm.gps,
+	    	rdm.remark,
+	    	rdm.regionname,
+	    	rtc.timespan,
+	    	rdm.provid,
+	    	(select name from area_prov ap where ap.id = rdm.provid) provDesc,
+	    	rdm.cityid,
+	    	(select name from area_city ac where ac.id = rdm.cityid) cityDesc
+	     	FROM
+			region_delivery_man rdm,
+			region_transit_center rtc
+		    where 1 = 1 and rdm.transitid = rtc.id
+		<if test="provid != null and provid != '' and provid != '-1'">
+           and rdm.provid = #{provid}
+        </if>
+        <if test="cityid != null and cityid != '' and cityid != '-1'">
+           and rdm.cityid = #{cityid}
+        </if>
+        <if test="transitid != null and transitid != '' and transitid != '-1'">
+           and rtc.transitid = #{transitid}
+        </if>
+	</select>
+
+     <select id="getOrderIdByOrderNo" resultType="pd" parameterType="pd" useCache="false">
+	 SELECT
+			om.id orderid,
+			om.orderno,
+			om.taketime,
+			DATE_FORMAT(om.addtime,"%Y-%m-%d %H:%m:%s") addtime,
+			(select bc.codename from base_config bc where bc.`code` = om.type and bc.codetype ='orderType') codename,
+			oa.srcaddress,
+			oa.srcaddrtype,
+			oa.scrlandmark,
+			ci.mobile mobile
+		FROM 
+			order_main om,
+			order_address oa,
+			cus_info ci
+		WHERE 1=1 AND om.id = oa.orderid
+		AND om.cusid = ci.id
+		AND om.orderno =#{orderno}
+	</select>
+     
+</mapper>

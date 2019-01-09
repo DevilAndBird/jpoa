@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="ProblemOrderMapper">
+
+	<!-- 添加反馈 -->
+	<insert id="insert" parameterType="ProblemOrder">
+		insert into order_trouble_info (
+			orderid,
+			feedbackuserid,
+			feedbackusername,
+			feedbackusermobile,
+			feedtime,
+			feedbackdesc,
+			processstatus)
+	   values (
+			#{orderid},
+			#{feedbackuserid},
+			#{feedbackusername},
+			#{feedbackusermobile},
+			now(),
+			#{feedbackdesc},
+			#{processstatus})
+	</insert>
+	
+	<!-- 处理信息 -->
+	<update id="update" parameterType="ProblemOrder">
+		update
+			order_trouble_info oti
+		set
+			oti.processname = #{processname},
+			oti.processmobile = #{processmobile},
+			oti.processdesc = #{processdesc},
+			oti.processstatus = #{processstatus},
+			oti.processtime = now()
+		where oti.id = #{id}
+	</update>
+
+	<!-- 查询列表 -->
+		
+	<select id="findProblemOrderList" resultType="ProblemOrder" parameterType="Integer" useCache="false">
+		SELECT	
+			oti.id,
+			oti.orderid,
+			oti.feedbackuserid,
+			oti.feedbackusername,
+			oti.feedbackusermobile,
+			oti.feedtime,
+			DATE_FORMAT(oti.feedtime,'%Y-%m-%d %H:%i') feedtimeformat,
+			oti.feedbackdesc,
+			oti.processname,
+			oti.processmobile,
+			oti.processdesc,
+			oti.processtime,
+			DATE_FORMAT(oti.processtime,'%Y-%m-%d %H:%i') processtimeformat,
+			oti.processstatus
+		FROM
+			order_trouble_info oti
+		WHERE 1=1
+			AND oti.orderid = #{orderid}
+		ORDER BY oti.id desc
+	</select>
+	
+	<select id="findOrderlistPage" resultType="pd" parameterType="page" useCache="false">
+		SELECT
+			om.id,
+			om.orderno,
+			ci.name,
+			ci.mobile,
+			(SELECT COUNT(1) FROM order_trouble_info otii WHERE 1=1 AND otii.orderid = om.id AND otii.processstatus = 'UNSOLVED') unsolved
+		FROM
+			order_main om,
+			cus_info ci
+		WHERE 1=1
+			AND ci.id = om.cusid
+			AND exists (SELECT 
+							1 
+						FROM 
+							order_trouble_info oti_
+						WHERE 1=1
+							 AND oti_.orderid = om.id 
+							 <if test="pd.processstatus != null and pd.processstatus != '' and pd.processstatus != '-1'">
+							 AND oti_.processstatus = #{pd.processstatus}
+							 </if>
+							 )
+			<if test="pd.orderno != null and pd.orderno != ''">
+				AND om.orderno like '%${pd.orderno}%'
+			</if>
+			<if test="pd.cusname != null and pd.cusname != ''">
+				AND ci.name like '%${pd.cusname}%'
+			</if>
+			<if test="pd.cusmobile != null and pd.cusmobile != ''">
+				AND ci.mobile like '%${pd.cusmobile}%'
+			</if>
+			<if test="pd.baggageid != null and pd.baggageid != ''">
+				AND om.id = (select oba.orderid from order_baggage oba where oba.baggageid like '%${pd.baggageid}%' limit 1 )
+			</if>
+			ORDER BY id DESC
+	</select>
+
+	<select id="findNumByUntreated" resultType="Integer" useCache="false">
+		SELECT
+			count(oti.orderid) num
+		FROM
+			order_trouble_info oti
+		WHERE 1=1
+		and oti.processstatus = 'UNSOLVED'
+	</select>
+	
+	<select id="findTroubleInfoById" resultType="ProblemOrder"  useCache="false">
+		SELECT
+			*
+		FROM
+			order_trouble_info oti
+		WHERE 1=1
+		and oti.id = #{id}
+	</select>
+	
+	<select id="findUnsolvedByOrderid" resultType="Integer" parameterType="Integer" useCache="false">
+		SELECT 
+			COUNT(otii.orderid) num
+		FROM 
+			order_trouble_info otii 
+		WHERE 1=1 
+		AND otii.orderid = #{orderid}
+		AND otii.processstatus = 'UNSOLVED'
+	</select>
+
+	<!-- 检查反馈信息是否重复 -->
+	<select id="checkFeedbackdescRepe" resultType="ProblemOrder" parameterType="ProblemOrder" useCache="false">
+		SELECT
+			*
+		FROM
+			order_trouble_info otii
+		WHERE 1=1
+		AND otii.orderid = #{orderid}
+		AND otii.feedbackdesc = #{feedbackdesc}
+		LIMIT 1
+	</select>
+
+</mapper>
+
+

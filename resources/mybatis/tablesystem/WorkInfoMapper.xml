@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="workInfoMapper">
+    <cache type="org.mybatis.caches.ehcache.LoggingEhcache"/>    	
+    <select id="finrdid"  resultType="wi" useCache="false" flushCache="true">
+          select max(id)  id from work_info
+          where 1 = 1
+    </select>
+    
+    <select id="finrdonedata"  resultType="wi" useCache="false" flushCache="true">
+          select * from work_info
+          where id = #{fid}
+    </select>
+    
+    <select id="wimlistPage" parameterType="page" resultType="pd" useCache="false" flushCache="true">
+		select
+	   id,
+	   sheetname,
+	   sheettype,
+	   sheettypename,
+	   notes,
+	   userid,
+	   username,
+	   date_format(createdtime,'%Y-%m-%d %H:%i:%s') as createdtime,
+	   status,
+	   statusname,
+	   sheetid	
+		 from  work_info
+        where 1=1
+        <if test="pd.sheetname != null and pd.sheetname != ''">
+            and ( sheetname LIKE CONCAT(CONCAT('%', #{pd.sheetname}),'%') ) 
+         </if>
+         <if test="pd.sheettypename != null and pd.sheettypename != ''"  >
+            and ( sheettypename LIKE CONCAT(CONCAT('%', #{pd.sheettypename}),'%') ) 
+         </if>
+	</select>
+	
+	<insert id="addwim" >
+	   insert into work_info(
+	   sheetname,
+	   sheettype,
+	   sheettypename,
+	   notes,
+	   userid,
+	   username,
+	   createdtime,
+	   status,
+	   statusname,
+	   sheetid,
+	   workflowid
+	   )values(
+	   #{sheetname},
+	   #{sheettype},
+	   #{sheettypename},
+	   #{notes},
+	   #{userid},
+	   #{username},
+	   #{createdtime},
+	   #{status},
+	   #{statusname},  
+	   #{sheetid},
+	   #{workflowid}
+	   )
+	</insert>
+	
+	<update id="updatewim" >
+	   	update work_info set 
+		sheetname=#{sheetname},
+		sheettype= #{sheettype},
+		sheettypename= #{sheettypename},
+		notes=#{notes},
+		userid= #{userid},
+		username= #{username},
+		status= #{status},
+		statusname= #{statusname},
+		sheetid= #{sheetid}
+		where id = #{id}
+	</update>
+	
+	<delete id="deletewim"  flushCache="false">
+		delete from work_info
+		where 
+			id = #{id}
+	</delete>
+	
+	<select id="auditlistPage" parameterType="page" resultType="pd" useCache="false" flushCache="true">
+	   select * from work_info 
+	   where userid=#{pd.userid} 
+	   and status=1
+	</select>
+	
+	<select id="auditedlistPage" parameterType="page" resultType="pd" useCache="false" flushCache="true">
+	   select * from work_info 
+	   where userid=#{pd.userid} 
+	   and status=2
+	</select>
+	
+	<select id="auditlistPagebyfalse" parameterType="page" resultType="pd" useCache="false" flushCache="true">
+	   select * from work_info 
+	   where userid=#{pd.userid} 
+	   and status=3
+	</select>
+	
+	<update id="updatestatus" >
+	   	update work_info set 
+		status= #{status},
+		statusname= #{statusname}
+		where id = #{id}
+	</update>
+	
+</mapper>

@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="UserDriverInfoMapper">
+  
+  <!-- 班车司机列表查询  -->
+	<select id="userDriverlistPage" resultType="pd" parameterType="page" useCache="false" >
+	    SELECT 
+	    	ud.id,
+	    	ud.userid,
+	    	ud.name,
+	    	ud.idno,
+	    	ud.mobile,
+	    	ud.isvalid,
+	    	(select codename from base_config bc where bc.codetype = 'ISVALID' and bc.code = ud.isvalid) isvalidDesc,
+	    	ud.addtime,
+	        ud.modifytime
+	    FROM 
+	    	user_driver_info ud
+	    where 1=1
+	      <if test="pd.userid !=null and pd.userid != ''"> 
+			and ud.userid = #{pd.userid}
+		  </if>
+		  <if test="pd.name !=null and pd.name != ''"> 
+			and ud.name like '%${pd.name}%'
+		  </if>
+		    <if test="pd.idno !=null and pd.idno != ''"> 
+			and ud.idno like '%${pd.idno}%'
+		  </if>
+		  <if test="pd.mobile !=null and pd.mobile != ''"> 
+			and ud.mobile like '%${pd.mobile}%'
+		  </if>
+		  order by ud.modifytime,ud.addtime desc
+	</select>
+  
+  	<!-- 修改状态  -->
+  	<update id="updateUserPicker" parameterType="pd">
+  		UPDATE user_driver_info
+  		 set 
+  		 	name = #{name},
+  		 	idno = #{idno},
+  		 	mobile = #{mobile},
+  		 	isvalid = #{isvalid},
+  		 	modifytime = now()
+  	    WHERE id = #{id}
+  	</update>
+  
+  	<!-- 班车司机新增   -->
+	<insert id="insertUserDriver" parameterType="pd" >
+	    INSERT into user_driver_info 
+	    	(userid,
+	    	name,
+	    	idno,
+	    	mobile,
+	    	isvalid,
+	    	createdby,
+	    	addtime,
+	    	modifiedby,
+	    	modifytime)
+	    VALUES 
+	    	(#{userid},
+	    	 #{name},
+	    	 #{idno},
+	    	 #{mobile},
+	    	 'Y',
+	    	 #{createdby},
+	    	 now(),
+	    	 #{modifiedby},
+	    	 now())
+  	</insert>
+  	
+	<!-- 班车司机审核  -->
+	<select id="checkInfo" resultType="UserDriverInfo" parameterType="pd" useCache="false" >
+	    select * from user_driver_info where userid = #{modelName} and idno = #{modelIdno} and provid = #{modelProvID} and cityid = #{modelCityID} 
+	</select>
+	
+	<!-- 查询所有班车司机  -->
+	<select id="findAll" resultType="pd" useCache="false" >
+	    select
+	    	 id,
+	    	 name,
+	    	 mobile
+	    from
+	     	user_driver_info
+	</select>
+</mapper>

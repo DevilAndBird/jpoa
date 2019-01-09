@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="OrderFlightMapper">
+
+	<select id="findByOrderid" resultType="OrderFlight" parameterType="Integer" useCache="false">
+		SELECT
+			oflight.id,
+			oflight.orderid,
+			oflight.sendflightno,
+			oflight.takeflightno,
+			oflight.addtime
+		FROM 
+			order_flight oflight 
+		WHERE 1=1
+		AND oflight.orderid =#{orderid}
+	</select>
+	
+	<!-- 
+		新增订单航班
+		陈玉石
+		2018年3月7日21:52:28
+	 -->
+	<insert id="insert" parameterType="OrderFlight">
+		insert into order_flight(
+			orderid,
+			sendflightno,
+			takeflightno,
+			addtime) 
+		values(
+			#{orderid},
+			#{sendflightno},
+			#{takeflightno},
+			now())
+	</insert>
+	
+</mapper>
+

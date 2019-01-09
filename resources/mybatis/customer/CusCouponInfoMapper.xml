@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="CusCouponInfoMapper">
+	
+	<!-- 
+		根据用户ID获取客户对应优惠券列表 
+		陈玉石
+		2018年3月4日16:28:39
+	-->
+	<select id="getCusCouponListByCusId" parameterType="Integer" resultType="CusCouponInfo" useCache="false" >
+		SELECT 
+	    	cci.id,
+			cci.cusid,
+			cci.couponid,
+			ci.code,
+			ci.channel,
+	        ci.startdate,
+	        ci.invaliddate,
+	        ci.money,
+	        ci.type,
+			ci.fullmoney,
+			ci.discount,
+	        cci.orderid,
+	        cci.isused,
+	        cci.usetime,
+	        cci.isvalid
+	    FROM 
+	    	cus_coupon_info cci,
+	    	coupon_info ci
+	    WHERE 1=1
+	    	AND cci.couponid = ci.id
+ 			AND cci.cusid = #{cusid}
+ 	        AND cci.isvalid = 'Y'
+	</select>
+	
+	<!-- 
+		根据用户ID获取客户对应有效的优惠券列表 
+		陈玉石
+		2018年3月4日16:28:39
+	-->
+	<select id="getValidCusCouponListByCusId" parameterType="pd" resultType="CusCouponInfo" useCache="false" >
+		select * 
+			from 
+				cus_coupon_info
+			where
+				cusid = #{cusid} and
+				isvalid =1
+	</select>
+	
+	<!-- 
+		修改优惠券状态
+		陈玉石
+		2018年3月4日16:30:02
+	 -->
+	<update id="chgCusCouponStatus" parameterType="pd">
+		update 
+			cus_coupon_info
+		set
+			isvalid = #{isvalid}
+		where
+			id = #{id}
+	</update>
+	
+	<!-- 
+		使用优惠券
+		陈玉石
+		2018年3月4日16:30:02
+	 -->
+	<update id="useCoupon" parameterType="String">
+		update 
+			order_main om,
+			cus_coupon_info cci
+		set
+			isused = 'Y',
+			usetime = now()
+		where 1=1
+			and om.id = cci.orderid
+			and om.orderno = #{orderno}
+	</update>
+	
+	<!-- 
+		根据用户ID获取客户对应有效的优惠券列表 
+		陈玉石
+		2018年3月4日16:28:39
+	-->
+	<select id="getById" parameterType="pd" resultType="CusCouponInfo" useCache="false" >
+		select * 
+			from 
+				cus_coupon_info
+			where
+				id = #{id}
+	</select>
+	
+	<!-- 客户优惠卷列表查询  -->
+	<select id="cusCouponlistPage" resultType="pd" parameterType="page" useCache="false" >
+	    SELECT 
+	    	cci.id,
+			cci.cusid,
+			cci.couponid,
+			ci.code,
+			ci.channel,
+			(SELECT bc.codename FROM base_config bc WHERE bc.codetype = 'COUPONCHANNEL' AND ci.channel = bc.code) channelDesc,
+	        ci.startdate,
+	        ci.invaliddate,
+	        ci.money,
+	        ci.type,
+			(SELECT bc.codename FROM base_config bc WHERE bc.codetype = 'COUPONTYPE' AND ci.type = bc.code) typeDesc,
+			ci.fullmoney,
+			ci.discount,
+	        cci.orderid,
+	        cci.isused,
+	        (select bc.codename from base_config bc where cci.isused=bc.code) isusedDesc,
+	        cci.usetime,
+	        cci.isvalid
+	    FROM 
+	    	cus_coupon_info cci,
+	    	coupon_info ci
+	    WHERE 1=1
+	    AND cci.couponid = ci.id
+        <if test="pd.cusid !=null and pd.cusid != ''"> 
+ 			and cci.cusid = #{pd.cusid} 
+ 	    </if> 
+ 	    <if test="pd.orderid !=null and pd.orderid != ''"> 
+ 			and cci.orderid = #{pd.orderid} 
+ 	    </if>
+ 	    <if test="pd.type !=null and pd.type != ''"> 
+ 			and cci.type = #{pd.type}
+ 	    </if>
+ 	    AND cci.isvalid = 'Y'
+ 	    ORDER BY cci.id desc
+	</select>
+	
+	<!-- 
+		优惠券信息更新
+		zhangjj
+		2018年3月4日20:03:03
+	 -->
+	<update id="update" parameterType="CusCouponInfo">
+		update cus_coupon_info
+	    set
+			cusid = #{cusid},
+			orderid = #{orderid},
+			type = #{type},
+	        money = #{money},
+	        couponid = #{couponid},
+	        couponmoney = #{couponmoney},
+	        isused = #{isused},
+	        usetime = #{usetime},
+	        invalidtime = #{invalidtime},
+	        isvalid = #{isvalid}
+		where 1=1
+	   <if test="cusid !=null and cusid != ''"> 
+ 			and cusid = #{cusid} 
+ 	   </if>
+ 	   <if test="orderid !=null and orderid != ''"> 
+ 			and orderid = #{orderid} 
+ 	   </if>
+	</update>
+	
+	<!-- 检查是否添加重复优惠卷 zhangjj -->
+	<select id="checkRepeatCoupon" parameterType="pd" resultType="pd" useCache="false" >
+		SELECT 
+			* 
+		FROM 
+			cus_coupon_info cci
+		WHERE 1=1
+			AND cci.cusid = #{cusid}
+			AND cci.couponid = #{couponid}
+			AND	cci.isvalid = 'Y'
+	</select>
+	
+	 <!-- 客户领取优惠卷 zhangjj -->
+	 <insert id="insert" parameterType="CusCouponInfo">
+		 INSERT INTO cus_coupon_info (
+			cusid,
+			orderid,
+	        couponcode,
+	        isused,
+	        isvalid,
+	        addtime
+		)
+		VALUES(
+			#{cusid},
+			#{orderid},
+			#{couponcode},
+			'N',
+			'Y',
+			now())
+		<selectKey resultType="java.lang.Integer" order="AFTER" keyProperty="id"> 
+			SELECT LAST_INSERT_ID() 
+		</selectKey>
+  	</insert>
+  	
+  	<!-- 根据订单号查询客户该订单下的优惠卷信息 zhangjj -->
+  	<select id="findCouponinfoByOrderno" parameterType="String" resultType="CusCouponInfo">
+  		SELECT
+  			cci.*
+  		FROM
+  			order_main om,
+  			cus_coupon_info cci
+  		WHERE 1=1
+  			AND om.id = cci.orderid
+  			AND om.orderno = #{orderno}
+  			LIMIT 1
+  	</select>
+  	
+  	<!-- 回撤订单使用优惠卷 -->
+	<update id="reCallUseCoupon" parameterType="String">
+		update 
+			order_main om,
+			cus_coupon_info cci
+		set
+			cci.isused = 'N'
+		where 1=1
+			and om.id = cci.orderid
+			and om.orderno = #{orderno}
+	</update>
+</mapper>

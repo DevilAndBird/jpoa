@@ -1,0 +1,59 @@
+.bodyautoallotdetail {
+	font-weight:bold;	
+}
+
+.tableautoallot{
+	margin-top:10px;
+	width:500px;
+	height:70px;
+}
+
+.tdimg {
+	width: 50px;
+}
+
+.addrdesc {
+	width: 280px;
+}
+
+#divautoallotbaseinfo{
+	height: 30px
+}
+
+#tableautoallottbaseinfo td{
+	width: 70px;
+}
+
+#tableautoallottbaseinfo #mailingway {
+	width: 100px;
+}
+
+#divAutoallotdetail{
+	max-height: 800px;
+	overflow-y:auto;
+}
+
+hr{
+	width: 90%;
+	margin-left:5%; 
+}
+
+.actionfinishtime {
+	font-weight:bold;	
+	color: #58aa89;
+}
+
+.classcountdown{
+	color: red;
+}
+
+.lableovertime{
+	color: red;
+}
+
+button{
+	margin-top:10px;
+	margin-left:5%;
+	float: left;
+	width: 45%;
+}

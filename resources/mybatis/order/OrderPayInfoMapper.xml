@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="OrderPayInfoMapper">
+
+	<insert id="insertOrderPayInfo" parameterType="OrderPayInfo">
+			INSERT INTO order_pay_info(
+				orderid,
+				status,
+				type,
+				addtime,
+				money)
+			VALUES (
+				#{orderid},
+				#{status},
+				#{type},
+				now(),
+				#{money});
+	</insert>
+
+	<!--
+    修改支付状态
+    tangqm
+     -->
+	<update id="updateOrderPayInfo" parameterType="OrderPayInfo" >
+		UPDATE
+			order_pay_info opi
+		SET
+			opi.status=#{status},
+			opi.paytime=now()
+		WHERE 1=1
+		AND opi.orderid = #{orderid}
+	</update>
+
+</mapper>
+

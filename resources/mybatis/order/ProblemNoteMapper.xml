@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="ProblemNoteMapper">
+
+	<select id="findProblemNoteslistPage" resultType="pd"
+		parameterType="page" useCache="false">
+		select * from order_trouble_notes otn where 1=1
+		<if test="pd.id != null and pd.id != ''">
+			and otn.troubleid = #{pd.id}
+		</if>
+	</select>
+
+	<select id="findProblemNotesList" resultType="ProblemNotes"
+		parameterType="page" useCache="false">
+	    select otn.notes,otn.addtime from order_trouble_notes otn where 1=1
+		and otn.troubleid = #{troubleid}
+	</select>
+
+	<insert id="insert" parameterType="ProblemNotes">
+		<selectKey keyProperty="id" resultType="int">
+			select
+			LAST_INSERT_ID()
+		</selectKey>
+		insert into order_trouble_notes (troubleid, notes, addtime, addby,
+		addusername)
+		values ( #{troubleid}, #{notes},now(),#{addby},
+		#{addusername})
+	</insert>
+
+</mapper>
+
+
