@@ -1,5 +1,6 @@
 package com.fh.service.order.orderinfo;
 
+import com.fh.common.constant.ConfigCenterKeys;
 import com.fh.common.constant.MsgOfTmpCode;
 import com.fh.common.constant_enum.*;
 import com.fh.controller.wxpublicnum.wxpushinfo.WeixinUtil;
@@ -208,7 +209,11 @@ public String saveAppOrder(AppSaveOrderInfoReqData saveOrderInfoReqBean)throws E
 	String orderno = "JPWX" + worker.getDefaultFormatId();
 	orderMain.setOrderno( orderno );
 	// 订单类型
-	orderMain.setStatus(CollectionUtils.isNotEmpty(saveOrderInfoReqBean.getOrderBaggageReqDataList()) ?  ORDER_STATUS.TAKEGOOGSOVER.getValue() :  ORDER_STATUS.WAITPICK.getValue());
+	String orderStatus = ORDER_STATUS.WAITPICK.getValue();
+	if(CollectionUtils.isNotEmpty(saveOrderInfoReqBean.getOrderBaggageReqDataList())) {
+		orderStatus = StringUtils.isNotBlank(saveOrderInfoReqBean.getOrderBaggageReqDataList().get(0).getBaggageid())? ORDER_STATUS.TAKEGOOGSOVER.getValue() : ORDER_STATUS.WAITPICK.getValue();
+	}
+	orderMain.setStatus(orderStatus);
 	// 订单类型
 	orderMain.setType(saveOrderInfoReqBean.getOrderAddress().getSrcaddrtype() + "TO" + saveOrderInfoReqBean.getOrderAddress().getDestaddrtype());
 	dao.save( "OrderMainMapper.insert", orderMain);
@@ -267,8 +272,14 @@ public String saveAppOrder(AppSaveOrderInfoReqData saveOrderInfoReqBean)throws E
 
         // 图片上传成功
         for (OrderBaggageReqData orderBaggageReqData : orderBaggageReqDataList) {
-            orderBaggageReqData.setOrderid(orderId);
-            orderBaggageService.insertQRAndImgUrl(orderBaggageReqData);
+        	// QR 为空， 不做处理
+			if(StringUtils.isBlank(orderBaggageReqData.getBaggageid())) {
+				continue;
+			}
+
+            orderBaggageReqData.setBaggageid(ConfigCenterKeys.QR_PREFIX + orderBaggageReqData.getBaggageid());
+			orderBaggageReqData.setOrderid(orderId);
+			orderBaggageService.insertQRAndImgUrl(orderBaggageReqData);
         }
     }
 

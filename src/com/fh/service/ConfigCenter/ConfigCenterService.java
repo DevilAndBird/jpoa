@@ -18,6 +18,9 @@ public class ConfigCenterService {
 	
 	@Resource
 	private DaoSupport dao;
+	/* 默认 */
+	private final static String DEFAULT = "_DEFAULT";
+
 	
 	
 	/** 计价规则信息存储 */
@@ -30,19 +33,33 @@ public class ConfigCenterService {
 	 * @date 2018年10月26日
 	 */
 	public String getConfig(String cityid, String key) throws Exception {
-		if(priceDetail.get(cityid + key) != null) {
+		if(StringUtils.isNotBlank(priceDetail.get(cityid + key))) {
 			return priceDetail.get(cityid + key);
-		} 
+		} else if (StringUtils.isNotBlank(priceDetail.get(key + DEFAULT))){
+			// 默认值
+			return priceDetail.get(key + DEFAULT);
+		}
 		
 		synchronized (cityid + key) {
-			if(priceDetail.get(cityid + key) != null) {
+			if(StringUtils.isNotBlank(priceDetail.get(cityid + key))) {
 				return priceDetail.get(cityid + key);
+			} else if (StringUtils.isNotBlank(priceDetail.get(key + DEFAULT))){
+				// 默认值
+				return priceDetail.get(key + DEFAULT);
 			}
-			
+
+			// 城市是否配置
 			String value = getConfigCenterValue(cityid, key);
-			value = StringUtils.isNotBlank(value) ? value : "";
+			// 默认值
+			if(StringUtils.isNotBlank(value)) {
+				priceDetail.put(cityid + key, value);
+			} else {
+				value = getConfigCenterValue("", key + DEFAULT);
+				value = StringUtils.isNotBlank(value) ? value : "";
+				priceDetail.put(key + DEFAULT, value);
+			}
+
 			LoggerUtil.info("配置中心获取配置：cityid：" + cityid + ",key：" + key + ",value:" + value);
-			priceDetail.put(cityid + key, value);
 			return value;
 		}
 	}

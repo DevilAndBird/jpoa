@@ -26,12 +26,12 @@ function fillmodifypublicnum(param) {
 
 $('#butmodifyconfig').click(function() {
 	var id = $('#butmodifyconfig').val();
-	var cityid = $('#model_cityid').val();
+    var cityid = $('#model_cityid').val();
 	var business_key = $('#model_businesskey').val();
-	var business_value = $('#model_businessvalue').val().trim();
+    var business_value = $('#model_businessvalue').val().trim();
 	var isvalid = $('#model_isvalid').val().trim();
 	var remark = $('#model_remark').val().trim();
-	
+
 	if(business_value == null || business_value == '') {
 		layer.msg('value不能为空');
 		return;
@@ -91,18 +91,12 @@ $('#butsaveconfig').click(function() {
 	var cityid = $('#seleCityid_modal').val().trim();
 	var business_key = $('#model_key').val().trim();
 	var business_value = $('#model_value').val().trim();
-	var remark = $('#model_remark').val().trim();
-	
-	if(provid == null || provid == '' || provid == '-1') {
-		layer.msg('省份不能为空');
-		return;
+	var remark = $('#model_remark_save').val().trim();
+
+	if(cityid == '-1') {
+		cityid = '';
 	}
-	
-	if(cityid == null || cityid == '' || cityid == '-1') {
-		layer.msg('城市不能为空');
-		return;
-	}
-	
+
 	if(business_key == null || business_key == '') {
 		layer.msg('业务key不能为空');
 		return;
@@ -122,7 +116,7 @@ $('#butsaveconfig').click(function() {
 		url : "./configcenter/saveConfig",
 		data : {
 			provid : provid,
-	        cityid : cityid,
+            cityid : cityid,
 	        business_key : business_key,
 	        business_value : business_value,
 	        remark : remark

@@ -169,8 +169,12 @@
 						<div class="row-fluid">
 	                   		<label>备注</label>
 	                   		 <span class="input-icon">
-								<input autocomplete="off"  type="text" id='model_remark'  placeholder="备注" />
+								<input autocomplete="off"  type="text" id="model_remark_save"  placeholder="备注" />
 							 </span>
+						</div>
+						<div class="row-fluid">
+							<label>1:配置默认值，城市信息不需要填写</label>
+							<label>2:配置默认值，key后面跟着_DEFAULT,即xx_DEFAULT</label>
 						</div>
 					</div>
                  </div>

@@ -128,7 +128,7 @@ public class OrderBaggageService {
             ExceptionUtil.isFalse(orderBaggagetemp !=null && orderBaggagetemp.size() > 0, "qr码已存在，重新换取：" + orderBaggageReqData.getBaggageid());
 
 			// 将图片压缩成 json形式;
-            Map<String, Object> map = map = new HashMap<String, Object>();
+            Map<String, Object> map = new HashMap<String, Object>();
             map.put(orderBaggageReqData.getImgtype(), orderBaggageReqData.getImgurlList());
             // 更新照片的人
             map.put(orderBaggageReqData.getImgtype() + "Userid", orderBaggageReqData.getUploadUserid());
