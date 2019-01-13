@@ -1683,8 +1683,10 @@
 			FROM 
 				order_main om,
 				order_address ad,
-				cus_info ci
+				cus_info ci,
+				order_pay_info opi
 			WHERE 1=1
+			AND opi.orderid = om.id
 			AND ad.destaddressid = #{airportid} 
 			AND (ad.srcaddrtype = 'AIRPORTCOUNTER' OR ad.destaddrtype = 'AIRPORTCOUNTER')
 			AND om.id = ad.orderid
@@ -1726,15 +1728,18 @@
 			FROM 
 				order_main om,
 				order_address ad,
-				cus_info ci
+				cus_info ci,
+ 				order_pay_info opi
 			WHERE 1=1
-			AND ad.srcaddressid = #{airportid} 
+			AND ad.srcaddressid = #{airportid}
+		    AND opi.orderid = om.id
+		    AND (opi.status = 'PREPAID' or opi.type = 'MONTH')
 			AND ad.srcaddrtype = 'AIRPORTCOUNTER'
 			AND om.id = ad.orderid
 			AND om.cusid = ci.id
 			AND om.status = 'WAITPICK'
 			AND om.isvalid = 'Y'
-			AND DATE_FORMAT(om.taketime,'%Y-%m-%d') =  DATE_FORMAT(NOW(),'%Y-%m-%d')
+			<!-- AND DATE_FORMAT(om.taketime,'%Y-%m-%d') =  DATE_FORMAT(NOW(),'%Y-%m-%d') -->
 	</select>
 	
 	<!-- 查询机场柜台待派件 -->
