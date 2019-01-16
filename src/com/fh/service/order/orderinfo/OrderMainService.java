@@ -262,6 +262,7 @@ public String saveAppOrder(AppSaveOrderInfoReqData saveOrderInfoReqBean)throws E
 
 	// qr + 图片
     List<OrderBaggageReqData> orderBaggageReqDataList = saveOrderInfoReqBean.getOrderBaggageReqDataList();
+
     if(CollectionUtils.isNotEmpty(orderBaggageReqDataList)) {
         // 校验是否有重复qr码
         List<String> checkBagidRep = new ArrayList<String>();
@@ -276,8 +277,11 @@ public String saveAppOrder(AppSaveOrderInfoReqData saveOrderInfoReqBean)throws E
 			if(StringUtils.isBlank(orderBaggageReqData.getBaggageid())) {
 				continue;
 			}
-
-            orderBaggageReqData.setBaggageid(ConfigCenterKeys.QR_PREFIX + orderBaggageReqData.getBaggageid());
+			String baggageid = orderBaggageReqData.getBaggageid();
+			if(orderBaggageReqData.getBaggageid().indexOf(ConfigCenterKeys.QR_PREFIX)<0){
+				baggageid = ConfigCenterKeys.QR_PREFIX + orderBaggageReqData.getBaggageid();
+			}
+            orderBaggageReqData.setBaggageid(baggageid);
 			orderBaggageReqData.setOrderid(orderId);
 			orderBaggageService.insertQRAndImgUrl(orderBaggageReqData);
         }
@@ -704,5 +708,5 @@ public String saveAppOrder(AppSaveOrderInfoReqData saveOrderInfoReqBean)throws E
 	public PageData findOpenidByOrderid( Integer orderid ) throws Exception {
         return (PageData) dao.findForObject("OrderMainMapper.findOpenidByOrderid", orderid);
     }
-	
+
 }

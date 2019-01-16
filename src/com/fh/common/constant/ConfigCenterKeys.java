@@ -12,7 +12,7 @@ public class ConfigCenterKeys {
 	/** 专车 */
 	public static final String SERVER_TYPE_SC = "sc";
 	/** qr_前缀 */
-	public static final String QR_PREFIX = "JPOA";
+	public static final String QR_PREFIX = "JPQR";
 
 
 	
