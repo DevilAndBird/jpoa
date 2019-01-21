@@ -88,7 +88,7 @@ public class OrderAddressService {
     		return false;
     	}
     	for(PageData temp : gpslist) {
-    		JSONArray jsonArray = JSONArray.fromObject(temp.get("gps")); 
+    		JSONArray jsonArray = JSONArray.fromObject(temp.get("gps"));
     		List<PageData> partitionLocation = (List<PageData>) JSONArray.toCollection(jsonArray, PageData.class);
     		boolean res = baiDuMapBO.isInPolygon(orderLocation, partitionLocation);
     		if(res) {

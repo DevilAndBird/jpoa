@@ -3,6 +3,7 @@ package com.fh.test.app.order;
 
 import com.fh.common.constant_enum.*;
 import com.fh.entity.app.AppRequestBean;
+import com.fh.entity.app.counterservice.CheckAddrReqBean;
 import com.fh.entity.app.order.AppSaveOrderInfoReqData;
 import com.fh.entity.app.order.OrderBaggageReqData;
 import com.fh.entity.customer.CusInfo;
@@ -23,13 +24,14 @@ public class TestAppOrderController {
 //    public final static String url = "http://localhost:8080/jpoa/apporder/countOrderBaggageNum";
 //    public final static String url = "http://localhost:8080/jpoa/apporder/countBatchBagNumByQR";
 //    public final static String url = "http://localhost:8080/jpoa/apporder/saveSignUrl";//tangqm
-    public final static String url = "http://localhost:8081/jpoa/apporder/saveorder";// app 柜台下单保存信息
+//    public final static String url = "http://localhost:8081/jpoa/apporder/saveorder";// app 柜台下单保存信息
 //    public final static String url = "http://localhost:8080/jpoa/apporder/updateprepaid";// app 订单状态修改为已支付
 //    public final static String url = "http://localhost:8080/jpoa/appCounterService/findCountersByCity";// app 柜台信息查询
 //	public final static String url = "http://localhost:8081/jpoa/apporder/findPricingRule";// app 计费价格回复
 //	public final static String url = "http://localhost:8080/jpoa/apporder/findAppOrderAirport";// app 柜台订单列表查询
 //	public final static String url = "http://localhost:8080/jpoa/apporder/deleteOrder";// app 删除订单
-	
+	public final static String url = "http://localhost:8081/jpoa/apporder/checkAddressUsable";// 检查地址是否在范围内
+
     
     
     public static void main(String[] args) {
@@ -113,7 +115,7 @@ public class TestAppOrderController {
         
         
         // APP 订单生成接口 start
-        AppSaveOrderInfoReqData data = new AppSaveOrderInfoReqData();
+        /*AppSaveOrderInfoReqData data = new AppSaveOrderInfoReqData();
         CusInfo cusInfo = new CusInfo();
         cusInfo.setName("test5");
         cusInfo.setMobile("12345678904");
@@ -190,7 +192,7 @@ public class TestAppOrderController {
         imgurlList2.add("http://jingpeioss.oss-cn-hangzhou.aliyuncs.com/1534943187.jpg2");
         orderBaggageReqData2.setImgurlList(imgurlList2);
         orderBaggageReqDataList.add(orderBaggageReqData1);
-        orderBaggageReqDataList.add(orderBaggageReqData2);
+        orderBaggageReqDataList.add(orderBaggageReqData2);*/
 //        data.setOrderBaggageReqDataList(orderBaggageReqDataList);
 
 //         APP 订单生成接口 end
@@ -216,14 +218,21 @@ public class TestAppOrderController {
         data.setAirportid(1);
         data.setOrdertype(AIRPORTORDER_TYPE.WAITPAY.getValue());*/
         // App 柜台订单列表查询根据状态
-        
+
+        // 检查地址是否在划分范围内
+        CheckAddrReqBean data = new CheckAddrReqBean();
+        data.setProvid("310000");
+        data.setCityid("310000");
+        data.setByCheckgps("{'lng':'121.27108','lat':'31.208887'}");
+        data.setIstransitgps(false);
+
         // App 订单删除订单
       /*  AppDeleteOrderReqData data = new AppDeleteOrderReqData();
         data.setOrderid(4092);*/
         // App 订单删除订单
-        
+
         bean.setData( new Gson().toJson( data ) );
-        
+
         Gson gson = new Gson();
         String json = gson.toJson( bean );
         
