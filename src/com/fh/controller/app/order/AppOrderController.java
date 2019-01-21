@@ -9,10 +9,15 @@ import com.fh.common.constant_enum.UPDATE_TYPE;
 import com.fh.controller.base.BaseController;
 import com.fh.entity.app.AppRequestBean;
 import com.fh.entity.app.AppResponseBean;
+import com.fh.entity.app.counterservice.CheckAddrReqBean;
+import com.fh.entity.app.counterservice.CheckAddrResBean;
 import com.fh.entity.app.order.*;
 import com.fh.entity.configcenter.GoldPriceDetail;
 import com.fh.entity.configcenter.SpecialPriceDetail;
+import com.fh.entity.h5.H5CheckAddrReqBean;
+import com.fh.entity.h5.H5CheckAddrResBean;
 import com.fh.service.ConfigCenter.ConfigCenterService;
+import com.fh.service.order.OrderAddressService;
 import com.fh.service.order.OrderBaggageService;
 import com.fh.service.order.OrderEvaluateService;
 import com.fh.service.order.orderinfo.OrderInfoService;
@@ -57,6 +62,8 @@ public class AppOrderController extends BaseController {
 	private OrderMainService orderMainService;
 	@Autowired
 	private ConfigCenterService priceRuleService;
+	@Autowired
+	private OrderAddressService orderAddressService;
 
 	/**
 	 * @desc app_订单列表查询
@@ -912,6 +919,58 @@ public class AppOrderController extends BaseController {
 			rtBean.setCode(APP_RESPONSE_CODE.FAIL.getValue());
 			rtBean.setMsg("非预期异常，请联系IT");
 			return gson.toJson(rtBean);
+		}
+	}
+
+
+	/**
+	 * @desc 校验寄件/收件 地址是否可用
+	 * @auther zhangjj
+	 * @date 2018年4月10日
+	 */
+	@ResponseBody
+	@RequestMapping(value="/checkAddressUsable", produces = "application/json;charset=UTF-8" )
+	public String checkAddressUsable( @RequestBody AppRequestBean reqParm ){
+		AppResponseBean rtBean = doH5Validate(reqParm);
+		CheckAddrReqBean reqBean = (CheckAddrReqBean) new Gson().fromJson(reqParm.getData(), CheckAddrReqBean.class);
+		if(reqBean == null) {
+			rtBean.setCode(APP_RESPONSE_CODE.FAIL.getValue());
+			rtBean.setMsg( "请求参数转换异常" );
+			return new Gson().toJson(rtBean);
+		}
+
+		try {
+			// 校验
+			ExceptionUtil.checkNotEmpty(reqBean.getProvid(), "省份id不能为空");
+			ExceptionUtil.checkNotEmpty(reqBean.getCityid(), "市级不能为空");
+			ExceptionUtil.checkNotEmpty(reqBean.getByCheckgps(), "地址坐标不能为空");
+
+			// 检查寄件/收件 地址是否在允许范围内
+			boolean checkAddrIsuse = orderAddressService.checkAddrIsuse(reqBean.getProvid(), reqBean.getCityid(), reqBean.getByCheckgps(), reqBean.getIstransitgps());
+
+			CheckAddrResBean resBean = new CheckAddrResBean();
+			resBean.setCheckAddrIsuse(checkAddrIsuse);
+
+			rtBean.setJsonData(new Gson().toJson(resBean));
+			rtBean.setCode(APP_RESPONSE_CODE.SUCCESS.getValue());
+			rtBean.setMsg("地址可用");
+			return new Gson().toJson(rtBean);
+		} catch (RulesCheckedException e) {
+			logger.error("检查寄件/收件 地址是否可用-校验异常:" + e.getMessage());
+			rtBean.setCode(APP_RESPONSE_CODE.CHECK.getValue());
+			rtBean.setMsg("检查寄件/收件 地址是否可用-校验异常：" + e.getMessage());
+			H5CheckAddrResBean resBean = new H5CheckAddrResBean();
+			resBean.setCheckAddrIsuse(true);
+			rtBean.setJsonData(new Gson().toJson(resBean));
+			return new Gson().toJson(rtBean);
+		} catch (Exception ex) {
+			logger.error("检查寄件/收件 地址是否可用-非预期异常:" + ex.getLocalizedMessage());
+			rtBean.setCode(APP_RESPONSE_CODE.FAIL.getValue());
+			rtBean.setMsg( "检查寄件/收件 地址是否可用-非预期异常" );
+			H5CheckAddrResBean resBean = new H5CheckAddrResBean();
+			resBean.setCheckAddrIsuse(true);
+			rtBean.setJsonData(new Gson().toJson(resBean));
+			return new Gson().toJson(rtBean);
 		}
 	}
 	
