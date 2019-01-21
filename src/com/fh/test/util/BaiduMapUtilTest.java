@@ -26,7 +26,7 @@ public class BaiduMapUtilTest extends BaseTest {
      */
     @Test
     public void getLngAndLat() throws Exception {
-    	String address = "浙江省杭州市萧山机场";// 121.35492, lat=31.192945
+    	String address = "上海九华特联汽车销售有限公司";// 121.35492, lat=31.192945
     	BaiduCoord coordinate = baiDuMapBO.getLngAndLat(address);
     	System.out.println(coordinate);
     }

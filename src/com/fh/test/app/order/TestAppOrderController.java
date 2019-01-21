@@ -3,6 +3,7 @@ package com.fh.test.app.order;
 
 import com.fh.common.constant_enum.*;
 import com.fh.entity.app.AppRequestBean;
+import com.fh.entity.app.counterservice.CheckAddrReqBean;
 import com.fh.entity.app.order.AppSaveOrderInfoReqData;
 import com.fh.entity.app.order.OrderBaggageReqData;
 import com.fh.entity.app.order.PricingRuleReqData;
@@ -30,7 +31,8 @@ public class TestAppOrderController {
 	public final static String url = "http://localhost:8081/jpoa/apporder/findPricingRule";// app 计费价格回复
 //	public final static String url = "http://localhost:8080/jpoa/apporder/findAppOrderAirport";// app 柜台订单列表查询
 //	public final static String url = "http://localhost:8080/jpoa/apporder/deleteOrder";// app 删除订单
-	
+	public final static String url = "http://localhost:8081/jpoa/apporder/checkAddressUsable";// 检查地址是否在范围内
+
     
     
     public static void main(String[] args) {
@@ -217,14 +219,21 @@ public class TestAppOrderController {
         data.setAirportid(1);
         data.setOrdertype(AIRPORTORDER_TYPE.WAITPAY.getValue());*/
         // App 柜台订单列表查询根据状态
-        
+
+        // 检查地址是否在划分范围内
+        CheckAddrReqBean data = new CheckAddrReqBean();
+        data.setProvid("310000");
+        data.setCityid("310000");
+        data.setByCheckgps("{'lng':'121.27108','lat':'31.208887'}");
+        data.setIstransitgps(false);
+
         // App 订单删除订单
       /*  AppDeleteOrderReqData data = new AppDeleteOrderReqData();
         data.setOrderid(4092);*/
         // App 订单删除订单
-        
+
         bean.setData( new Gson().toJson( data ) );
-        
+
         Gson gson = new Gson();
         String json = gson.toJson( bean );
         
