@@ -43,7 +43,9 @@ public enum ORDER_STATUS {
     /**待卸车*/
 	WAITINGUNLOAD("WAITINGUNLOAD", "待卸车"), 
 	/**已卸车*/
-	UNLOAD("UNLOAD", "已卸车");
+	UNLOAD("UNLOAD", "已卸车"),
+    /**配送中*/
+    INTRANSIT("INTRANSIT", "配送中");
 
 	private final String value;
 	private final String name;
