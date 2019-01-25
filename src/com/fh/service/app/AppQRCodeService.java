@@ -15,15 +15,19 @@ public class AppQRCodeService {
     private DaoSupport dao;
     
     @SuppressWarnings("all")
-	public List<String> findQRCodeLimitPage(AppQRCodeReqData appQRCodeReqData) throws Exception{
-		return  (List<String>) dao.findForList( "QRCodeMapper.findQRCodeLimitPage" , (appQRCodeReqData.getLimit()-1)*200 );
+	public List<String> findQRCodeLimitPage() throws Exception{
+		return  (List<String>) dao.findForList( "QRCodeMapper.findQRCodeLimitPage" , null);
     }
     
     @SuppressWarnings("all")
-    public void update(List<String> qrcodeList) throws Exception{
+    public void update(List<String> qrcodeList) throws Exception {
     	   PageData pd = new PageData();
     	   pd.put("qrcodeList", qrcodeList);
     	   dao.update( "QRCodeMapper.update" , pd );
+    }
+
+    public void insert(String qrcode) throws Exception {
+        dao.save( "QRCodeMapper.insert" , qrcode);
     }
     
 }

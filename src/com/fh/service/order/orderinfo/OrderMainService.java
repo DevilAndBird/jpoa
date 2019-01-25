@@ -291,7 +291,7 @@ public String saveAppOrder(AppSaveOrderInfoReqData saveOrderInfoReqBean)throws E
 
     // 如果是已取件则需要在orderrole 增加一条记录
     if(ORDER_STATUS.TAKEGOOGSOVER.getValue().equals(orderStatus)) {
-		OrderRole orderRole = saveOrderInfoReqBean.getOrderrole();
+		OrderRole orderRole = saveOrderInfoReqBean.getOrderRole();
 		orderRole.setOrderid(orderId);
 		orderRole.setRoletype(ROLE_TYPE.ROLE_AIRPORT_TASKED.getValue());
 		orderRole.setIsfinish(IS_FINISH.FINISHED.getValue());

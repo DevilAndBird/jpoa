@@ -29,7 +29,7 @@ public class AppSaveOrderInfoReqData {
 	private List<OrderBaggageReqData> orderBaggageReqDataList;
 
 	/* 下单人员信息 */
-	private OrderRole orderrole;
+	private OrderRole orderRole;
 
 
 	/**
@@ -109,11 +109,11 @@ public class AppSaveOrderInfoReqData {
 		this.orderBaggageReqDataList = orderBaggageReqDataList;
 	}
 
-	public OrderRole getOrderrole() {
-		return orderrole;
+	public OrderRole getOrderRole() {
+		return orderRole;
 	}
 
-	public void setOrderrole(OrderRole orderrole) {
-		this.orderrole = orderrole;
+	public void setOrderRole(OrderRole orderRole) {
+		this.orderRole = orderRole;
 	}
 }

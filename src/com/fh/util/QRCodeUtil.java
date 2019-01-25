@@ -151,6 +151,13 @@ public class QRCodeUtil {
         return bimage;
     }
 
+    public static void mkdirs(String destPath){
+        File file = new File(destPath);
+        if(!file.exists() && !file.isDirectory()){
+            file.mkdirs();
+        }
+    }
+
     public static void encode(String QR, String backgroundPath, String qrLogoPath, String destPath) throws Exception{
         // 生成qr码（内嵌logo）
         BufferedImage image = QRCodeUtil.createQrimage(QR, qrLogoPath);
@@ -176,19 +183,9 @@ public class QRCodeUtil {
         ImageIO.write(bg_buffered, QrName, new File(destPath+"/" + QR + ".jpg"));
     }
 
-    public static void mkdirs(String destPath){
-        File file = new File(destPath);
-        if(!file.exists() && !file.isDirectory()){
-            file.mkdirs();
-        }
-    }
+
 
     public static void main(String[] args) {
-        // 查询 所有可用的QR码
-
-
-        // 循环制造qr码标签
-
         try {
         	QRCodeUtil.encode("JPQR123457","D:\\QR\\bg.png", "D:\\QR\\logo.png","D:\\QR\\dest");
         } catch (Exception e) {

@@ -194,11 +194,11 @@ public class TestAppOrderController {
         orderBaggageReqData2.setImgurlList(imgurlList2);
         orderBaggageReqDataList.add(orderBaggageReqData1);
         orderBaggageReqDataList.add(orderBaggageReqData2);
-        data.setOrderBaggageReqDataList(orderBaggageReqDataList);
+//        data.setOrderBaggageReqDataList(orderBaggageReqDataList);
 
         OrderRole orderorle = new OrderRole();
         orderorle.setRoleid(1);
-        data.setOrderrole(orderorle);
+        data.setOrderRole(orderorle);
 //         APP 订单生成接口 end
         
         // App 订单状态修改为已经支付 start
