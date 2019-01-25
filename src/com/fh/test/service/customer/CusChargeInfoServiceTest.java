@@ -37,8 +37,10 @@ public class CusChargeInfoServiceTest extends BaseTest {
     
     @org.junit.Test
     public void insertQRCode() throws Exception {
-    	PageData pd = new PageData();
-    	for (int i = 0; i < 10000; i++) {			
+        PageData pd = new PageData();
+    	for (int i = 0; i < 100; i++) {
+    	    Integer temp = 100000;
+            pd.put("qrcode", temp ++);
     		orderInfoService.insertQRCode(pd);
 		}
     }

@@ -1,6 +1,7 @@
 package com.fh.entity.app.order;
 
 import com.fh.entity.customer.CusInfo;
+import com.fh.entity.delivery.AppUser;
 import com.fh.entity.order.*;
 
 import java.util.List;
@@ -26,6 +27,9 @@ public class AppSaveOrderInfoReqData {
 	 * qr + 图片url
 	 */
 	private List<OrderBaggageReqData> orderBaggageReqDataList;
+
+	/* 下单人员信息 */
+	private OrderRole orderrole;
 
 
 	/**
@@ -103,5 +107,13 @@ public class AppSaveOrderInfoReqData {
 
 	public void setOrderBaggageReqDataList(List<OrderBaggageReqData> orderBaggageReqDataList) {
 		this.orderBaggageReqDataList = orderBaggageReqDataList;
+	}
+
+	public OrderRole getOrderrole() {
+		return orderrole;
+	}
+
+	public void setOrderrole(OrderRole orderrole) {
+		this.orderrole = orderrole;
 	}
 }

@@ -59,6 +59,8 @@ public class OrderMainService
 	private CouponInfoService couponInfoService;
 	@Autowired
     private OrderBaggageService orderBaggageService;
+	@Autowired
+	private OrderInfoService orderInfoService;
 
 	
 	
@@ -286,6 +288,17 @@ public String saveAppOrder(AppSaveOrderInfoReqData saveOrderInfoReqBean)throws E
 			orderBaggageService.insertQRAndImgUrl(orderBaggageReqData);
         }
     }
+
+    // 如果是已取件则需要在orderrole 增加一条记录
+    if(ORDER_STATUS.TAKEGOOGSOVER.getValue().equals(orderStatus)) {
+		OrderRole orderRole = saveOrderInfoReqBean.getOrderrole();
+		orderRole.setOrderid(orderId);
+		orderRole.setRoletype(ROLE_TYPE.ROLE_AIRPORT_TASKED.getValue());
+		orderRole.setIsfinish(IS_FINISH.FINISHED.getValue());
+		orderRole.setActionfinishtime(DateUtil.format(new Date(), "yyyy-MM-dd HH:mm"));
+		dao.save("OrderRoleMapper.insert", orderRole);
+	}
+
 
     return orderno;
 }
