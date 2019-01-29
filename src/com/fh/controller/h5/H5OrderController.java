@@ -2,13 +2,17 @@ package com.fh.controller.h5;
 
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
+import com.fh.util.HttpUtils;
 import oracle.net.aso.h;
 
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.http.HttpResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -1108,6 +1112,48 @@ public class H5OrderController extends BaseController{
 		    return new Gson().toJson(rtBean);
 		}
 	}
+	/**
+	 * @desc 语音验证码
+	 * @auther zhangjj
+	 * @date 2018年4月10日
+	 */
+	@ResponseBody
+	@RequestMapping(value="/h5VoiceNotification", produces = "application/json;charset=UTF-8" )
+	public String h5VoiceNotification( @RequestBody AppRequestBean reqParm ){
+		AppResponseBean rtBean = doH5Validate(reqParm);
+		CusGenerateVerify reqBean = (CusGenerateVerify)new Gson().fromJson(reqParm.getData(), CusGenerateVerify.class);
+		if(reqBean == null) {
+			rtBean.setCode(APP_RESPONSE_CODE.FAIL.getValue());
+			rtBean.setMsg( "请求参数转换异常" );
+			return new Gson().toJson(rtBean);
+		}
+
+		try {
+			// 校验
+			ExceptionUtil.checkNotEmpty(reqBean.getMobile(), "手机号不能为空");
+			// 随机生成四位验证码
+			Integer num = (int)(Math.random()*9000)+1000;
+			PageData pd = new PageData();
+			pd.put("mobile", reqBean.getMobile());
+			pd.put("valicode", num);
+			valiCodeService.save(pd);
+			//发送验证码
+			voiceAuthenticationCode(reqBean.getMobile(),num+"");
+			rtBean.setCode(APP_RESPONSE_CODE.SUCCESS.getValue());
+            rtBean.setMsg("语音验证码发送成功");
+            return new Gson().toJson(rtBean);
+		} catch (RulesCheckedException e) {
+            logger.error("语音验证码校验异常:" + e.getMessage());
+            rtBean.setCode(APP_RESPONSE_CODE.CHECK.getValue());
+            rtBean.setMsg("语音验证码校验异常：" + e.getMessage());
+            return new Gson().toJson(rtBean);
+		} catch (Exception ex) {
+			logger.error("语音验证码证非预期异常:" + ex.getLocalizedMessage());
+			rtBean.setCode(APP_RESPONSE_CODE.FAIL.getValue());
+			rtBean.setMsg( "语音验证码非预期异常" );
+		    return new Gson().toJson(rtBean);
+		}
+	}
 	
 	/**
 	 * @desc 手动存储提取码
@@ -1315,7 +1361,7 @@ public class H5OrderController extends BaseController{
 		String json = new Gson().toJson(rtBean);
 		return json;
 	}
-	
+
 	/**
 	 * @desc 客户领取优惠卷 reqBean转实体
 	 * @auther zhangjj
@@ -1398,5 +1444,29 @@ public class H5OrderController extends BaseController{
 		H5OrderInvoiceInfoResBean resBean = new H5OrderInvoiceInfoResBean();
 		BeanUtils.copyProperties(resBean, orderInvoiceInfo);
 		return resBean;
+	}
+
+	/**
+	 * 唐启铭
+	 * 语音验证码
+	 * 2019年1月25日
+	 */
+	private void voiceAuthenticationCode(String mobile,String valicode){
+		String host = "https://yyyzm.market.alicloudapi.com";
+		String path = "/chuangxin/yyyzm";
+		String method = "POST";
+		String appcode = "7ea52ec1d6144aa58ccd2094c212773a";
+		Map<String, String> headers = new HashMap<String, String>();
+		//最后在header中的格式(中间是英文空格)为Authorization:APPCODE 83359fd73fe94948385f570e3c139105
+		headers.put("Authorization", "APPCODE " + appcode);
+		Map<String, String> querys = new HashMap<String, String>();
+		querys.put("content", valicode);
+		querys.put("mobile", mobile);
+		Map<String, String> bodys = new HashMap<String, String>();
+		try {
+			HttpResponse response = HttpUtils.doPost(host, path, method, headers, querys, bodys);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 }

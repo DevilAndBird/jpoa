@@ -39,7 +39,7 @@ import com.google.gson.Gson;
  */
 public class H5JunitTest extends BaseTest {
 
-	public   String urlHeader = "http://localhost/jpoa/";// 地址头
+	public   String urlHeader = "http://localhost:8080/jpoa/";// 地址头
 //	public  String urlHeader = "http://47.96.186.145/jpoa/";//测试服务器
 	
 	 @Test
@@ -61,6 +61,17 @@ public class H5JunitTest extends BaseTest {
         data.setIdno("3WER");
         data.setMobile("14751684265");
         data.setVerify("5153");
+        commonTest(urlHeader,new Gson().toJson(data));
+    }
+
+    /**
+     * 语音验证码
+     */
+    @Test
+    public void h5VoiceNotification() {
+        urlHeader+="h5order/h5VoiceNotification";
+        CusInfo data  = new CusInfo();
+        data.setMobile("15300870760");
         commonTest(urlHeader,new Gson().toJson(data));
     }
 	
