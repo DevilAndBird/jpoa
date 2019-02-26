@@ -41,6 +41,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.*;
 
 /**
@@ -753,6 +754,8 @@ public class OrderInfoService {
 
 				extramoney = (float) (num * startingmoney - startingmoney);//第一件行李免费
 				basemoney = totalmoney - prem - extramoney - cutmoney;
+				BigDecimal bigDecimal = new BigDecimal(basemoney);
+				basemoney =  bigDecimal.setScale(2,BigDecimal.ROUND_HALF_UP).floatValue();
 				lugBaseCost.put("基础运费", basemoney + "");
 			}else{
 			    // 基础运费
