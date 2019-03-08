@@ -595,10 +595,11 @@ public class OrderInfoService {
 
 	@SuppressWarnings("all")
 	public String notifyAppCus(AppOrderReqData appOrderReqData) throws Exception{
-		PageData pd = new PageData();
-		UserDeliveryMan userDeliveryMan  = (UserDeliveryMan) dao.findForObject("UserDeliveryManMapper.findDmanByuserid", appOrderReqData.getRoleid());    
+		// 订单号获取
+		OrderMainSpec orderMainSpec = (OrderMainSpec) dao.findForObject("OrderMainMapper.findOrderInfoByid", appOrderReqData.getId());
+		UserDeliveryMan userDeliveryMan  = (UserDeliveryMan) dao.findForObject("UserDeliveryManMapper.findDmanByuserid", appOrderReqData.getRoleid());
 		List<PageData>  checkCount =(List<PageData>) dao.findForList("OrderRoleMapper.findOrderRoleById", appOrderReqData); 
-		if(CollectionUtils.isEmpty(checkCount)){			
+		if(CollectionUtils.isEmpty(checkCount)){
 			PageData openid =   (PageData) dao.findForObject("OrderMainMapper.findOpenidByOrderid", appOrderReqData.getId());    
 			openid.put("udmname", userDeliveryMan.getName());
 			openid.put("regionname", userDeliveryMan.getRegionname());
@@ -608,7 +609,7 @@ public class OrderInfoService {
 				// 公众号信息通知
 				WeixinUtil.orderStatus(openid, "即将到达");
 				// 发送短消息
-				smsSendService.smsTemplateSend("{'mobile':'"+ (String) openid.getString("mobile") +"','header': '"+ MsgOfTmpCode.SMS_HEADER +"', 'dmanname':'"+ userDeliveryMan.getName() +"','dmanmobile':'"+ userDeliveryMan.getMobile() +"', 'smscode':'X017'}");
+				smsSendService.smsTemplateSend("{'orderno':'"+ orderMainSpec.getOrderno() +"','mobile':'"+ (String) openid.getString("mobile") +"','header': '"+ MsgOfTmpCode.SMS_HEADER +"', 'dmanname':'"+ userDeliveryMan.getName() +"','dmanmobile':'"+ userDeliveryMan.getMobile() +"', 'smscode':'X017'}");
 			}catch(Exception e) {
 				LoggerUtil.warn("消息通知发送失败,消息编码：X017", e);
 			}
@@ -1320,7 +1321,19 @@ public class OrderInfoService {
      * @date 2018年11月09日
      */
     public void updateTaketimeOrSendTime(OrderMainSpec orderMainSpec) throws Exception {
+    	// 订单寄件时间修改
         dao.update("OrderMainMapper.updateTaketimeOrSendTime", orderMainSpec);
+
+        // 更改动作寄件时间 or 收件时间
+		OrderRole orderrole = new OrderRole();
+        orderrole.setOrderid(orderMainSpec.getId());
+        if(StringUtils.isNotBlank(orderMainSpec.getTaketime())) {
+            orderrole.setArrivedtime(orderMainSpec.getTaketime());
+            dao.update("OrderRoleMapper.updateArrivedtimeByTask", orderrole);
+        } else if (StringUtils.isNotBlank(orderMainSpec.getSendtime())) {
+            orderrole.setArrivedtime(orderMainSpec.getSendtime());
+            dao.update("OrderRoleMapper.updateArrivedtimeBySend", orderrole);
+        }
     }
 
 }

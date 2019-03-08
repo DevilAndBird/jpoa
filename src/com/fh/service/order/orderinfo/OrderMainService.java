@@ -16,6 +16,7 @@ import com.fh.entity.app.transitcenter.TransitOrderReqData;
 import com.fh.entity.app.transitcenter.TransitOrderResData;
 import com.fh.entity.customer.CusCouponInfo;
 import com.fh.entity.customer.CusInfo;
+import com.fh.entity.delivery.AppUser;
 import com.fh.entity.delivery.TaskMainDriver;
 import com.fh.entity.delivery.UserDeliveryMan;
 import com.fh.entity.h5.H5OrderInfo;
@@ -405,12 +406,15 @@ public String saveAppOrder(AppSaveOrderInfoReqData saveOrderInfoReqBean)throws E
         
       
         try {
+			// 查询取派员的信息
+			AppUser appUser = (AppUser) dao.findForObject("AppUserMapper.findUserInfoByid", roleid);
+
         	PageData ordermain =   (PageData) dao.findForObject("OrderMainMapper.findOpenidByOrderid", orderid);  
             ordermain.put("actionfinishtime", DateUtil.getTime());
         	// 公众号通知
             WeixinUtil.deliverySucc(ordermain);
             // 短信通知
-			smsSendService.smsTemplateSend("{'mobile':'"+ (String) ordermain.getString("mobile") +"','header': '"+ MsgOfTmpCode.SMS_HEADER +"', 'destlandmark':'"+ orderAddress.getDestlandmark() +"','smscode':'X020'}");
+			smsSendService.smsTemplateSend("{'dmanmobile':'"+ appUser.getMobile() +"','mobile':'"+ (String) ordermain.getString("mobile") +"','header': '"+ MsgOfTmpCode.SMS_HEADER +"', 'destlandmark':'"+ orderAddress.getDestlandmark() +"','smscode':'X020'}");
 		}catch(Exception e) {
 			LoggerUtil.warn("消息通知发送失败,消息编码：X020", e);
 		}

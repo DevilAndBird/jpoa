@@ -158,13 +158,23 @@
 	<!--  推送给机场柜台  -->
 	<select id="pushInfoUserAllDmangui" resultType="Integer" useCache="false">
 		SELECT
-			au.id							
+			au.id
 		FROM
 			app_user au
 		WHERE 1=1
 			AND au.isvalid = 'Y'
-			AND au.type = 'SERVICE_CENTER'	
+			AND au.type = 'SERVICE_CENTER'
 	</select>
-	
+
+
+	<!--  根据id查询角色信息  -->
+	<select id="findUserInfoByid" parameterType="Integer" resultType="AppUser" useCache="false">
+		SELECT
+			au.mobile
+		FROM
+			app_user au
+		WHERE 1=1
+			AND au.id = #{appuserid}
+	</select>
 	
 </mapper>

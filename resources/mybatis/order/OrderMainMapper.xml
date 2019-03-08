@@ -1831,5 +1831,32 @@
 			om.id = #{id}
 		WHERE om.id = #{id}
 	</update>
+
+	<!-- 根据订单id查询订单信息 zhangjj -->
+	<select id="findOrderInfoByid" parameterType="Integer" resultType="OrderMainSpec">
+		SELECT
+			orderno
+		FROM
+			order_main om
+		WHERE 1=1
+			AND om.id = #{orderid}
+	</select>
+
+
+	<!-- 订单更新寄件方式 -->
+	<update id="updatMailingOrbackway" parameterType="OrderMainSpec">
+		UPDATE
+			order_main om
+		SET
+		<if test="mailingway !=null and mailingway != ''">
+			om.mailingway = #{mailingway},
+		</if>
+		<if test="backway !=null and backway != ''">
+			om.backway = #{backway},
+		</if>
+		om.id = #{id}
+		WHERE
+			om.id = #{id}
+	</update>
 </mapper>
 
