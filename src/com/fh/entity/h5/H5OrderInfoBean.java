@@ -87,6 +87,9 @@ public class H5OrderInfoBean {
 	 * 是否开发票 
 	 */
 	private String neadinvoice;
+
+	private String payStatus;
+
 	public Integer getId() {
 		return id;
 	}
@@ -236,5 +239,13 @@ public class H5OrderInfoBean {
 	}
 	public void setChannel(String channel) {
 		this.channel = channel;
+	}
+
+	public String getPayStatus() {
+		return payStatus;
+	}
+
+	public void setPayStatus(String payStatus) {
+		this.payStatus = payStatus;
 	}
 }

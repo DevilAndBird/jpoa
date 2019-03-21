@@ -85,7 +85,7 @@ public class BaseController {
 			rtBean.setMsg( "参数体为空" );
 		}
 		// 生产使用
-		Object object = RedisUtil.get(param.getUser());
+		/*Object object = RedisUtil.get(param.getUser());
 		if(object==null){
 			rtBean.setCode( APP_RESPONSE_CODE.LOGINERROR.getValue() );
 			rtBean.setMsg( "登陆超时" );
@@ -95,7 +95,7 @@ public class BaseController {
 		if( !sign.equalsIgnoreCase( param.getSign())){
 			rtBean.setCode( APP_RESPONSE_CODE.LOGINERROR.getValue() );
 	     	rtBean.setMsg( "登陆超时" );
-	 	}
+	 	}*/
 		return rtBean;
 	}
 	

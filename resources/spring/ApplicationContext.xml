@@ -18,8 +18,8 @@
 	    <property name="locations">
 	        <list>
 	            <!-- 配置汇总 -->
- 		 	    <value>classpath:overallconfig_prd.properties</value> 
-<!--             	<value>classpath:overallconfig_dev.properties</value>    -->
+ 		 	    <!--<value>classpath:overallconfig_prd.properties</value> -->
+             	<value>classpath:overallconfig_dev.properties</value>
 	            <!-- 推送模板 -->
 	            <value>classpath:thirdconfig/jiguang/pushTemplate.properties</value>
 	        </list>
