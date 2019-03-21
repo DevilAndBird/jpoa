@@ -211,9 +211,17 @@ public String saveAppOrder(AppSaveOrderInfoReqData saveOrderInfoReqBean)throws E
 	String orderno = "JPWX" + worker.getDefaultFormatId();
 	orderMain.setOrderno( orderno );
 	// 订单类型
-	String orderStatus = ORDER_STATUS.WAITPICK.getValue();
-	if(CollectionUtils.isNotEmpty(saveOrderInfoReqBean.getOrderBaggageReqDataList())) {
-		orderStatus = StringUtils.isNotBlank(saveOrderInfoReqBean.getOrderBaggageReqDataList().get(0).getBaggageid())? ORDER_STATUS.TAKEGOOGSOVER.getValue() : ORDER_STATUS.WAITPICK.getValue();
+	String orderStatus = ORDER_STATUS.TAKEGOOGSOVER.getValue();
+	List<OrderBaggageReqData> orderBaggageReqDataList1 = saveOrderInfoReqBean.getOrderBaggageReqDataList();
+	if(CollectionUtils.isNotEmpty(orderBaggageReqDataList1)) {
+		for (OrderBaggageReqData orderBaggageReqData : orderBaggageReqDataList1) {
+			if(StringUtils.isBlank(orderBaggageReqData.getBaggageid())||CollectionUtils.isEmpty(orderBaggageReqData.getImgurlList())){
+				orderStatus=ORDER_STATUS.WAITPICK.getValue();
+			}
+		}
+//		orderStatus = StringUtils.isNotBlank(orderBaggageReqDataList1.get(0).getBaggageid())? ORDER_STATUS.TAKEGOOGSOVER.getValue() : ORDER_STATUS.WAITPICK.getValue();
+	}else{
+		orderStatus=ORDER_STATUS.WAITPICK.getValue();
 	}
 	orderMain.setStatus(orderStatus);
 	// 订单类型
@@ -263,7 +271,7 @@ public String saveAppOrder(AppSaveOrderInfoReqData saveOrderInfoReqBean)throws E
 	dao.save( "OrderPayInfoMapper.insertOrderPayInfo", orderPayInfo);
 
 	// qr + 图片
-    List<OrderBaggageReqData> orderBaggageReqDataList = saveOrderInfoReqBean.getOrderBaggageReqDataList();
+    List<OrderBaggageReqData> orderBaggageReqDataList = orderBaggageReqDataList1;
 
     if(CollectionUtils.isNotEmpty(orderBaggageReqDataList)) {
         // 校验是否有重复qr码
@@ -659,10 +667,10 @@ public String saveAppOrder(AppSaveOrderInfoReqData saveOrderInfoReqBean)throws E
      * @history 2018年04月10日
      */
 	@SuppressWarnings("unchecked")
-	public List<OrderRole> queryStatusByOrderId( Integer orderid, String baggageid ) throws Exception {
+	public List<OrderRole> queryStatusByOrderId( Integer orderid, String orderno ) throws Exception {
 	    PageData pd = new PageData();
 	    pd.put("orderid", orderid);
-	    pd.put("baggageid", baggageid);
+		pd.put("orderno", orderno);
         return (List<OrderRole>) dao.findForList("OrderRoleMapper.queryStatusByOrderId", pd);
     }
 	
@@ -706,10 +714,10 @@ public String saveAppOrder(AppSaveOrderInfoReqData saveOrderInfoReqBean)throws E
      * @author sunqp
      * @history 2018年04月10日
      */
-	public H5OrderInfo getH5OrderInfo( Integer orderid, String baggageid) throws Exception {
+	public H5OrderInfo getH5OrderInfo( Integer orderid, String orderno) throws Exception {
         PageData pd = new PageData();
         pd.put( "orderid", orderid );
-        pd.put("baggageid", baggageid);
+        pd.put("orderno", orderno);
         return (H5OrderInfo) dao.findForObject("OrderMainMapper.getH5OrderInfo", pd);
     }
 	

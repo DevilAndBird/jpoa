@@ -1667,6 +1667,9 @@
 			<if test=" baggageid != null and baggageid != ''">
 				and om.id = (SELECT oBaggage.orderid FROM order_baggage oBaggage WHERE oBaggage.baggageid = #{baggageid} limit 1)
 			</if>
+			<if test="orderno != null and orderno != ''">
+				AND om.orderno = #{orderno}
+			</if>
 	</select>
 	
 	
