@@ -84,11 +84,8 @@
 						<thead>
 							<tr>
 								<th class="center">序号</th>
-							<!-- 	<th class="center">用户名</th>
-								<th class="center">手机号码</th> -->
 								<th class="center">订单号</th>
 								<th class="center">订单来源</th>
-							<!-- 	<th class="center">合作伙伴订单号</th> -->
 								<th class="center">寄件人姓名</th>
 								<th class="center">寄件人电话</th>
 								<th class="center">支付状态</th>
@@ -117,8 +114,6 @@
 										varStatus="vs">
 										<tr>
 											<td class="center">${vs.index+1}</td>
-										<%-- 	<td class="center">${orderInfo.cusname}</td>
-											<td class="center">${orderInfo.cusmobile}</td> --%>
 											<td class="center">${orderInfo.orderno}</td>
 											<td class="center">${orderInfo.channeldesc}</td>
 											<%-- <td class="center">${orderInfo.porderno}</td> --%>
@@ -159,9 +154,6 @@
 												<img  onclick="selectDetail(this)" src='/jpoa/static/img/details_24px.png'>
 												<input type='hidden' value='${orderInfo.id}' />
 											</td>
-											<%-- <td class="center">
-												<a onclick="showAddPage(${orderInfo.id})" class='btn btn-mini btn-info' >分配</a>
-											</td> --%>
 										</tr>
 									</c:forEach>
 								</c:when>

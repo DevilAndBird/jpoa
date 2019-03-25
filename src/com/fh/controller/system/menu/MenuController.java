@@ -32,7 +32,6 @@ public class MenuController extends BaseController {
 	
 	/**
 	 * 显示菜单列表
-	 * @param model
 	 * @return
 	 */
 	@RequestMapping
@@ -51,7 +50,6 @@ public class MenuController extends BaseController {
 	
 	/**
 	 * 请求新增菜单页面
-	 * @param model
 	 * @return
 	 */
 	@RequestMapping(value="/toAdd")
@@ -70,7 +68,6 @@ public class MenuController extends BaseController {
 	/**
 	 * 保存菜单信息
 	 * @param menu
-	 * @param model
 	 * @return
 	 */
 	@RequestMapping(value="/add")
@@ -202,7 +199,6 @@ public class MenuController extends BaseController {
 	
 	/**
 	 * 获取当前菜单的所有子菜单
-	 * @param menuId
 	 * @param response
 	 */
 	@RequestMapping(value="/sub")
@@ -225,7 +221,6 @@ public class MenuController extends BaseController {
 	
 	/**
 	 * 删除菜单
-	 * @param menuId
 	 * @param out
 	 */
 	@RequestMapping(value="/del")

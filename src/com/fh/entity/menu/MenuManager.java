@@ -19,20 +19,20 @@ public class MenuManager {
     
     // dev start ==================================================
     // 第三方用户唯一凭证
-//    static final String  appId = "wx44636cc298fa4cad";
+    static final String  appId = "wx44636cc298fa4cad";
 //    // 第三方用户唯一凭证密钥
-//    static final String appSecret = "977f6fcef1aea65797e97e1bf1c06cb3";
+    static final String appSecret = "977f6fcef1aea65797e97e1bf1c06cb3";
 //    // 公众号域名
-//    static final String domainurl = "dat.porterme.cn";
+    static final String domainurl = "dat.porterme.cn";
    // dev end ======================================================
 	
 	// prd start ==================================================
     // 第三方用户唯一凭证
-    static final String appId = "wxd4209fdab3d66847";
+    /*static final String appId = "wxd4209fdab3d66847";
     // 第三方用户唯一凭证密钥
     static final String appSecret = "64819f738126f4b7389c311b72193d58";
     // 公众号域名
-    static final String domainurl = "wx.porterme.cn";
+    static final String domainurl = "wx.porterme.cn";*/
     // prd end ====================================================== 
 
     public static void main(String[] args) {
@@ -41,7 +41,7 @@ public class MenuManager {
         
 //        if (null != at) {
             // 调用接口创建菜单
-            int result = WeixinUtil.createMenu(getMenu(), "16_ml8kfr44Nrf9E6jxq8d2hq8nXt9QZ387bKWdARtj9SZ8nUxPO_veroST08zqvdCOXnZDYgEBO7THP7WIhPpDyMCAqSJLNqPgQoi8_Mq2lBU5VVaL3Bh4_nhCLloQgUW7z5FcZEZrScjKVCTpSEJgAEAIUZ");
+            int result = WeixinUtil.createMenu(getMenu(), "19_1TXsS_YDdguwh8ORKqqkUHNKG1uNlzBE2sl_OyAeNpSkszpizwqitImAdsoL-NA1ne-KkEMobsTOGNTTwKesbSKPcju_U_79zlMCr37nq5JELHBNJ0Cr4QUj7KeaNyFqaGBR4Ant4Z0qJ5BcLQHdAFAPUL");
 //
             // 判断菜单创建结果
             if (0 == result)
@@ -85,7 +85,7 @@ public class MenuManager {
         CommonButton btn35 = new CommonButton();
         btn35.setName("查看物流");
         btn35.setType("view");
-        btn35.setUrl("http://wx.porterme.cn/wx/order_logistics.html");
+        btn35.setUrl("http://"+domainurl+"/wx/order_logistics.html");
         
         CommonButton btn21 = new CommonButton();
         btn21.setName("服务指南");
