@@ -837,6 +837,111 @@ public class OrderInfoService {
 		}
 
 		return appOrderDetailsResData;
+	}/**
+	 * @desc web_订单详情查询
+	 * @auther zhangjj
+	 * @history 2018年2月28日
+	 */
+	@SuppressWarnings("all")
+	public AppOrderDetailsResData findWebAppOrderDetails(AppOrderDetailsReqData appOrderDetailsReqData) throws Exception {
+		AppOrderDetailsResData appOrderDetailsResData = (AppOrderDetailsResData) dao.findForObject("OrderMainMapper.findAppOrderDetails", appOrderDetailsReqData);
+		ExceptionUtil.checkNotNull(appOrderDetailsResData,"未查出订单基本信息,请检查入参是否正确");
+		List<String> queryDetailsType = appOrderDetailsReqData.getQueryDetailsType();
+		// 如果详情查询类型为空，则只查询最基本的订单信息
+		if (CollectionUtils.isEmpty(queryDetailsType)) {
+			return appOrderDetailsResData;
+		}
+		// 寄件人收件人信息
+		if (queryDetailsType.contains(QUERY_ORERYDETAILS_TYPE.ORDERSENDERRECEIVER.getValue())) {
+			OrderSenderReceiver orderSenderReceiver = (OrderSenderReceiver) dao.findForObject("OrderSenderReceiverMapper.findByOrderid", appOrderDetailsResData.getId());
+			appOrderDetailsResData.setOrderSenderReceiver(orderSenderReceiver);
+		}
+		// 查询QR码+图片路径信息
+		if (queryDetailsType.contains(QUERY_ORERYDETAILS_TYPE.ORDERBAGAGE.getValue())) {
+			List<OrderBaggage> orderBaggageList = (List<OrderBaggage>) dao.findForList("OrderBaggageMapper.findByOrderid", appOrderDetailsResData.getId());
+			// 特殊处理
+			if(CollectionUtils.isNotEmpty(orderBaggageList)) {
+				for (OrderBaggage orderBaggage : orderBaggageList) {
+					String imgurl = orderBaggage.getImgurl();
+					if(StringUtils.isBlank(imgurl)) {
+						continue;
+					}
+					Map<String, Object> parseObject = JSONObject.parseObject(imgurl, Map.class);
+					OrderImgurl orderImgurl = new OrderImgurl();
+					// 收取行李照片
+					Object co = parseObject.get(IMGURL_BUSINESS_TYPE.COOLECT.getValue());
+					if(co != null) {
+						orderImgurl.setCOOLECT(JSONArray.parseArray(co.toString(), String.class));
+					}
+					// 释放行李照片
+					Object re= parseObject.get(IMGURL_BUSINESS_TYPE.RELEASE.getValue());
+					if(re != null) {
+						orderImgurl.setRELEASE(JSONArray.parseArray(re.toString(), String.class));
+					}
+					orderBaggage.setOrderImgurl(orderImgurl);
+				}
+			}
+
+			appOrderDetailsResData.setOrderBaggageList(orderBaggageList);
+		}
+
+		// 查询订单备份信息
+		if (queryDetailsType.contains(QUERY_ORERYDETAILS_TYPE.ORDERNOTES.getValue())) {
+			List<OrderNotesInfo> orderNotesInfoList = (List<OrderNotesInfo>) dao.findForList("orderNotesInfoMapper.findByOrderid", appOrderDetailsResData.getId());
+			appOrderDetailsResData.setOrderNotesInfoList(orderNotesInfoList);
+		}
+
+		// 查询航班信息
+		if (queryDetailsType.contains(QUERY_ORERYDETAILS_TYPE.ORDERFLIGHT.getValue())) {
+			OrderFlight orderFlight = (OrderFlight) dao.findForObject("OrderFlightMapper.findByOrderid", appOrderDetailsResData.getId());
+			appOrderDetailsResData.setOrderFlight(orderFlight);
+		}
+
+		// 查询客户信息
+		if (queryDetailsType.contains(QUERY_ORERYDETAILS_TYPE.ORDERCUS.getValue())) {
+			CusInfo cusInfo = (CusInfo) dao.findForObject("CusInfoMapper.getById", appOrderDetailsResData.getCusid());
+			appOrderDetailsResData.setCusInfo(cusInfo);
+		}
+
+		// 查询订单地址信息
+		if (queryDetailsType.contains(QUERY_ORERYDETAILS_TYPE.ORDERADDRESS.getValue())) {
+			OrderAddress orderAddress = (OrderAddress) dao.findForObject("orderAddressMapper.findByOrderid", appOrderDetailsResData.getId());
+			appOrderDetailsResData.setOrderAddress(orderAddress);
+		}
+
+
+		if(queryDetailsType.contains(QUERY_ORERYDETAILS_TYPE.ACTION_DETAILS.getValue())) {
+	        // 订单角色动作轨迹
+	        List<PageData> actionList = this.orderRoleTypeListPage(appOrderDetailsResData.getId());
+			appOrderDetailsResData.setActiondetail(actionList);
+		}
+
+		// 当前分配取派员信息
+		if (queryDetailsType.contains(QUERY_ORERYDETAILS_TYPE.ORDERDMAN.getValue())) {
+			List<OrderRole> orderRoleList = appOrderDetailsReqData.getOrderRoleList();
+			ExceptionUtil.checkNotNull(orderRoleList, "当订单详情查询类型为取派员时，角色动作必传");
+
+			List<UserDeliveryMan> userDeliveryManList = new ArrayList<UserDeliveryMan>();
+			for (OrderRole orderRole : orderRoleList) {
+				PageData pd = new PageData();
+				pd.put("orderid", appOrderDetailsResData.getId());
+				pd.put("roletype", orderRole.getRoletype());
+				pd.put("isfinish", orderRole.getIsfinish());
+				Integer roleid = (Integer) dao.findForObject("OrderRoleMapper.findRoleid", pd);
+
+				if (roleid == null) {
+					// 未查到该订单已经分配取派员
+					continue;
+				}
+
+				UserDeliveryMan userDeliveryMan = (UserDeliveryMan) dao.findForObject("UserDeliveryManMapper.findDmanByuserid", roleid);
+				if (userDeliveryMan != null) {
+					userDeliveryManList.add(userDeliveryMan);
+				}
+			}
+			appOrderDetailsResData.setUserDeliveryManList(userDeliveryManList);
+		}
+		return appOrderDetailsResData;
 	}
 	
 	/**

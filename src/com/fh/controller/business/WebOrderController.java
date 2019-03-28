@@ -13,6 +13,7 @@ import com.fh.entity.app.AppResponseBean;
 import com.fh.entity.app.counterservice.CheckAddrReqBean;
 import com.fh.entity.app.counterservice.CheckAddrResBean;
 import com.fh.entity.app.order.*;
+import com.fh.entity.business.WebOrderPageResBean;
 import com.fh.entity.configcenter.GoldPriceDetail;
 import com.fh.entity.configcenter.SpecialPriceDetail;
 import com.fh.entity.h5.H5CheckAddrResBean;
@@ -22,6 +23,7 @@ import com.fh.service.order.OrderBaggageService;
 import com.fh.service.order.OrderEvaluateService;
 import com.fh.service.order.orderinfo.OrderInfoService;
 import com.fh.service.order.orderinfo.OrderMainService;
+import com.fh.service.report.reportFormsService;
 import com.fh.util.ExceptionUtil;
 import com.fh.util.PageData;
 import com.fh.util.RulesCheckedException;
@@ -45,8 +47,11 @@ import java.util.Map;
 @Controller
 @RequestMapping(value = "weborder")
 public class WebOrderController extends BaseController {
+
 	@Autowired
 	private OrderInfoService orderInfoService;
+	@Autowired
+	private com.fh.service.report.reportFormsService reportFormsService;
 
 	/**
 	 * @desc web_订单列表查询
@@ -61,14 +66,17 @@ public class WebOrderController extends BaseController {
 			return gson.toJson(rtBean);
 		}
 		Page page = new Gson().fromJson(reqParm.getData().toString(), Page.class);
+		WebOrderPageResBean data = new WebOrderPageResBean();
 		if (page == null) {
 			rtBean.setCode(APP_RESPONSE_CODE.FAIL.getValue());
-			rtBean.setMsg("查询订单信息成功失败，原因是请求参数转换异常");
+			rtBean.setMsg("查询订单信息失败，原因是请求参数转换异常");
 			return gson.toJson(rtBean);
 		}
 		try {
-			List<PageData> pageData = orderInfoService.orderMainlistPage(page);
-			rtBean.setJsonData(new Gson().toJson(pageData));
+			List<PageData> pageList = orderInfoService.orderMainlistPage(page);
+			data.setPage(page);
+			data.setPageList(pageList);
+			rtBean.setJsonData(new Gson().toJson(data));
 			rtBean.setCode(APP_RESPONSE_CODE.SUCCESS.getValue());
 			rtBean.setMsg("查询订单列表信息成功");
 			return gson.toJson(rtBean);
@@ -76,6 +84,72 @@ public class WebOrderController extends BaseController {
 			logger.error("查询订单列表信息非预期异常:" + e);
 			rtBean.setCode(APP_RESPONSE_CODE.FAIL.getValue());
 			rtBean.setMsg("非预期异常，请联系IT");
+			return gson.toJson(rtBean);
+		}
+	}
+
+	/**
+	 * @desc web_订单详情查询
+	 * @auther tangqm
+	 * @history 2019年3月26日
+	 */
+	@ResponseBody
+	@RequestMapping(value = "/findWebOrderDetailList", produces = "application/json;charset=UTF-8")
+	public String findWebOrderDetailList(@RequestBody AppRequestBean reqParm) {
+		AppResponseBean rtBean = doValidate(reqParm);
+		if (!rtBean.getCode().equals(APP_RESPONSE_CODE.SUCCESS.getValue())) {
+			return gson.toJson(rtBean);
+		}
+		AppOrderDetailsReqData reqDetails = new Gson().fromJson(reqParm.getData().toString(), AppOrderDetailsReqData.class);
+		if (reqDetails == null) {
+			rtBean.setCode(APP_RESPONSE_CODE.FAIL.getValue());
+			rtBean.setMsg("查询订单详情失败，原因是请求参数转换异常");
+			return gson.toJson(rtBean);
+		}
+		try {
+			AppOrderDetailsResData resDetails = orderInfoService.findWebAppOrderDetails(reqDetails);
+			rtBean.setJsonData(new Gson().toJson(resDetails));
+			rtBean.setCode(APP_RESPONSE_CODE.SUCCESS.getValue());
+			rtBean.setMsg("查询订单详情信息成功");
+			return gson.toJson(rtBean);
+		} catch (Exception e) {
+			logger.error("查询订单详情信息非预期异常:" + e);
+			rtBean.setCode(APP_RESPONSE_CODE.FAIL.getValue());
+			rtBean.setMsg("非预期异常，请联系IT");
+			return gson.toJson(rtBean);
+		}
+	}
+
+	/**
+	 * @desc web_导出报表
+	 * @auther tangqm
+	 * @history 2019年3月26日
+	 */
+	@ResponseBody
+	@RequestMapping(value = "/outWebOrderMainExcel", produces = "application/json;charset=UTF-8")
+	public String outWebOrderMainExcel(@RequestBody AppRequestBean reqParm) {
+		AppResponseBean rtBean = doValidate(reqParm);
+		if (!rtBean.getCode().equals(APP_RESPONSE_CODE.SUCCESS.getValue())) {
+			return gson.toJson(rtBean);
+		}
+		Page page = new Gson().fromJson(reqParm.getData().toString(), Page.class);
+		WebOrderPageResBean data = new WebOrderPageResBean();
+		if (page == null) {
+			rtBean.setCode(APP_RESPONSE_CODE.FAIL.getValue());
+			rtBean.setMsg("导出EXCEL失败，原因是请求参数转换异常");
+			return gson.toJson(rtBean);
+		}
+		try {
+			List<PageData> reportForms = reportFormsService.reportFormslistPage(page);
+			data.setPageList(reportForms);
+			rtBean.setJsonData(new Gson().toJson(data));
+			rtBean.setCode(APP_RESPONSE_CODE.SUCCESS.getValue());
+			rtBean.setMsg("导出EXCEL成功");
+			return gson.toJson(rtBean);
+		} catch (Exception e) {
+			logger.error("导出EXCEL非预期异常:" + e);
+			rtBean.setCode(APP_RESPONSE_CODE.FAIL.getValue());
+			rtBean.setMsg("导出EXCEL非预期异常，请联系IT");
 			return gson.toJson(rtBean);
 		}
 	}

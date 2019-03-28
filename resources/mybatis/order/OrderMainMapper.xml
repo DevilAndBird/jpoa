@@ -856,9 +856,7 @@
 			order_main omain,
 			order_sender_receiver osr
 		WHERE 1=1 and osr.orderid = omain.id
-		<if test=" orderid != null and orderid != ''">
-			and omain.id = #{orderid}
-		</if>
+		and omain.id = #{orderid}
 		<if test=" orderno != null and orderno != ''">
 			and omain.orderno  LIKE '%${orderno}'
 		</if>

@@ -112,6 +112,7 @@ public class OrderInfoControl extends BaseController {
         
         //组装参数
         AppOrderDetailsReqData reqDetails = new AppOrderDetailsReqData();
+        Float.parseFloat((String)pd.get("id"));
         reqDetails.setOrderid(Integer.parseInt((String)pd.get("id")));
         List<String> queryDetailsType = new ArrayList<String>();
         // 客户信息
