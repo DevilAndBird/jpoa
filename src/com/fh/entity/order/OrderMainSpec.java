@@ -172,7 +172,13 @@ public class OrderMainSpec implements  Serializable{
     /** 备注 */
     private String remark;
 
-    public Integer getId() {
+    /* 案件编号 */
+    private String casenum;
+    /*  */
+    private String isbusiness;
+
+
+        public Integer getId() {
         return id;
     }
 
@@ -504,7 +510,27 @@ public class OrderMainSpec implements  Serializable{
 		return serialVersionUID;
 	}
 
-	@Override
+    public static long getSerialVersionUID() {
+        return serialVersionUID;
+    }
+
+    public String getCasenum() {
+        return casenum;
+    }
+
+    public void setCasenum(String casenum) {
+        this.casenum = casenum;
+    }
+
+    public String getIsbusiness() {
+        return isbusiness;
+    }
+
+    public void setIsbusiness(String isbusiness) {
+        this.isbusiness = isbusiness;
+    }
+
+    @Override
 	public String toString() {
 		return "OrderMainSpec [id=" + id + ", orderno=" + orderno
 				+ ", porderno=" + porderno + ", cusid=" + cusid + ", type="
