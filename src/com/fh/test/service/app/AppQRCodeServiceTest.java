@@ -17,9 +17,15 @@ public class AppQRCodeServiceTest extends BaseTest {
     /* 步骤：1 */
     @Test
     public void insert() throws Exception {
-        for (int a = 100000; a<=100100; a++) {
-            appQRCodeService.insert(a +"");
+        for (int a = 102101; a<=103100; a++) {
+            try {
+                appQRCodeService.insert(a +"");
+            } catch(Exception e) {
+
+            }
         }
+        /**/
+
     }
 
     /* 步骤：2 */
@@ -28,7 +34,7 @@ public class AppQRCodeServiceTest extends BaseTest {
         // 查询未用过的qr码
         List<String> qrlist = appQRCodeService.findQRCodeLimitPage();
         for (String qr : qrlist){
-            QRCodeUtil.encode("JPQR" + qr,"D:\\QR\\bg.png", "D:\\QR\\logo.png","D:\\QR\\dest");
+            QRCodeUtil.encode_("JPQR" + qr,"D:\\QR\\bg.png", "D:\\QR\\logo.png","D:\\QR\\dest");
         }
         // 失效
         appQRCodeService.update(qrlist);

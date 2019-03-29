@@ -5,16 +5,18 @@
 	<insert id="insert" parameterType="String">
 		INSERT INTO qr_code(
 			qrcode,
-			isvalid
+			isvalid,
+			addtime
 		) VALUE(
 			#{qrcode},
-			'Y'
+			'Y',
+			now()
 		)
 	</insert>
 
 
 	<select id="findQRCodeLimitPage" resultType="String" useCache="false">
-    	select qrcode  from qr_code where isvalid = 'Y'  limit 0,100
+    	select qrcode  from qr_code where isvalid = 'Y'  limit 0,2000
 	</select>
 	
 	<update id="update" parameterType="pd">

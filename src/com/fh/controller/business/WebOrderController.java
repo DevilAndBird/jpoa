@@ -52,6 +52,8 @@ public class WebOrderController extends BaseController {
 	private OrderInfoService orderInfoService;
 	@Autowired
 	private com.fh.service.report.reportFormsService reportFormsService;
+	@Autowired
+	private OrderMainService orderMainService;
 
 	/**
 	 * @desc web_订单列表查询
@@ -152,6 +154,41 @@ public class WebOrderController extends BaseController {
 			rtBean.setMsg("导出EXCEL非预期异常，请联系IT");
 			return gson.toJson(rtBean);
 		}
+	}
+
+	/**
+	 * @desc 企业下单订单
+	 * @auther zhangjj
+	 * @history 2019年3月29日
+	 */
+	@ResponseBody
+	@RequestMapping(value = "/create_order", produces = "application/json;charset=UTF-8")
+	public String create_order(@RequestBody AppRequestBean reqParm) {
+		AppResponseBean rtBean = doValidate(reqParm);
+		if (!rtBean.getCode().equals(APP_RESPONSE_CODE.SUCCESS.getValue())) {
+			return gson.toJson(rtBean);
+		}
+
+		AppSaveOrderInfoReqData saveOrderInfoReqBean = new Gson().fromJson(reqParm.getData().toString(), AppSaveOrderInfoReqData.class);
+		if (saveOrderInfoReqBean == null) {
+			rtBean.setCode(APP_RESPONSE_CODE.FAIL.getValue());
+			rtBean.setMsg("企业下单失败，原因是请求参数转换异常");
+			return gson.toJson(rtBean);
+		}
+
+		try {
+			orderMainService.saveEnterpriseOrder(saveOrderInfoReqBean);
+
+			rtBean.setCode(APP_RESPONSE_CODE.SUCCESS.getValue());
+			rtBean.setMsg("企业下单成功");
+			return gson.toJson(rtBean);
+		} catch (Exception e) {
+			logger.error("企业下单非预期异常:" + e);
+			rtBean.setCode(APP_RESPONSE_CODE.FAIL.getValue());
+			rtBean.setMsg("企业下单非预期异常，请联系IT");
+			return gson.toJson(rtBean);
+		}
+
 	}
 	
 }
