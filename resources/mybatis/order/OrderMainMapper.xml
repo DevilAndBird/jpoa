@@ -64,7 +64,9 @@
 			addtime,
 			modifytime,
 			isvalid,
-			remark)
+			remark,
+		casenum,
+		isbusiness)
 		VALUES (
 		    #{orderno},
 		    #{fetchcode},
@@ -84,7 +86,9 @@
 			now(),
 			now(),
 			'Y',
-			#{remark});
+			#{remark},
+			#{casenum},
+			#{isbusiness});
 	</insert>
 
 	<!-- 根据id查询订单 木桐 2018年3月4日19:49:45 -->
