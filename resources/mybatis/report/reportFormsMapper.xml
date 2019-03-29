@@ -108,6 +108,7 @@
 		( SELECT bcf.codename FROM base_config bcf WHERE bcf.codetype = 'orderType' AND bcf.`code` = om.type ) type,
 		om.remark,
 		( SELECT GROUP_CONCAT( DISTINCT ( oba.baggageid ) ) FROM order_baggage oba WHERE oba.orderid = om.id ) baggageid,
+		( SELECT GROUP_CONCAT( DISTINCT ( oni.notes ) ) FROM order_notes_info oni WHERE oni.orderid = om.id ) notes,
 		om.num,
 		ci.`name` cusname,
 		ci.idno,

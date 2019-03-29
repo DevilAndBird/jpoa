@@ -129,7 +129,6 @@
 		SELECT
 		om.id,
 		om.orderno,
-		om.flightno,
 		om.channel,
 		(select bc.codename from base_config bc where om.channel = bc.code and bc.codetype='ORDER_CHANNEL' ) channeldesc,
 		opi.status paystatus,

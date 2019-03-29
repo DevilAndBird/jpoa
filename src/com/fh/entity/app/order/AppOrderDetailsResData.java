@@ -21,68 +21,130 @@ import com.fh.util.PageData;
 public class AppOrderDetailsResData implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    /** 订单内部 */
+    /**
+     * 订单内部
+     */
     private Integer id;
-    /** 订单编码 */
+    /**
+     * 订单编码
+     */
     private String orderno;
     /** 订单类型：机-酒  酒-机 */
-    /** 渠道类型 */
+    /**
+     * 渠道类型
+     */
     private String channel;
     private String type;
-    /** 订单状态 */
+    /**
+     * 订单状态
+     */
     private String status;
-    /** 航班号 */
+    /**
+     * 航班号
+     */
     private String flightno;
-    /** 寄件方式 */
+    /**
+     * 寄件方式
+     */
     private String mailingway;
-    /** 收件方式 */
+    /**
+     * 收件方式
+     */
     private String backway;
-    /** 取件时间 */
+    /**
+     * 取件时间
+     */
     private String taketime;
-    /** 送件时间 */
+    /**
+     * 送件时间
+     */
     private String sendtime;
-    /** 寄件人姓名 */
+    /**
+     * 寄件人姓名
+     */
     private String sendername;
-    /** 寄件人号码 */
+    /**
+     * 寄件人号码
+     */
     private String senderphone;
-    /** 收件人姓名 */
+    /**
+     * 收件人姓名
+     */
     private String receivername;
-    /** 收件人号码 */
+    /**
+     * 收件人号码
+     */
     private String receiverphone;
-    /** 行李数 */
+    /**
+     * 行李数
+     */
     private Integer num;
-    /** 客户号 */
+    /**
+     * 客户号
+     */
     private Integer cusid;
-    /** 客户信息 */
+    /**
+     * 客户信息
+     */
     private CusInfo cusInfo;
-    /** 二维码+图片路径 */
+    /**
+     * 二维码+图片路径
+     */
     private List<OrderBaggage> orderBaggageList;
-    /** 备注信息 */
+    /**
+     * 备注信息
+     */
     private List<OrderNotesInfo> orderNotesInfoList;
-    /** 航班信息 */
+    /**
+     * 航班信息
+     */
     private OrderFlight orderFlight;
-    /** 订单地址信息 */
+    /**
+     * 订单地址信息
+     */
     private OrderAddress orderAddress;
-    /** 订单寄件收件地址 */
+    /**
+     * 订单寄件收件地址
+     */
     private OrderSenderReceiver orderSenderReceiver;
-    /** 取派员 */
+    /**
+     * 取派员
+     */
     private List<UserDeliveryMan> userDeliveryManList;
-    /** 去往的集散中心 */
+    /**
+     * 去往的集散中心
+     */
     private List<AppTransitCenter> appTransitCenterList;
-    /** 优惠卷 */
+    /**
+     * 优惠卷
+     */
     private Float cutmoney;
-    /** 实际支付金额 */
+    /**
+     * 实际支付金额
+     */
     private Float actualmoney;
-    /** 总金额 */
+    /**
+     * 总金额
+     */
     private Float totalmoney;
-    /** 备注 */
+    /**
+     * 备注
+     */
     private String remark;
     private OrderPriceDetatils orderPriceDetatils;
-    /** 订单状态描述 */
+    /**
+     * 订单状态描述
+     */
     private String statusDesc;
-    /** 动作类型 */
+    /**
+     * 动作类型
+     */
     private List<PageData> actiondetail;
-    
+    /**
+     * 案件编号
+     */
+    private String casenum;
+
     public Integer getId() {
         return id;
     }
@@ -122,7 +184,7 @@ public class AppOrderDetailsResData implements Serializable {
     public void setNum(Integer num) {
         this.num = num;
     }
-    
+
     public Integer getCusid() {
         return cusid;
     }
@@ -147,15 +209,15 @@ public class AppOrderDetailsResData implements Serializable {
         this.cusInfo = cusInfo;
     }
 
-	public List<OrderBaggage> getOrderBaggageList() {
-		return orderBaggageList;
-	}
+    public List<OrderBaggage> getOrderBaggageList() {
+        return orderBaggageList;
+    }
 
-	public void setOrderBaggageList(List<OrderBaggage> orderBaggageList) {
-		this.orderBaggageList = orderBaggageList;
-	}
+    public void setOrderBaggageList(List<OrderBaggage> orderBaggageList) {
+        this.orderBaggageList = orderBaggageList;
+    }
 
-	public OrderFlight getOrderFlight() {
+    public OrderFlight getOrderFlight() {
         return orderFlight;
     }
 
@@ -187,149 +249,149 @@ public class AppOrderDetailsResData implements Serializable {
         this.orderSenderReceiver = orderSenderReceiver;
     }
 
-	public List<AppTransitCenter> getAppTransitCenterList() {
-		return appTransitCenterList;
-	}
+    public List<AppTransitCenter> getAppTransitCenterList() {
+        return appTransitCenterList;
+    }
 
-	public void setAppTransitCenterList(List<AppTransitCenter> appTransitCenterList) {
-		this.appTransitCenterList = appTransitCenterList;
-	}
+    public void setAppTransitCenterList(List<AppTransitCenter> appTransitCenterList) {
+        this.appTransitCenterList = appTransitCenterList;
+    }
 
-	public String getMailingway() {
-		return mailingway;
-	}
+    public String getMailingway() {
+        return mailingway;
+    }
 
-	public void setMailingway(String mailingway) {
-		this.mailingway = mailingway;
-	}
+    public void setMailingway(String mailingway) {
+        this.mailingway = mailingway;
+    }
 
-	public String getTaketime() {
-		return taketime;
-	}
+    public String getTaketime() {
+        return taketime;
+    }
 
-	public void setTaketime(String taketime) {
-		this.taketime = taketime;
-	}
+    public void setTaketime(String taketime) {
+        this.taketime = taketime;
+    }
 
-	public String getSendtime() {
-		return sendtime;
-	}
+    public String getSendtime() {
+        return sendtime;
+    }
 
-	public void setSendtime(String sendtime) {
-		this.sendtime = sendtime;
-	}
+    public void setSendtime(String sendtime) {
+        this.sendtime = sendtime;
+    }
 
-	public String getBackway() {
-		return backway;
-	}
+    public String getBackway() {
+        return backway;
+    }
 
-	public void setBackway(String backway) {
-		this.backway = backway;
-	}
+    public void setBackway(String backway) {
+        this.backway = backway;
+    }
 
-	public String getSendername() {
-		return sendername;
-	}
+    public String getSendername() {
+        return sendername;
+    }
 
-	public void setSendername(String sendername) {
-		this.sendername = sendername;
-	}
+    public void setSendername(String sendername) {
+        this.sendername = sendername;
+    }
 
-	public String getSenderphone() {
-		return senderphone;
-	}
+    public String getSenderphone() {
+        return senderphone;
+    }
 
-	public void setSenderphone(String senderphone) {
-		this.senderphone = senderphone;
-	}
+    public void setSenderphone(String senderphone) {
+        this.senderphone = senderphone;
+    }
 
-	public String getReceivername() {
-		return receivername;
-	}
+    public String getReceivername() {
+        return receivername;
+    }
 
-	public void setReceivername(String receivername) {
-		this.receivername = receivername;
-	}
+    public void setReceivername(String receivername) {
+        this.receivername = receivername;
+    }
 
-	public String getReceiverphone() {
-		return receiverphone;
-	}
+    public String getReceiverphone() {
+        return receiverphone;
+    }
 
-	public void setReceiverphone(String receiverphone) {
-		this.receiverphone = receiverphone;
-	}
+    public void setReceiverphone(String receiverphone) {
+        this.receiverphone = receiverphone;
+    }
 
-	public String getFlightno() {
-		return flightno;
-	}
+    public String getFlightno() {
+        return flightno;
+    }
 
-	public void setFlightno(String flightno) {
-		this.flightno = flightno;
-	}
+    public void setFlightno(String flightno) {
+        this.flightno = flightno;
+    }
 
-	public float getActualmoney() {
-		return actualmoney;
-	}
+    public float getActualmoney() {
+        return actualmoney;
+    }
 
-	public void setActualmoney(float actualmoney) {
-		this.actualmoney = actualmoney;
-	}
+    public void setActualmoney(float actualmoney) {
+        this.actualmoney = actualmoney;
+    }
 
-	public static long getSerialversionuid() {
-		return serialVersionUID;
-	}
+    public static long getSerialversionuid() {
+        return serialVersionUID;
+    }
 
-	public String getRemark() {
-		return remark;
-	}
+    public String getRemark() {
+        return remark;
+    }
 
-	public void setRemark(String remark) {
-		this.remark = remark;
-	}
+    public void setRemark(String remark) {
+        this.remark = remark;
+    }
 
-	public OrderPriceDetatils getOrderPriceDetatils() {
-		return orderPriceDetatils;
-	}
+    public OrderPriceDetatils getOrderPriceDetatils() {
+        return orderPriceDetatils;
+    }
 
-	public void setOrderPriceDetatils(OrderPriceDetatils orderPriceDetatils) {
-		this.orderPriceDetatils = orderPriceDetatils;
-	}
+    public void setOrderPriceDetatils(OrderPriceDetatils orderPriceDetatils) {
+        this.orderPriceDetatils = orderPriceDetatils;
+    }
 
-	public String getChannel() {
-		return channel;
-	}
+    public String getChannel() {
+        return channel;
+    }
 
-	public void setChannel(String channel) {
-		this.channel = channel;
-	}
+    public void setChannel(String channel) {
+        this.channel = channel;
+    }
 
-	public Float getCutmoney() {
-		return cutmoney;
-	}
+    public Float getCutmoney() {
+        return cutmoney;
+    }
 
-	public void setCutmoney(Float cutmoney) {
-		this.cutmoney = cutmoney;
-	}
+    public void setCutmoney(Float cutmoney) {
+        this.cutmoney = cutmoney;
+    }
 
-	public void setActualmoney(Float actualmoney) {
-		this.actualmoney = actualmoney;
-	}
+    public void setActualmoney(Float actualmoney) {
+        this.actualmoney = actualmoney;
+    }
 
-	public Float getTotalmoney() {
-		return totalmoney;
-	}
+    public Float getTotalmoney() {
+        return totalmoney;
+    }
 
-	public void setTotalmoney(Float totalmoney) {
-		this.totalmoney = totalmoney;
-	}
+    public void setTotalmoney(Float totalmoney) {
+        this.totalmoney = totalmoney;
+    }
 
-	public String getStatusDesc() {
-		return statusDesc;
-	}
+    public String getStatusDesc() {
+        return statusDesc;
+    }
 
-	public void setStatusDesc(String statusDesc) {
-		this.statusDesc = statusDesc;
-	}
+    public void setStatusDesc(String statusDesc) {
+        this.statusDesc = statusDesc;
+    }
 
     public List<PageData> getActiondetail() {
         return actiondetail;
@@ -338,7 +400,14 @@ public class AppOrderDetailsResData implements Serializable {
     public void setActiondetail(List<PageData> actiondetail) {
         this.actiondetail = actiondetail;
     }
-	
+
+    public String getCasenum() {
+        return casenum;
+    }
+
+    public void setCasenum(String casenum) {
+        this.casenum = casenum;
+    }
 }
 
 
