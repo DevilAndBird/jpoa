@@ -133,16 +133,14 @@ public class WebOrderController extends BaseController {
 			return gson.toJson(rtBean);
 		}
 		Page page = new Gson().fromJson(reqParm.getData().toString(), Page.class);
-		WebOrderPageResBean data = new WebOrderPageResBean();
 		if (page == null) {
 			rtBean.setCode(APP_RESPONSE_CODE.FAIL.getValue());
 			rtBean.setMsg("导出EXCEL失败，原因是请求参数转换异常");
 			return gson.toJson(rtBean);
 		}
 		try {
-			List<PageData> reportForms = reportFormsService.reportFormslistPage(page);
-			data.setPageList(reportForms);
-			rtBean.setJsonData(new Gson().toJson(data));
+			List<PageData> reportForms = reportFormsService.reportFormslist(page.getPd());
+			rtBean.setJsonData(new Gson().toJson(reportForms));
 			rtBean.setCode(APP_RESPONSE_CODE.SUCCESS.getValue());
 			rtBean.setMsg("导出EXCEL成功");
 			return gson.toJson(rtBean);

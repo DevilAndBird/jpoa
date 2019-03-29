@@ -129,6 +129,7 @@
 		SELECT
 		om.id,
 		om.orderno,
+		om.flightno,
 		om.channel,
 		(select bc.codename from base_config bc where om.channel = bc.code and bc.codetype='ORDER_CHANNEL' ) channeldesc,
 		opi.status paystatus,
@@ -159,7 +160,8 @@
 		oaddr.scrlandmark,
 		oaddr.destlandmark,
 		date_format(om.taketime,'%Y-%m-%d %H:%i') taketime,
-		date_format(om.sendtime,'%Y-%m-%d %H:%i') sendtime
+		date_format(om.sendtime,'%Y-%m-%d %H:%i') sendtime,
+		om.casenum
 		FROM
 		order_main om,
 		order_address oaddr,
@@ -200,6 +202,9 @@
 		</if>
 		<if test="pd.paystatus != null and pd.paystatus != ''">
 			and opi.status = #{pd.paystatus}
+		</if>
+		<if test="pd.isbusiness != null and pd.isbusiness != ''">
+			and om.isbusiness = #{pd.isbusiness}
 		</if>
 		AND oaddr.srccityid = #{pd.loginperson_cityid}
 		/*AND om.status != 'WAITPAY'*/<!-- 不查询待支付订单 -->
@@ -817,6 +822,8 @@
 		SELECT
 			omain.id,
 			<!-- 订单编码 -->
+			omain.casenum,
+			omain.flightno,
 			omain.channel,
 			omain.orderno,
 			<!-- 类型:机-酒、酒-机 -->

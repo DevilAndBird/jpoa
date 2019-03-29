@@ -103,6 +103,8 @@
 		( SELECT bcf.codename FROM base_config bcf WHERE bcf.codetype = 'ORDER_CHANNEL' AND bcf.`code` = om.channel ) channeldesc,
 		CONCAT_WS( '-', oa.srccityname, oa.destcityname ) city,
 		om.orderno,
+		om.casenum,
+		om.flightno,
 		( SELECT bcf.codename FROM base_config bcf WHERE bcf.codetype = 'orderType' AND bcf.`code` = om.type ) type,
 		om.remark,
 		( SELECT GROUP_CONCAT( DISTINCT ( oba.baggageid ) ) FROM order_baggage oba WHERE oba.orderid = om.id ) baggageid,
@@ -182,6 +184,12 @@
 		</if>
 		<if test="endtime != null and endtime != ''">
 			and om.addtime &lt;= #{endtime}
+		</if>
+		<if test="isbusiness != null and isbusiness != ''">
+			and om.isbusiness = #{isbusiness}
+		</if>
+		<if test="name != null and name != ''">
+			and ci.name like '%${name}%'
 		</if>
 		 and oa.srccityid = #{loginperson_cityid}
 		 and om.isvalid ='Y'

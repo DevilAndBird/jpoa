@@ -1,5 +1,6 @@
 package com.fh.test.app.auxiliary.push;
 
+import com.fh.test.app.flowtest.WebJunitTest;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -63,24 +64,8 @@ public class AppPushInfoControllerTest  extends BaseTest{
     }
 	
 	public void commonTest(String url,String data) {
-		AppRequestBean bean = new AppRequestBean();
-		bean.setUser("wojiaotangqiming");
-		bean.setKey("JPWEIXIN");
-		bean.setTimestamp("" + System.currentTimeMillis());
-		
-		bean.setSign(MD5.md5("jingpei" + bean.getUser() + bean.getKey()
-				+ bean.getTimestamp()));
-		bean.setData(data);
-		Gson gson = new Gson();
-		String json = gson.toJson(bean);
-		System.out.println(json);
-		try {
-			String res = HttpClientUtil.doPostJson(url, json);
-			System.out.println(res);
-		} catch (Exception ex) {
-			ex.printStackTrace();
-		}
-	}
+        WebJunitTest.commonTest(url, data);
+    }
 
 	
 
