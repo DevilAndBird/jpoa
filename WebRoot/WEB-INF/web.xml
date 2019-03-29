@@ -165,4 +165,9 @@
 	<session-config>
 		<session-timeout>600</session-timeout>
 	</session-config>
+
+	<context-param>
+		<param-name>webAppRootKey</param-name>
+		<param-value>myapp.root</param-value>
+	</context-param>
 </web-app>

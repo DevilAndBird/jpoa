@@ -102,11 +102,11 @@ function editdmanAllocDetails() {
 		gps = "{'lng':'"+ temp3[0] +"','lat':'"+ temp3[1] +"'}";
 		
 		desttype = DESTINSATION_TYPE.SERVICECERTER.value;
-		
-		if(address == -1) {
-			toastr.warning('请选择/填写');
-			return;
-		}
+
+        if(address == -1) {
+                toastr.warning('请选择/填写');
+                return;
+        }
 	}
 	// 如果酒店
 	if(roletypeCharge == ORDER_ADDRESS_TYPE.HOTEL.value
@@ -125,6 +125,7 @@ function editdmanAllocDetails() {
 	var param = $("#addrType").val();
 	orderAddr = {};
 	orderAddr.id = $('#orderAddrId').val();
+    orderAddr.orderid = $('#orderid').val();
 	orderAddr.istrans = istrans;
 	if('SEND' == param) {
 		orderAddr.srcaddrtype = roletypeCharge;

@@ -877,6 +877,70 @@
 		 AND oro.orderid = #{orderid}
 		 AND (oro.roletype like '%TASK' OR oro.roletype like '%SEND')
 	</select>
+
+	<!--
+		更改最迟到达时间，取
+		zhangjj
+	 -->
+	<update id="updateArrivedtimeByTask" parameterType="OrderRole" >
+		UPDATE
+			order_role orole
+		SET
+			orole.arrivedtime = #{arrivedtime}
+		WHERE 1=1
+			AND orole.orderid = #{orderid}
+			AND (orole.roletype = 'ROLE_AIRPORT_TASK' OR orole.roletype = 'ROLE_HOTEL_TASK')
+	</update>
+
+	<!--
+		更改最迟到达时间，送
+		zhangjj
+	 -->
+	<update id="updateArrivedtimeBySend" parameterType="OrderRole" >
+		UPDATE
+			order_role orole
+		SET
+			orole.arrivedtime = #{arrivedtime}
+		WHERE 1=1
+			AND orole.orderid = #{orderid}
+			AND (orole.roletype = 'ROLE_AIRPORT_SEND' OR orole.roletype = 'ROLE_HOTEL_SEND')
+	</update>
+
+	<!--
+		更改地址信息，取
+		zhangjj
+	 -->
+	<update id="updateAddrByTask" parameterType="OrderRole" >
+		UPDATE
+			order_role orole
+		SET
+			orole.desttype = #{desttype},
+			orole.destaddress = #{destaddress},
+			orole.destaddrname = #{destaddrname},
+			orole.destaddrdesc = #{destaddrdesc},
+			orole.destgps = #{destgps}
+		WHERE 1=1
+			AND orole.orderid = #{orderid}
+			AND (orole.roletype = 'ROLE_AIRPORT_TASK' OR orole.roletype = 'ROLE_HOTEL_TASK')
+	</update>
+
+	<!--
+		更改地址信息，送
+		zhangjj
+	 -->
+	<update id="updateAddrBySend" parameterType="OrderRole" >
+		UPDATE
+			order_role orole
+		SET
+			orole.desttype = #{desttype},
+			orole.destaddress = #{destaddress},
+			orole.destaddrname = #{destaddrname},
+			orole.destaddrdesc = #{destaddrdesc},
+			orole.destgps = #{destgps}
+		WHERE 1=1
+			AND orole.orderid = #{orderid}
+			AND (orole.roletype = 'ROLE_AIRPORT_SEND' OR orole.roletype = 'ROLE_HOTEL_SEND')
+	</update>
 		
 </mapper>
 

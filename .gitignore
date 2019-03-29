@@ -2,6 +2,6 @@
 out/
 jpoa.iml
 WebRoot/plugins/ueditor/ueditor.iml
-resources/spring/ApplicationContext.xml
-src/com/fh/util/PropertiesUtils.java
-
+ApplicationContext.xml
+PropertiesUtils.java
+BaseController.java

@@ -18,6 +18,12 @@ import com.sun.image.codec.jpeg.JPEGCodec;
 import com.sun.image.codec.jpeg.JPEGImageDecoder;
 import com.sun.image.codec.jpeg.JPEGImageEncoder;
 import net.coobird.thumbnailator.builders.BufferedImageBuilder;
+import org.apache.avalon.framework.configuration.Configuration;
+import org.apache.avalon.framework.configuration.DefaultConfigurationBuilder;
+import org.krysalis.barcode4j.BarcodeGenerator;
+import org.krysalis.barcode4j.BarcodeUtil;
+import org.krysalis.barcode4j.output.bitmap.BitmapCanvasProvider;
+import sun.net.www.content.image.png;
 
 public class QRCodeUtil {
      
@@ -158,7 +164,27 @@ public class QRCodeUtil {
         }
     }
 
-    public static void encode(String QR, String backgroundPath, String qrLogoPath, String destPath) throws Exception{
+    // barcode4j
+    public static void generatePdf417Img(String QR) {
+        try {
+            DefaultConfigurationBuilder builder = new DefaultConfigurationBuilder();
+            Configuration cfg = builder.buildFromFile(new File("D:\\QR\\config.xml"));
+            BarcodeUtil barcodeUtil = BarcodeUtil.getInstance();
+            BarcodeGenerator barcodeGenerator = barcodeUtil.createBarcodeGenerator(cfg);
+
+            OutputStream out = new java.io.FileOutputStream(new File("D:\\QR\\pdf417\\"+ QR +".png"));
+            BitmapCanvasProvider provider = new BitmapCanvasProvider(
+                    out, "image/x-png", 300, BufferedImage.TYPE_BYTE_GRAY, true, 0);
+            barcodeGenerator.generateBarcode(provider, QR);
+            provider.finish();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    // 二维码生成
+    public static void encode_(String QR, String backgroundPath, String qrLogoPath, String destPath) throws Exception {
         // 生成qr码（内嵌logo）
         BufferedImage image = QRCodeUtil.createQrimage(QR, qrLogoPath);
         // 获取背景图
@@ -185,9 +211,47 @@ public class QRCodeUtil {
 
 
 
+    // 条形码做为扫描需求
+    public static void pdf417_encode(String QR, String pdf417Path, String backgroundPath, String destPath) throws Exception {
+//        generatePdf417Img(QR);
+        // 获取条形码图片
+        Image pdf417bg = Toolkit.getDefaultToolkit().getImage(pdf417Path);
+        BufferedImage pdfbg_buffered = toBufferedImage(pdf417bg);
+        // 背景图
+        Image bg = Toolkit.getDefaultToolkit().getImage(backgroundPath);
+        BufferedImage bg_buffered = toBufferedImage(bg);
+
+        // background得到画笔对象
+        Graphics g = bg_buffered.getGraphics();
+
+        // 将qr码嵌入背景图
+        g.drawImage(pdfbg_buffered,610,90, 400, 85,null);
+
+//        // 将qr码文字嵌入背景图
+        g.setColor(Color.BLACK);
+        Font font = new Font("宋体",Font.BOLD,25);
+        g.setFont(font);
+
+        g.drawString("BR:" + QR.substring(4), 615, 195);
+
+
+        // 检查是否有该路径，没有则创建
+        mkdirs(destPath);
+        ImageIO.write(bg_buffered, QrName, new File(destPath+"/" + QR + ".jpg"));
+    }
+
+
+
     public static void main(String[] args) {
+        // 二维码
+//        try {
+//        	QRCodeUtil.encode("JPQR123457","D:\\QR\\bg.png", "D:\\QR\\logo.png","D:\\QR\\dest");
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+        // 条形码
         try {
-        	QRCodeUtil.encode("JPQR123457","D:\\QR\\bg.png", "D:\\QR\\logo.png","D:\\QR\\dest");
+        	QRCodeUtil.pdf417_encode("JPQR321654", "D:\\QR\\pdf417\\JPQR321654.png", "D:\\QR\\bgt.jpg", "D:\\QR\\dest");
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -16,6 +16,7 @@ import com.fh.entity.app.transitcenter.TransitOrderReqData;
 import com.fh.entity.app.transitcenter.TransitOrderResData;
 import com.fh.entity.customer.CusCouponInfo;
 import com.fh.entity.customer.CusInfo;
+import com.fh.entity.delivery.AppUser;
 import com.fh.entity.delivery.TaskMainDriver;
 import com.fh.entity.delivery.UserDeliveryMan;
 import com.fh.entity.h5.H5OrderInfo;
@@ -311,6 +312,86 @@ public String saveAppOrder(AppSaveOrderInfoReqData saveOrderInfoReqBean)throws E
     return orderno;
 }
 
+	/**
+	 * @desc 企业下单
+	 * @auther zhangjj
+	 * @date 2019年3月29日
+	 */
+	public String saveEnterpriseOrder(AppSaveOrderInfoReqData saveOrderInfoReqBean)throws Exception {
+
+		// 保存客户信息=======================================================
+		CusInfo cusInfo = null;
+		synchronized (saveOrderInfoReqBean.getCusInfo().getMobile()) {
+			// 客户信息只能是一条
+			cusInfo = (CusInfo) dao.findForObject("CusInfoMapper.findByMobile", saveOrderInfoReqBean.getCusInfo().getMobile());
+
+			if (cusInfo == null) {
+				cusInfo = saveOrderInfoReqBean.getCusInfo();
+				dao.save("CusInfoMapper.insert", cusInfo);
+			}
+		}
+
+		// =======================================================
+
+		// 保存订单信息=======================================================
+		OrderMainSpec orderMain = saveOrderInfoReqBean.getOrderMainSpec();
+		orderMain.setCusid(cusInfo.getId() + "");
+		// 订单id生成
+		IdWorker worker = IdWorker.getInstance();
+		String orderno = "JPWX" + worker.getDefaultFormatId();
+		orderMain.setOrderno( orderno );
+		// 订单状态
+		orderMain.setStatus(ORDER_STATUS.WAITPICK.getValue());
+		// 订单类型
+		orderMain.setType(saveOrderInfoReqBean.getOrderAddress().getSrcaddrtype() + "TO" + saveOrderInfoReqBean.getOrderAddress().getDestaddrtype());
+		dao.save( "OrderMainMapper.insert", orderMain);
+		Integer orderId = orderMain.getId();
+		// ================================================================
+
+		// 保险信息保存=======================================================
+		OrderInsureInfo orderInsureInfo = saveOrderInfoReqBean.getOrderInsureInfo();
+		orderInsureInfo.setOrderid(orderId);
+		dao.save( "OrderInsureInfoMapper.insert", saveOrderInfoReqBean.getOrderInsureInfo());
+		// ================================================================
+
+		// 地址信息==========================================================
+		OrderAddress orderAddress = saveOrderInfoReqBean.getOrderAddress();
+		orderAddress.setOrderid( orderId );
+		dao.save( "orderAddressMapper.insert", orderAddress);
+		// ================================================================
+
+		// 寄件人收件人信息====================================================
+		OrderSenderReceiver sr = saveOrderInfoReqBean.getOrderSenderReceiver();
+		sr.setOrderid( orderId );
+		dao.save( "OrderSenderReceiverMapper.insert", sr );
+		// ================================================================
+
+		// 备注=============================================================
+		OrderNotesInfo orderNotesInfo = saveOrderInfoReqBean.getOrderNotesInfo();
+		if(StringUtils.isNotBlank(orderNotesInfo.getNotes())) {
+			orderNotesInfo.setOrderid(orderId);
+			dao.save( "orderNotesInfoMapper.insert",  orderNotesInfo);
+		}
+		// ================================================================
+
+		// 航班信息=============================================================
+		OrderFlight orderFlight = saveOrderInfoReqBean.getOrderFlight();
+		if(StringUtils.isNotBlank(orderFlight.getSendflightno()) || StringUtils.isNotBlank(orderFlight.getTakeflightno())) {
+			orderFlight.setOrderid(orderId);
+			dao.save( "OrderFlightMapper.insert",  orderFlight);
+		}
+		// =============================================================
+
+		// 支付信息保存
+		OrderPayInfo orderPayInfo = saveOrderInfoReqBean.getOrderPayInfo();
+		orderPayInfo.setOrderid(orderId);
+		orderPayInfo.setMoney(orderMain.getActualmoney());
+		orderPayInfo.setStatus(ORDER_PAY_STUTAS.WAITPAY.getValue());
+		orderPayInfo.setType(ORDER_PAY_TYPE.MONTH.getValue());
+		dao.save( "OrderPayInfoMapper.insertOrderPayInfo", orderPayInfo);
+
+		return orderno;
+	}
 
     /**
 	 * 用户确定取件
@@ -413,12 +494,15 @@ public String saveAppOrder(AppSaveOrderInfoReqData saveOrderInfoReqBean)throws E
         
       
         try {
+			// 查询取派员的信息
+			AppUser appUser = (AppUser) dao.findForObject("AppUserMapper.findUserInfoByid", roleid);
+
         	PageData ordermain =   (PageData) dao.findForObject("OrderMainMapper.findOpenidByOrderid", orderid);  
             ordermain.put("actionfinishtime", DateUtil.getTime());
         	// 公众号通知
             WeixinUtil.deliverySucc(ordermain);
             // 短信通知
-			smsSendService.smsTemplateSend("{'mobile':'"+ (String) ordermain.getString("mobile") +"','header': '"+ MsgOfTmpCode.SMS_HEADER +"', 'destlandmark':'"+ orderAddress.getDestlandmark() +"','smscode':'X020'}");
+			smsSendService.smsTemplateSend("{'dmanmobile':'"+ appUser.getMobile() +"','mobile':'"+ (String) ordermain.getString("mobile") +"','header': '"+ MsgOfTmpCode.SMS_HEADER +"', 'destlandmark':'"+ orderAddress.getDestlandmark() +"','smscode':'X020'}");
 		}catch(Exception e) {
 			LoggerUtil.warn("消息通知发送失败,消息编码：X020", e);
 		}

@@ -9,18 +9,18 @@
 			+ request.getServerName() + ":" + request.getServerPort()
 			+ path + "/";
 %>
-<!DOCTYPE html>
+
+<body><!DOCTYPE html>
 <html lang="en">
 <head>
-<base href="<%=basePath%>">
-<!-- jsp文件头和头部 -->
-<%@ include file="../../system/admin/top.jsp"%>
-<link rel="stylesheet" type="text/css" href="static/js/reset.css" />
-<link rel="stylesheet" type="text/css" href="static/js/style.css" />
-<link rel="stylesheet" type="text/css"
-	href="static/js/bootstrap-datetimepicker.min.css" />
+	<base href="<%=basePath%>">
+	<!-- jsp文件头和头部 -->
+	<%@ include file="../../system/admin/top.jsp"%>
+	<link rel="stylesheet" type="text/css" href="static/js/reset.css" />
+	<link rel="stylesheet" type="text/css" href="static/js/style.css" />
+	<link rel="stylesheet" type="text/css"
+		  href="static/js/bootstrap-datetimepicker.min.css" />
 </head>
-<body>
 	<div class="container-fluid" id="main-container">
 		<div id="page-content" class="clearfix">
 			<div class="row-fluid">

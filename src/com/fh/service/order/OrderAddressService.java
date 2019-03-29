@@ -3,10 +3,15 @@ package com.fh.service.order;
 import java.util.List;
 
 
+import com.fh.common.constant_enum.MAILING_WAY;
+import com.fh.common.constant_enum.ORDER_ADDRESS_TYPE;
+import com.fh.entity.order.OrderMainSpec;
+import com.fh.entity.order.OrderRole;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -106,6 +111,33 @@ public class OrderAddressService {
      */
     public void updateOrderAddr(OrderAddress orderAddress) throws Exception {
         dao.update("orderAddressMapper.updatedAddr", orderAddress);
+
+		// 修改寄件方式 or 收件方式
+		OrderMainSpec orderMainSpec = new OrderMainSpec();
+		orderMainSpec.setId(orderAddress.getOrderid());
+		orderMainSpec.setMailingway(ORDER_ADDRESS_TYPE.AIRPORTCOUNTER.getValue().equals(orderAddress.getSrcaddrtype()) ? MAILING_WAY.AIRPOSTCOUNTER.getValue() : ORDER_ADDRESS_TYPE.HOTEL.getValue().equals(orderAddress.getSrcaddrtype())? MAILING_WAY.FRONTDESK.getValue() : "");
+		orderMainSpec.setBackway(ORDER_ADDRESS_TYPE.AIRPORTCOUNTER.getValue().equals(orderAddress.getDestaddrtype()) ? MAILING_WAY.AIRPOSTCOUNTER.getValue() : ORDER_ADDRESS_TYPE.HOTEL.getValue().equals(orderAddress.getDestaddrtype())? MAILING_WAY.FRONTDESK.getValue() : "");
+		dao.update("OrderMainMapper.updatMailingOrbackway", orderMainSpec);
+
+		// 更改动作信息寄送收件地址
+		OrderRole orderRole = new OrderRole();
+		orderRole.setOrderid(orderAddress.getOrderid());
+		if(StringUtils.isNotBlank(orderAddress.getSrcaddrtype())) {
+            orderRole.setDesttype(orderAddress.getSrcaddrtype());
+            orderRole.setDestaddress(orderAddress.getSrcaddressid()+"");
+            orderRole.setDestaddrname(orderAddress.getScrlandmark());
+            orderRole.setDestaddrdesc(orderAddress.getSrcaddress());
+            orderRole.setDestgps(orderAddress.getSrcgps());
+			dao.update("OrderRoleMapper.updateAddrByTask", orderRole);
+		} else if(StringUtils.isNotBlank(orderAddress.getDestaddrtype())) {
+
+            orderRole.setDesttype(orderAddress.getDestaddrtype());
+            orderRole.setDestaddress(orderAddress.getDestaddressid() + "");
+            orderRole.setDestaddrname(orderAddress.getDestlandmark());
+            orderRole.setDestaddrdesc(orderAddress.getDestaddress());
+            orderRole.setDestgps(orderAddress.getDestgps());
+			dao.update("OrderRoleMapper.updateAddrBySend", orderRole);
+		}
     }
 
 }
