@@ -354,6 +354,10 @@ public String saveAppOrder(AppSaveOrderInfoReqData saveOrderInfoReqBean)throws E
 		dao.save( "OrderInsureInfoMapper.insert", saveOrderInfoReqBean.getOrderInsureInfo());
 		// ================================================================
 
+		// 高德转换百度gps
+		JSONObject gaode_json = JSONObject.fromObject(saveOrderInfoReqBean.getOrderAddress().getDestgps());
+		Point point = new Point(Double.parseDouble((String) gaode_json.get("lng")), Double.parseDouble((String) gaode_json.get("lat")));
+		saveOrderInfoReqBean.getOrderAddress().setDestgps(MapUtil.GD_TRANS_BD(point).toEntity());
 		// 地址信息==========================================================
 		OrderAddress orderAddress = saveOrderInfoReqBean.getOrderAddress();
 		orderAddress.setOrderid( orderId );
