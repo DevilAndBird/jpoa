@@ -383,7 +383,7 @@ public String saveAppOrder(AppSaveOrderInfoReqData saveOrderInfoReqBean)throws E
 		// =============================================================
 
 		// 支付信息保存
-		OrderPayInfo orderPayInfo = saveOrderInfoReqBean.getOrderPayInfo();
+		OrderPayInfo orderPayInfo = new OrderPayInfo();
 		orderPayInfo.setOrderid(orderId);
 		orderPayInfo.setMoney(orderMain.getActualmoney());
 		orderPayInfo.setStatus(ORDER_PAY_STUTAS.WAITPAY.getValue());
