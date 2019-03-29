@@ -93,11 +93,9 @@ public class OrderInfoControl extends BaseController {
         PageData pd = this.getPageData();
         page.setPd(pd);
         List<PageData> orderInfoList = orderInfoService.orderMainlistPage(page);
-
         if (CollectionUtils.isNotEmpty(orderInfoList)) {
             mv.addObject("orderInfoList", orderInfoList);
         }
-
         mv.addObject("pd", pd);
         mv.setViewName("jpoa/order/ordermain/jsp/ordermain_list");
         return mv;
@@ -114,15 +112,23 @@ public class OrderInfoControl extends BaseController {
         
         //组装参数
         AppOrderDetailsReqData reqDetails = new AppOrderDetailsReqData();
+        Float.parseFloat((String)pd.get("id"));
         reqDetails.setOrderid(Integer.parseInt((String)pd.get("id")));
         List<String> queryDetailsType = new ArrayList<String>();
-        queryDetailsType.add(QUERY_ORERYDETAILS_TYPE.ORDERCUS.getValue());// 客户信息
-        queryDetailsType.add(QUERY_ORERYDETAILS_TYPE.ORDERADDRESS.getValue());// 地址
-        queryDetailsType.add(QUERY_ORERYDETAILS_TYPE.ORDERBAGAGE.getValue());// 行李qr码
-        queryDetailsType.add(QUERY_ORERYDETAILS_TYPE.ORDERSENDERRECEIVER.getValue());// 寄件收件
-        queryDetailsType.add(QUERY_ORERYDETAILS_TYPE.ORDERNOTES.getValue());// 备注
-        queryDetailsType.add(QUERY_ORERYDETAILS_TYPE.ORDER_PRICE_DETAIL.getValue());// 订单价格详情
-        queryDetailsType.add(QUERY_ORERYDETAILS_TYPE.ACTION_DETAILS.getValue());// 动作类型详情
+        // 客户信息
+        queryDetailsType.add(QUERY_ORERYDETAILS_TYPE.ORDERCUS.getValue());
+        // 地址
+        queryDetailsType.add(QUERY_ORERYDETAILS_TYPE.ORDERADDRESS.getValue());
+        // 行李qr码
+        queryDetailsType.add(QUERY_ORERYDETAILS_TYPE.ORDERBAGAGE.getValue());
+        // 寄件收件
+        queryDetailsType.add(QUERY_ORERYDETAILS_TYPE.ORDERSENDERRECEIVER.getValue());
+        // 备注
+        queryDetailsType.add(QUERY_ORERYDETAILS_TYPE.ORDERNOTES.getValue());
+        // 订单价格详情
+        queryDetailsType.add(QUERY_ORERYDETAILS_TYPE.ORDER_PRICE_DETAIL.getValue());
+        // 动作类型详情
+        queryDetailsType.add(QUERY_ORERYDETAILS_TYPE.ACTION_DETAILS.getValue());
         reqDetails.setQueryDetailsType(queryDetailsType);
         // 查询订单详情
         AppOrderDetailsResData resDetails = orderInfoService.findAppAppOrderDetails(reqDetails);

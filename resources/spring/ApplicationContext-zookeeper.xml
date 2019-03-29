@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:task="http://www.springframework.org/schema/task"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/tx 
+       http://www.springframework.org/schema/tx/spring-tx.xsd
+       http://www.springframework.org/schema/context 
+       http://www.springframework.org/schema/context/spring-context.xsd
+       http://www.springframework.org/schema/aop
+       http://www.springframework.org/schema/aop/spring-aop.xsd
+       http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task-3.0.xsd"
+       >
+	<bean id="retryPolicy" class="org.apache.curator.retry.ExponentialBackoffRetry">
+		<!--重试次数-->
+		<constructor-arg index="0" value="1000"></constructor-arg>
+		<!--重试次数-->
+		<constructor-arg index="1" value="5000"></constructor-arg>
+	</bean>
+
+	<bean id="client" class="org.apache.curator.framework.CuratorFrameworkFactory" factory-method="newClient" init-method="start">
+		<!--配置ip:端口-->
+		<constructor-arg index="0" value="114.115.141.194:2181,114.115.153.144:2181"></constructor-arg>
+		<!-- sessionTimeoutMs会话超时时间，单位为毫秒。默认是60000ms  -->
+		<constructor-arg index="1" value="5000"></constructor-arg>
+		<!-- connectionTimeoutMs连接创建超时时间，单位毫秒，默认15000ms -->
+		<constructor-arg index="2" value="2000"></constructor-arg>
+		<constructor-arg index="3" ref="retryPolicy"></constructor-arg>
+	</bean>
+    <!--实例化curator工具类-->
+	<bean id="curatorUtils" class="com.fh.util.CuratorUtils" scope="singleton" init-method="init">
+		<constructor-arg index="0" ref="client"></constructor-arg>
+	</bean>
+	<!--分布式锁-->
+	<bean id="distributedLock" class="com.fh.util.DistributedLock" scope="singleton" init-method="init">
+		<constructor-arg index="0" ref="client"></constructor-arg>
+	</bean>
+</beans>

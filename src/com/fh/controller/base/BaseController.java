@@ -1,26 +1,12 @@
 package com.fh.controller.base;
 
-import java.io.IOException;
-
-import javax.servlet.http.HttpServletRequest;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
-import org.springframework.web.servlet.ModelAndView;
-
 import com.fh.common.constant_enum.APP_RESPONSE_CODE;
 import com.fh.entity.Page;
 import com.fh.entity.app.AppRequestBean;
 import com.fh.entity.app.AppResponseBean;
 import com.fh.resolver.DoubleDefault0Adapter;
 import com.fh.resolver.IntegerDefault0Adapter;
-import com.fh.service.base.AirportInfoConfigService;
-import com.fh.util.Logger;
-import com.fh.util.MD5;
-import com.fh.util.PageData;
-import com.fh.util.RedisUtil;
-import com.fh.util.UuidUtil;
+import com.fh.util.*;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.TypeAdapter;
@@ -28,6 +14,12 @@ import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
 import com.google.gson.stream.JsonWriter;
 import com.mysql.jdbc.StringUtils;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
+import org.springframework.web.servlet.ModelAndView;
+
+import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
 /**
  * 基础类(新增的controller需继承此类)
  * @author tqm
@@ -35,15 +27,15 @@ import com.mysql.jdbc.StringUtils;
  */
 public class BaseController {
 
-    
-    @Autowired
-    private AirportInfoConfigService airportInfoConfigService;
-
     protected Logger logger = Logger.getLogger(this.getClass());
-    //用于如果字段为null，则将其转换成"" tangqm
-	 public   Gson gson = new GsonBuilder().registerTypeAdapter(String.class, STRING).
-			 registerTypeAdapter(Integer.class, new IntegerDefault0Adapter()).registerTypeAdapter(int.class, new IntegerDefault0Adapter()).//整型解析
-			 registerTypeAdapter(double.class, new DoubleDefault0Adapter()).registerTypeAdapter(Double.class, new DoubleDefault0Adapter())//浮点型解析
+	/**
+	 * 用于如果字段为null，则将其转换成"" tangqm
+	 */
+	public   Gson gson = new GsonBuilder().registerTypeAdapter(String.class, STRING).
+			//整型解析
+			 registerTypeAdapter(Integer.class, new IntegerDefault0Adapter()).registerTypeAdapter(int.class, new IntegerDefault0Adapter()).
+			//浮点型解析
+			 registerTypeAdapter(double.class, new DoubleDefault0Adapter()).registerTypeAdapter(Double.class, new DoubleDefault0Adapter())
 			 .create();
 
 	 
@@ -53,7 +45,8 @@ public class BaseController {
      */
     @SuppressWarnings("all")
 	private static final TypeAdapter STRING = new TypeAdapter()  
-    {  
+    {
+    	@Override
         public String read(JsonReader reader) throws IOException  
         {  
             if (reader.peek() == JsonToken.NULL)  
@@ -80,20 +73,12 @@ public class BaseController {
 	 * 校验接口的数据是否正确
 	 * 
 	 * sign = MD5( "jingpei"+user + password + timestamp )
-	 * @param param
-	 * @return
 	 */
 	public AppResponseBean doValidate( AppRequestBean param )
 	{
 		AppResponseBean rtBean = new AppResponseBean();
 		rtBean.setCode(APP_RESPONSE_CODE.SUCCESS.getValue());
 		rtBean.setMsg( "接口调用成功!" );
-//		String sign = MD5.md5( "jingpei"+param.getUser()+param.getKey()+param.getTimestamp() );
-//		if( sign.equalsIgnoreCase( param.getSign() ))
-//		{
-//			rtBean.setCode( APP_RESPONSE_CODE.SUCCESS.getValue() );
-//			rtBean.setMsg( "接口调用成功!" );
-//		}
 		if( StringUtils.isEmptyOrWhitespaceOnly( param.getData() ) )
 		{
 			rtBean.setCode( APP_RESPONSE_CODE.FAIL.getValue() );
@@ -118,10 +103,8 @@ public class BaseController {
 	 * 校验H5接口的数据是否正确
 	 * 
 	 * sign = MD5( "jingpei"+user + password + timestamp )
-	 * @param param
-	 * @return
 	 */
-	public AppResponseBean doH5Validate( AppRequestBean param )
+	protected AppResponseBean doH5Validate( AppRequestBean param )
 	{
 		AppResponseBean rtBean = new AppResponseBean();
 		rtBean.setCode(APP_RESPONSE_CODE.SUCCESS.getValue());
@@ -144,10 +127,8 @@ public class BaseController {
 	 * 校验接口的数据是否正确
 	 * 
 	 * sign = MD5( "jingpei"+user + password + timestamp )
-	 * @param param
-	 * @return
 	 */
-	public AppResponseBean doLoginValidate( AppRequestBean param )
+	protected AppResponseBean doLoginValidate( AppRequestBean param )
 	{
 		AppResponseBean rtBean = new AppResponseBean();
 		rtBean.setCode(APP_RESPONSE_CODE.SUCCESS.getValue());
@@ -179,14 +160,11 @@ public class BaseController {
      */
     public HttpServletRequest getRequest() {
         HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
-
         return request;
     }
 
     /**
      * 得到32位的uuid
-     * 
-     * @return
      */
     public String get32UUID() {
         return UuidUtil.get32UUID();

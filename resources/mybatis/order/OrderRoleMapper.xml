@@ -511,14 +511,19 @@
 			date_format(ore.actionfinishtime,'%Y年%m月%d日 %H时%i分') actionfinishtime
 		FROM
 			order_role ore,
-			app_user au
+			app_user au,
+		    order_main om
 		WHERE 1 = 1
-		AND ore.roleid = au.id 
+		AND ore.roleid = au.id
+		And om.id = ore.orderid
 		<if test="orderid != null and orderid != ''">
 			AND orderid = #{orderid} 
 		</if>
 		<if test=" baggageid != null and baggageid != ''">
 			AND orderid = (SELECT oBaggage.orderid FROM order_baggage oBaggage WHERE oBaggage.baggageid = #{baggageid} limit 1)
+		</if>
+		<if test=" orderno != null and orderno != ''">
+			AND orderno = #{orderno}
 		</if>
 		AND ore.desttype !='TRANSITCERTER'
 		AND ore.isfinish in ('ONGOING','FINISHED')	

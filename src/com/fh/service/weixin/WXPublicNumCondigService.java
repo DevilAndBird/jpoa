@@ -76,7 +76,7 @@ public class WXPublicNumCondigService {
     			}
     		}
     	} catch (Exception e) {
-    		LoggerUtil.error("公众号配置信息加入缓存保存", e);
+    		LoggerUtil.error("公众号配置信息加入缓存错误", e);
     	}
     }
     

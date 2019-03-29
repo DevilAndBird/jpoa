@@ -25,7 +25,7 @@ public class TestAppOrderController {
 //    public final static String url = "http://localhost:8080/jpoa/apporder/countOrderBaggageNum";
 //    public final static String url = "http://localhost:8080/jpoa/apporder/countBatchBagNumByQR";
 //    public final static String url = "http://localhost:8080/jpoa/apporder/saveSignUrl";//tangqm
-    public final static String url = "http://localhost:8081/jpoa/apporder/saveorder";// app 柜台下单保存信息
+    public final static String url = "http://localhost:8080/jpoa/apporder/saveorder";// app 柜台下单保存信息
 //    public final static String url = "http://localhost:8080/jpoa/apporder/updateprepaid";// app 订单状态修改为已支付
 //    public final static String url = "http://localhost:8080/jpoa/appCounterService/findCountersByCity";// app 柜台信息查询
 //	public final static String url = "http://localhost:8081/jpoa/apporder/findPricingRule";// app 计费价格回复
@@ -177,16 +177,16 @@ public class TestAppOrderController {
         ArrayList<OrderBaggageReqData> orderBaggageReqDataList = new ArrayList<OrderBaggageReqData>();
         OrderBaggageReqData orderBaggageReqData1 = new OrderBaggageReqData();
         orderBaggageReqData1.setImgtype(IMGURL_BUSINESS_TYPE.COOLECT.getValue());
-        orderBaggageReqData1.setBaggageid("JPQR855164112");
+        orderBaggageReqData1.setBaggageid("JPQR852");
         orderBaggageReqData1.setUploadUserid(1);
-        ArrayList<String> imgurlList = new ArrayList<>();
-        imgurlList.add("http://jingpeioss.oss-cn-hangzhou.aliyuncs.com/1534943187.jpg1");
-        imgurlList.add("http://jingpeioss.oss-cn-hangzhou.aliyuncs.com/1534943187.jpg2");
-        orderBaggageReqData1.setImgurlList(imgurlList);
+//        ArrayList<String> imgurlList = new ArrayList<>();
+//        imgurlList.add("http://jingpeioss.oss-cn-hangzhou.aliyuncs.com/1534943187.jpg1");
+//        imgurlList.add("http://jingpeioss.oss-cn-hangzhou.aliyuncs.com/1534943187.jpg2");
+//        orderBaggageReqData1.setImgurlList(imgurlList);
 
         OrderBaggageReqData orderBaggageReqData2 = new OrderBaggageReqData();
         orderBaggageReqData2.setImgtype(IMGURL_BUSINESS_TYPE.COOLECT.getValue());
-        orderBaggageReqData2.setBaggageid("JPQR987456522");
+        orderBaggageReqData2.setBaggageid("JPQR9874535");
         orderBaggageReqData2.setUploadUserid(1);
         ArrayList<String> imgurlList2 = new ArrayList<>();
         imgurlList2.add("http://jingpeioss.oss-cn-hangzhou.aliyuncs.com/1534943187.jpg1");
@@ -194,7 +194,7 @@ public class TestAppOrderController {
         orderBaggageReqData2.setImgurlList(imgurlList2);
         orderBaggageReqDataList.add(orderBaggageReqData1);
         orderBaggageReqDataList.add(orderBaggageReqData2);
-//        data.setOrderBaggageReqDataList(orderBaggageReqDataList);
+        data.setOrderBaggageReqDataList(orderBaggageReqDataList);
 
         OrderRole orderorle = new OrderRole();
         orderorle.setRoleid(1);

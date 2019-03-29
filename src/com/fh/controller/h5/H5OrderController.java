@@ -673,7 +673,7 @@ public class H5OrderController extends BaseController{
 			return new Gson().toJson(rtBean);
 		}
 		try {
-			List<OrderRole> orderRole = orderMainService.queryStatusByOrderId( reqBean.getOrderid(), reqBean.getBaggageid());
+			List<OrderRole> orderRole = orderMainService.queryStatusByOrderId( reqBean.getOrderid(), reqBean.getOrderno());
 			
 			OrderRoleResBean orderRoleResBean = new OrderRoleResBean();
 			orderRoleResBean.setOrderRole(orderRole);
@@ -1309,7 +1309,7 @@ public class H5OrderController extends BaseController{
 			return new Gson().toJson(rtBean);
 		}
 		try {
-			H5OrderInfo h5OrderInfo = orderMainService.getH5OrderInfo( reqBean.getOrderid(), reqBean.getBaggageid());
+			H5OrderInfo h5OrderInfo = orderMainService.getH5OrderInfo( reqBean.getOrderid(), reqBean.getOrderno());
 			
 			rtBean.setJsonData( new Gson().toJson( h5OrderInfo ) );
 		} catch (Exception ex) {
