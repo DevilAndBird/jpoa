@@ -283,8 +283,8 @@ public String saveAppOrder(AppSaveOrderInfoReqData saveOrderInfoReqBean)throws E
         ExceptionUtil.isTrue(checkBagidRep.size() == new HashSet<Object>(checkBagidRep).size(), "qr码不能重复");
 
         // 图片上传成功
-        for (OrderBaggageReqData orderBaggageReqData : orderBaggageReqDataList) {
-        	// QR 为空， 不做处理
+		for (OrderBaggageReqData orderBaggageReqData : orderBaggageReqDataList) {
+			// QR 为空， 不做处理
 			if(StringUtils.isBlank(orderBaggageReqData.getBaggageid())) {
 				continue;
 			}
@@ -292,10 +292,10 @@ public String saveAppOrder(AppSaveOrderInfoReqData saveOrderInfoReqBean)throws E
 			if(orderBaggageReqData.getBaggageid().indexOf(ConfigCenterKeys.QR_PREFIX)<0){
 				baggageid = ConfigCenterKeys.QR_PREFIX + orderBaggageReqData.getBaggageid();
 			}
-            orderBaggageReqData.setBaggageid(baggageid);
+			orderBaggageReqData.setBaggageid(baggageid);
 			orderBaggageReqData.setOrderid(orderId);
 			orderBaggageService.insertQRAndImgUrl(orderBaggageReqData);
-        }
+		}
     }
 
     // 如果是已取件则需要在orderrole 增加一条记录
@@ -385,6 +385,17 @@ public String saveAppOrder(AppSaveOrderInfoReqData saveOrderInfoReqBean)throws E
 			dao.save( "OrderFlightMapper.insert",  orderFlight);
 		}
 		// =============================================================
+
+
+		// 上传图片
+		List<OrderBaggageReqData> orderBaggageReqDataList = saveOrderInfoReqBean.getOrderBaggageReqDataList();
+		if(CollectionUtils.isNotEmpty(orderBaggageReqDataList)) {
+			// 图片上传成功
+			for (OrderBaggageReqData orderBaggageReqData : orderBaggageReqDataList) {
+				orderBaggageReqData.setOrderid(orderId);
+				orderBaggageService.insertImgUrl(orderBaggageReqData);
+			}
+		}
 
 		// 支付信息保存
 		OrderPayInfo orderPayInfo = new OrderPayInfo();

@@ -124,26 +124,44 @@ public class OrderBaggageService {
 
 		synchronized (orderBaggageReqData.getBaggageid()) {
 			// 检查qr 码是否使用过
-            List<OrderBaggage> orderBaggagetemp = (List<OrderBaggage>) dao.findForList("OrderBaggageMapper.findBybagid", orderBaggageReqData.getBaggageid());
-            ExceptionUtil.isFalse(orderBaggagetemp !=null && orderBaggagetemp.size() > 0, "qr码已存在，重新换取：" + orderBaggageReqData.getBaggageid());
+			List<OrderBaggage> orderBaggagetemp = (List<OrderBaggage>) dao.findForList("OrderBaggageMapper.findBybagid", orderBaggageReqData.getBaggageid());
+			ExceptionUtil.isFalse(orderBaggagetemp !=null && orderBaggagetemp.size() > 0, "qr码已存在，重新换取：" + orderBaggageReqData.getBaggageid());
 
 			// 将图片压缩成 json形式;
-            Map<String, Object> map = new HashMap<String, Object>();
-            map.put(orderBaggageReqData.getImgtype(), orderBaggageReqData.getImgurlList());
-            // 更新照片的人
-            map.put(orderBaggageReqData.getImgtype() + "Userid", orderBaggageReqData.getUploadUserid());
-            // 更新照片的时间
-            map.put(orderBaggageReqData.getImgtype() + "Modeifytime", DateUtil.format(new Date(), "yyyy-MM-dd HH:mm"));
-            // 保存数据
-            OrderBaggage orderBaggage = new OrderBaggage();
-            orderBaggage.setOrderid(orderBaggageReqData.getOrderid());
-            orderBaggage.setBaggageid(orderBaggageReqData.getBaggageid());
-            orderBaggage.setImgurl(JSONObject.toJSONString(map));
-            dao.update("OrderBaggageMapper.insertQRAndImgUrl", orderBaggage);
+			Map<String, Object> map = new HashMap<String, Object>();
+			map.put(orderBaggageReqData.getImgtype(), orderBaggageReqData.getImgurlList());
+			// 更新照片的人
+			map.put(orderBaggageReqData.getImgtype() + "Userid", orderBaggageReqData.getUploadUserid());
+			// 更新照片的时间
+			map.put(orderBaggageReqData.getImgtype() + "Modeifytime", DateUtil.format(new Date(), "yyyy-MM-dd HH:mm"));
+			// 保存数据
+			OrderBaggage orderBaggage = new OrderBaggage();
+			orderBaggage.setOrderid(orderBaggageReqData.getOrderid());
+			orderBaggage.setBaggageid(orderBaggageReqData.getBaggageid());
+			orderBaggage.setImgurl(JSONObject.toJSONString(map));
+			dao.update("OrderBaggageMapper.insertQRAndImgUrl", orderBaggage);
 		}
 	}
 
-
+	/**
+	 * @desc  上传图片信息
+	 * @auther zhangjj
+	 * @date 2019年1月2日
+	 */
+	public void insertImgUrl(OrderBaggageReqData orderBaggageReqData) throws Exception {
+			// 将图片压缩成 json形式;
+			Map<String, Object> map = new HashMap<String, Object>();
+			map.put(orderBaggageReqData.getImgtype(), orderBaggageReqData.getImgurlList());
+			// 更新照片的人
+			map.put(orderBaggageReqData.getImgtype() + "Userid", orderBaggageReqData.getUploadUserid());
+			// 更新照片的时间
+			map.put(orderBaggageReqData.getImgtype() + "Modeifytime", DateUtil.format(new Date(), "yyyy-MM-dd HH:mm"));
+			// 保存数据
+			OrderBaggage orderBaggage = new OrderBaggage();
+			orderBaggage.setOrderid(orderBaggageReqData.getOrderid());
+			orderBaggage.setImgurl(JSONObject.toJSONString(map));
+			dao.update("OrderBaggageMapper.insertQRAndImgUrl", orderBaggage);
+		}
 
 }
 
