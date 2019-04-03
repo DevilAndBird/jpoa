@@ -8,7 +8,7 @@ import org.apache.commons.lang3.StringUtils;
  */
 public class SmsCode {
 
-    public static final String url = "http://106.3.37.83:6678/v2sms.aspx";
+    public static final String url = "http://140.210.2.15:6678/v2sms.aspx";
     public static final String userid = "2875";
     public static final String account = "jinpei";
     public static final String password = "123456";
