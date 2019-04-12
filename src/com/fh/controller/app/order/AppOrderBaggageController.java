@@ -1,5 +1,6 @@
 package com.fh.controller.app.order;
 
+import com.fh.util.LoggerUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -98,6 +99,7 @@ public class AppOrderBaggageController extends BaseController
         }
 
         OrderBaggageReqData orderBaggageReqData = new Gson().fromJson(reqParm.getData().toString(), OrderBaggageReqData.class);
+        LoggerUtil.info("OrderBaggageReqData" + reqParm.getData().toString());
         if(orderBaggageReqData == null) {
             rtBean.setCode(APP_RESPONSE_CODE.FAIL.getValue());
             rtBean.setMsg("关联SQ码失败，原因是请求参数转换异常");
@@ -113,16 +115,23 @@ public class AppOrderBaggageController extends BaseController
             // 检查QR码是否被使用过
         	OrderBaggage orderBaggageRes = orderInfoService.findOrderBaggageBybagid(orderBaggageReqData.getBaggageid());
         	ExceptionUtil.checkBoolean(orderBaggageRes != null, "该行李QR码不可用，请重新换一张QR码");
-        	
-        	// 检查订单QR码是否关联查过行李数
-        	Integer result = orderInfoService.checkLinkQRUltralimit(orderBaggageReqData.getOrderid());
-        	ExceptionUtil.checkBoolean(result == null || result <= 0, "关联QR码已超过行李数");
-        	
+
         	// 关联QR
-            OrderBaggage orderBaggage = new OrderBaggage();
-            orderBaggage.setOrderid(orderBaggageReqData.getOrderid());
-            orderBaggage.setBaggageid(orderBaggageReqData.getBaggageid());
-            orderInfoService.linkOrderAndQR(orderBaggage);
+
+            if(orderBaggageReqData.getId() == null) {
+                // 新增
+                OrderBaggage orderBaggage = new OrderBaggage();
+                orderBaggage.setOrderid(orderBaggageReqData.getOrderid());
+                orderBaggage.setBaggageid(orderBaggageReqData.getBaggageid());
+                orderInfoService.linkOrderAndQR(orderBaggage);
+            } else {
+                // 新增
+                OrderBaggage orderBaggage = new OrderBaggage();
+                orderBaggage.setId(orderBaggageReqData.getId());
+                orderBaggage.setBaggageid(orderBaggageReqData.getBaggageid());
+                orderInfoService.updateQR(orderBaggage);
+            }
+
             
             rtBean.setCode(APP_RESPONSE_CODE.SUCCESS.getValue());
             rtBean.setMsg("关联QR码成功");

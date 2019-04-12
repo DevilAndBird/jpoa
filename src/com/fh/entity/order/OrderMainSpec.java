@@ -177,8 +177,18 @@ public class OrderMainSpec implements  Serializable{
     /*  */
     private String isbusiness;
 
+    // 案件时间
+    private String casetime;
 
-        public Integer getId() {
+    public String getCasetime() {
+        return casetime;
+    }
+
+    public void setCasetime(String casetime) {
+        this.casetime = casetime;
+    }
+
+    public Integer getId() {
         return id;
     }
 

@@ -104,6 +104,7 @@
 		CONCAT_WS( '-', oa.srccityname, oa.destcityname ) city,
 		om.orderno,
 		om.casenum,
+		DATE_FORMAT(om.casetime, '%Y-%m-%d %H:%i' ) casetime,
 		om.flightno,
 		( SELECT bcf.codename FROM base_config bcf WHERE bcf.codetype = 'orderType' AND bcf.`code` = om.type ) type,
 		om.remark,

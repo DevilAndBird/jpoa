@@ -313,6 +313,15 @@ public class OrderInfoService {
 	}
 
 	/**
+	 * @desc 保存订单行李QR码
+	 * @auther zhangjj
+	 * @history 2018年2月6日
+	 */
+	public void updateQR(OrderBaggage orderBaggage) throws Exception {
+		dao.save("OrderBaggageMapper.updateQR", orderBaggage);
+	}
+
+	/**
 	 * @desc 生成QR码(用于生成电子格式qr码，已使用处理，避免重复生成)
 	 * @auther zhangjj
 	 * @history 2018年2月6日

@@ -145,6 +145,16 @@ public class AppOrderDetailsResData implements Serializable {
      */
     private String casenum;
 
+    private String casetime;
+
+    public String getCasetime() {
+        return casetime;
+    }
+
+    public void setCasetime(String casetime) {
+        this.casetime = casetime;
+    }
+
     public Integer getId() {
         return id;
     }

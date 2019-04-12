@@ -65,8 +65,9 @@
 			modifytime,
 			isvalid,
 			remark,
-		casenum,
-		isbusiness)
+			casenum,
+			isbusiness,
+			casetime)
 		VALUES (
 		    #{orderno},
 		    #{fetchcode},
@@ -88,7 +89,8 @@
 			'Y',
 			#{remark},
 			#{casenum},
-			#{isbusiness});
+			#{isbusiness},
+			#{casetime});
 	</insert>
 
 	<!-- 根据id查询订单 木桐 2018年3月4日19:49:45 -->
@@ -164,7 +166,8 @@
 		oaddr.destlandmark,
 		date_format(om.taketime,'%Y-%m-%d %H:%i') taketime,
 		date_format(om.sendtime,'%Y-%m-%d %H:%i') sendtime,
-		om.casenum
+		om.casenum,
+		date_format(om.casetime,'%Y-%m-%d %H:%i') casetime
 		FROM
 		order_main om,
 		order_address oaddr,
@@ -854,6 +857,7 @@
 			omain.actualmoney,
 			omain.totalmoney,
 			omain.remark,
+			DATE_FORMAT(omain.casetime,'%Y-%m-%d %H:%i:%s') casetime,
 			<!-- 寄件人姓名-->
 			osr.sendername,
 			<!-- 寄件人联系号码-->
@@ -866,7 +870,9 @@
 			order_main omain,
 			order_sender_receiver osr
 		WHERE 1=1 and osr.orderid = omain.id
-		and omain.id = #{orderid}
+		<if test="orderid != null and orderid != ''">
+			and omain.id = #{orderid}
+		</if>
 		<if test=" orderno != null and orderno != ''">
 			and omain.orderno  LIKE '%${orderno}'
 		</if>
