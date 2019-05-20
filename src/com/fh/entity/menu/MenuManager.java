@@ -19,21 +19,21 @@ public class MenuManager {
     
     // dev start ==================================================
     // 第三方用户唯一凭证
-    static final String  appId = "wx44636cc298fa4cad";
-//    // 第三方用户唯一凭证密钥
-    static final String appSecret = "977f6fcef1aea65797e97e1bf1c06cb3";
-//    // 公众号域名
-    static final String domainurl = "dat.porterme.cn";
+//    static final String  appId = "wx44636cc298fa4cad";
+////    // 第三方用户唯一凭证密钥
+//    static final String appSecret = "977f6fcef1aea65797e97e1bf1c06cb3";
+////    // 公众号域名
+//    static final String domainurl = "dat.porterme.cn";
    // dev end ======================================================
 	
 	// prd start ==================================================
     // 第三方用户唯一凭证
-    /*static final String appId = "wxd4209fdab3d66847";
+    static final String appId = "wxd4209fdab3d66847";
     // 第三方用户唯一凭证密钥
     static final String appSecret = "64819f738126f4b7389c311b72193d58";
     // 公众号域名
-    static final String domainurl = "wx.porterme.cn";*/
-    // prd end ====================================================== 
+    static final String domainurl = "wx.porterme.cn";
+    // prd end ======================================================
 
     public static void main(String[] args) {
         // 调用接口获取access_token
@@ -41,17 +41,10 @@ public class MenuManager {
         
 //        if (null != at) {
             // 调用接口创建菜单
-            int result = WeixinUtil.createMenu(getMenu(), "19_1TXsS_YDdguwh8ORKqqkUHNKG1uNlzBE2sl_OyAeNpSkszpizwqitImAdsoL-NA1ne-KkEMobsTOGNTTwKesbSKPcju_U_79zlMCr37nq5JELHBNJ0Cr4QUj7KeaNyFqaGBR4Ant4Z0qJ5BcLQHdAFAPUL");
-//
-            // 判断菜单创建结果
-            if (0 == result)
-                log.info("菜单创建成功！");
-            else
-                log.info("菜单创建失败，错误码：" + result);
-//        }
+            int result = WeixinUtil.createMenu(getMenu(), "20_4f8TL6NFw1lMKaSKFxycCxDxHmh6H26MIxAhk0yq7utwYmDlsajSCD8lz7HD8uuoUQ8TYBolLSAB-bOActHEuetXx4RknumzUcqE5iMsJz5pikCoZjQqRzmhxm9-1ijskbaKMNJXkzn6EGzQGBAgABAXSR");
         
          // 返回
-        String url = "https://api.weixin.qq.com/cgi-bin/menu/get?access_token=16_ml8kfr44Nrf9E6jxq8d2hq8nXt9QZ387bKWdARtj9SZ8nUxPO_veroST08zqvdCOXnZDYgEBO7THP7WIhPpDyMCAqSJLNqPgQoi8_Mq2lBU5VVaL3Bh4_nhCLloQgUW7z5FcZEZrScjKVCTpSEJgAEAIUZ";
+        String url = "https://api.weixin.qq.com/cgi-bin/menu/get?access_token=20_4f8TL6NFw1lMKaSKFxycCxDxHmh6H26MIxAhk0yq7utwYmDlsajSCD8lz7HD8uuoUQ8TYBolLSAB-bOActHEuetXx4RknumzUcqE5iMsJz5pikCoZjQqRzmhxm9-1ijskbaKMNJXkzn6EGzQGBAgABAXSR";
         HttpClientUtil.doPost(url);
     }
 
@@ -101,18 +94,32 @@ public class MenuManager {
         btn23.setName("行李标准");
         btn23.setType("view");
         btn23.setUrl("https://mp.weixin.qq.com/s/LYVTRydiJKsSyoFFgq0p-Q");
-        
+
+        CommonButton btn24 = new CommonButton();
+        btn24.setName("商务合作");
+        btn24.setType("click");
+        btn24.setKey("tojoin");
+
+        CommonButton btn11 = new CommonButton();
+        btn11.setName("金牌服务");
+        btn11.setType("view");
+        btn11.setUrl("http://"+ domainurl +"/wx/01index.html?r=" + new Random().nextInt());
+
+        CommonButton btn12 = new CommonButton();
+        btn12.setName("专车专送");
+        btn12.setType("view");
+        btn12.setUrl("http://"+ domainurl +"/wx/specialcar/specialcar.html?r=" + new Random().nextInt());
+
         /**
          * 微信：  mainBtn1,mainBtn2,mainBtn3底部的一级菜单。
          */      
         ComplexButton mainBtn1 = new ComplexButton();
         mainBtn1.setName("我要下单");
-        mainBtn1.setType("view");
-        mainBtn1.setUrl("http://"+ domainurl +"/wx/01index.html?r=" + new Random().nextInt());
+        mainBtn1.setSub_button(new CommonButton[] { btn11, btn12});
         
         ComplexButton mainBtn2 = new ComplexButton();
         mainBtn2.setName("服务介绍");
-        mainBtn2.setSub_button(new CommonButton[] { btn21, btn22, btn23 });
+        mainBtn2.setSub_button(new CommonButton[] { btn21, btn22, btn23, btn24});
         
         ComplexButton mainBtn3 = new ComplexButton();
         mainBtn3.setName("个人中心");
