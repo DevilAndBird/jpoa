@@ -41,10 +41,10 @@ public class MenuManager {
         
 //        if (null != at) {
             // 调用接口创建菜单
-            int result = WeixinUtil.createMenu(getMenu(), "20_4f8TL6NFw1lMKaSKFxycCxDxHmh6H26MIxAhk0yq7utwYmDlsajSCD8lz7HD8uuoUQ8TYBolLSAB-bOActHEuetXx4RknumzUcqE5iMsJz5pikCoZjQqRzmhxm9-1ijskbaKMNJXkzn6EGzQGBAgABAXSR");
+            int result = WeixinUtil.createMenu(getMenu(), "21_HesCTsUGzeOK3Q1QkxiT3jpr9H3Faz3RJpAC4tDXACUpuOeeuG5mGMqAB0EhUYqfwHZTH9SwW17quERnSlFzXD4qrCIhs5NYD6j750Q-gCQW5T_nl8nf8Z8vnTt2DOGtGt9Q74fZKCAOhN_zSCXbAGAFPK");
         
          // 返回
-        String url = "https://api.weixin.qq.com/cgi-bin/menu/get?access_token=20_4f8TL6NFw1lMKaSKFxycCxDxHmh6H26MIxAhk0yq7utwYmDlsajSCD8lz7HD8uuoUQ8TYBolLSAB-bOActHEuetXx4RknumzUcqE5iMsJz5pikCoZjQqRzmhxm9-1ijskbaKMNJXkzn6EGzQGBAgABAXSR";
+        String url = "https://api.weixin.qq.com/cgi-bin/menu/get?access_token=21_HesCTsUGzeOK3Q1QkxiT3jpr9H3Faz3RJpAC4tDXACUpuOeeuG5mGMqAB0EhUYqfwHZTH9SwW17quERnSlFzXD4qrCIhs5NYD6j750Q-gCQW5T_nl8nf8Z8vnTt2DOGtGt9Q74fZKCAOhN_zSCXbAGAFPK";
         HttpClientUtil.doPost(url);
     }
 
@@ -100,22 +100,26 @@ public class MenuManager {
         btn24.setType("click");
         btn24.setKey("tojoin");
 
-        CommonButton btn11 = new CommonButton();
-        btn11.setName("金牌服务");
-        btn11.setType("view");
-        btn11.setUrl("http://"+ domainurl +"/wx/01index.html?r=" + new Random().nextInt());
+//        CommonButton btn11 = new CommonButton();
+//        btn11.setName("金牌服务");
+//        btn11.setType("view");
+//        btn11.setUrl("http://"+ domainurl +"/wx/01index.html?r=" + new Random().nextInt());
 
-        CommonButton btn12 = new CommonButton();
-        btn12.setName("专车专送");
-        btn12.setType("view");
-        btn12.setUrl("http://"+ domainurl +"/wx/specialcar/specialcar.html?r=" + new Random().nextInt());
+//        CommonButton btn12 = new CommonButton();
+//        btn12.setName("专车专送");
+//        btn12.setType("view");
+//        btn12.setUrl("http://"+ domainurl +"/wx/specialcar/specialcar.html?r=" + new Random().nextInt());
 
         /**
          * 微信：  mainBtn1,mainBtn2,mainBtn3底部的一级菜单。
-         */      
-        ComplexButton mainBtn1 = new ComplexButton();
+         */
+        MiniprogramButton mainBtn1 = new MiniprogramButton();
         mainBtn1.setName("我要下单");
-        mainBtn1.setSub_button(new CommonButton[] { btn11, btn12});
+        mainBtn1.setType("miniprogram");
+        mainBtn1.setUrl("http://mp.weixin.qq.com");
+        mainBtn1.setAppid("wxa537bb199a6a1045");
+        mainBtn1.setPagepath("pages/view/index/index");
+////        mainBtn1.setSub_button(new CommonButton[] { btn11, btn12});
         
         ComplexButton mainBtn2 = new ComplexButton();
         mainBtn2.setName("服务介绍");
