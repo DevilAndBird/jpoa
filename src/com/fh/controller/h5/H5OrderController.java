@@ -1,5 +1,7 @@
 package com.fh.controller.h5;
 
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.util.HashMap;
@@ -7,7 +9,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+import com.aliyun.oss.OSSClient;
 import com.fh.util.HttpUtils;
+import net.coobird.thumbnailator.Thumbnails;
 import oracle.net.aso.h;
 
 import org.apache.commons.beanutils.BeanUtils;
@@ -17,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.fh.common.constant_enum.APP_RESPONSE_CODE;
@@ -75,6 +80,7 @@ import com.fh.util.ExceptionUtil;
 import com.fh.util.PageData;
 import com.fh.util.RulesCheckedException;
 import com.google.gson.Gson;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * @author zhangjj
@@ -110,6 +116,11 @@ public class H5OrderController extends BaseController{
 	private ServiceCenterService serviceCenterService;
 	@Autowired
 	private CouponInfoService couponInfoService;
+	private String env_Aliyun_oss_url = "http://oss-cn-hangzhou.aliyuncs.com";
+	private String env_AliyunOSSKey = "LTAIg8xwvCWb7Trj";
+	private String env_AliyunOSSSecret = "ui9Wtn1VtAZRzQqm0YGitOrPk6weMm";
+	private String env_MyBucketName = "jingpeioss";
+	private String env_imgaliyunpath = "http://jingpeioss.oss-cn-hangzhou.aliyuncs.com";
 	
  	/**
 	 * @desc 取消订单接口
@@ -152,6 +163,44 @@ public class H5OrderController extends BaseController{
 		}
 		
 		return new Gson().toJson( rtBean );
+	}
+
+	/**
+	 * @desc 上传照片
+	 * @auther zhangjj
+	 * @date 2018年10月26日
+	 */
+	@ResponseBody
+	@RequestMapping(value="/uploadImg", produces = "application/json;charset=UTF-8")
+	public Map<String, Object> uploadImg(@RequestParam("file") MultipartFile file) throws Exception{
+		Map<String, Object> modelMap = new HashMap<String, Object>();
+
+		OSSClient ossClient = null;
+
+		try{
+			// 创建OSSClient实例。
+			ossClient = new OSSClient(env_Aliyun_oss_url, env_AliyunOSSKey, env_AliyunOSSSecret);
+
+			BufferedImage thumbnail = Thumbnails.of(new ByteArrayInputStream(file.getBytes())).outputQuality(0.3f).asBufferedImage();
+
+			// 上传字符串
+			String imgname = System.currentTimeMillis() + "." + file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf(".") + 1);
+
+			modelMap.put("success", true);
+			modelMap.put("errMsg", "照片批量上传成功");
+			modelMap.put("imgurl", env_imgaliyunpath+ "/" + imgname);
+		} catch (Exception e) {
+			logger.error("照片批量上传失败："+e.getLocalizedMessage());
+			modelMap.put("success", false);
+			modelMap.put("errMsg", "照片批量上传失败");
+		} finally {
+			if(ossClient != null) {
+				// 关闭OSSClient。
+				ossClient.shutdown();
+			}
+		}
+
+		return modelMap;
 	}
 	
 	/**
