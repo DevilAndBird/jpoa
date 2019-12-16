@@ -175,7 +175,7 @@ public class H5OrderController extends BaseController{
 	public Map<String, Object> uploadImg(@RequestParam("file") MultipartFile file) throws Exception{
 		Map<String, Object> modelMap = new HashMap<String, Object>();
 
-		OSSClient ossClient = null;
+            OSSClient ossClient = null;
 
 		try{
 			// 创建OSSClient实例。
@@ -479,6 +479,48 @@ public class H5OrderController extends BaseController{
 		}
 		String json = new Gson().toJson(rtBean);
 		
+		return json;
+	}
+
+	/**
+	 * @desc 确认下单
+	 * @auther zhangjj
+	 * @date 2018年4月17日
+	 */
+	@ResponseBody
+	@RequestMapping(value="/doortododrsavaorder", produces = "application/json;charset=UTF-8" )
+	public String doortododrSavaOrder( @RequestBody AppRequestBean reqParm ){
+        AppResponseBean rtBean = new AppResponseBean();
+        rtBean.setCode(APP_RESPONSE_CODE.SUCCESS.getValue());
+        rtBean.setMsg( "接口调用成功!" );
+		H5OrderMain orderMain = (H5OrderMain)new Gson().fromJson( reqParm.getData(), H5OrderMain.class );
+		if( orderMain == null){
+			rtBean.setCode(APP_RESPONSE_CODE.FAIL.getValue());
+			rtBean.setMsg("确认下单接口请求参数转换异常");
+			return new Gson().toJson(rtBean);
+		}
+
+		try {
+			// 保存基本信息
+			String orderno = orderMainService.doortodoorSavaOrder(orderMain);
+
+			H5OrderNoBean bean = new H5OrderNoBean();
+			bean.setOrderno( orderno );
+			rtBean.setCode(APP_RESPONSE_CODE.SUCCESS.getValue());
+			rtBean.setMsg("确认下单成功");
+			rtBean.setJsonData( new Gson().toJson( bean ) );
+		}catch (RulesCheckedException e) {
+			logger.error("确认下单校验异常:" + e.getMessage());
+			rtBean.setCode(APP_RESPONSE_CODE.CHECK.getValue());
+			rtBean.setMsg("确认下单校验异常：" + e.getMessage());
+			return new Gson().toJson(rtBean);
+		} catch (Exception ex) {
+			logger.error("确认下单接口异常:" + ex.getLocalizedMessage());
+			rtBean.setCode(APP_RESPONSE_CODE.FAIL.getValue());
+			rtBean.setMsg( "确认下单接口异常" );
+		}
+		String json = new Gson().toJson(rtBean);
+
 		return json;
 	}
 	

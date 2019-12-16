@@ -44,7 +44,7 @@ public class DistributedLock {
         }
     }
     //获取分布式锁
-    public  void getLock(){
+    public void getLock(){
         while(true){
             try {
                 //临时节点 如果锁创建成功则表示锁没有被占用

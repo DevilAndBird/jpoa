@@ -26,7 +26,7 @@ import org.krysalis.barcode4j.output.bitmap.BitmapCanvasProvider;
 import sun.net.www.content.image.png;
 
 public class QRCodeUtil {
-     
+
 	private static String charset="utf-8";//定义字符编码
     private static String QrName="jpg";//定义类型
     private static int QrSize = 240;//定义size
@@ -251,10 +251,19 @@ public class QRCodeUtil {
 //        }
         // 条形码
         try {
-        	QRCodeUtil.pdf417_encode("JPQR321654", "D:\\QR\\pdf417\\JPQR321654.png", "D:\\QR\\bgt.jpg", "D:\\QR\\dest");
+
+            for(int a = 105001; a<=106000; a++) {
+//                generatePdf417Img("JPQR" + a);
+                QRCodeUtil.pdf417_encode("JPQR" + a, "D:\\QR\\pdf417\\JPQR"+ a +".png", "D:\\QR\\bgt.jpg", "D:\\QR\\dest");
+            }
+
+//
+
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+
     }
-    
+
 }

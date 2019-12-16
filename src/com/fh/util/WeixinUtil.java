@@ -12,15 +12,13 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 
+import com.fh.entity.menu.*;
 import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fh.entity.menu.AccessToken;
-import com.fh.entity.menu.Menu;
-import com.fh.entity.menu.MyX509TrustManager;
 /**
  * @author sunqp
  *	微信菜单
@@ -35,6 +33,111 @@ public class WeixinUtil {
     // 菜单创建（POST） 限100（次/天）
     public static String menu_create_url = "https://api.weixin.qq.com/cgi-bin/menu/create?access_token=ACCESS_TOKEN";
 
+    // dev start ==================================================
+    // 第三方用户唯一凭证
+    static final String  appId = "wx44636cc298fa4cad";
+    //    // 第三方用户唯一凭证密钥
+    static final String appSecret = "977f6fcef1aea65797e97e1bf1c06cb3";
+
+    // prd start ==================================================
+    // 第三方用户唯一凭证
+//    static final String appId = "wxd4209fdab3d66847";
+//    // 第三方用户唯一凭证密钥
+//    static final String appSecret = "64819f738126f4b7389c311b72193d58";
+
+    // 公众号域名
+    static final String domainurl = "uat1.porterme.cn";
+//    static final String domainurl = "wx.porterme.cn";
+
+
+    public static void main(String[] args) {
+        // 获取access_token 测试环境专用，生产环境查看日志获取
+        System.out.println(WeixinUtil.getAccessToken(appId, appSecret).getToken());
+        // 菜单
+        System.out.println(JSONObject.fromObject(getMenu()).toString());
+    }
+
+    /**
+     * 组装菜单数据
+     *
+     * @return
+     */
+    private static Menu getMenu() {
+        CommonButton btn33 = new CommonButton();
+        btn33.setName("常见问题");
+        btn33.setType("view");
+        btn33.setUrl("https://mp.weixin.qq.com/s/MmsyJjB-q-y0sgJSw9nceg");
+
+        CommonButton btn34 = new CommonButton();
+        btn34.setName("联系客服");
+        btn34.setType("click");
+        btn34.setKey("custphone");
+
+        CommonButton btn21 = new CommonButton();
+        btn21.setName("服务指南");
+        btn21.setType("view");
+        btn21.setUrl("https://mp.weixin.qq.com/s/UA_8M4CbTvXbIsmol6KDZg");
+
+        CommonButton btn22 = new CommonButton();
+        btn22.setName("柜台位置");
+        btn22.setType("view");
+        btn22.setUrl("https://mp.weixin.qq.com/s/Gdrdq8DSyXI5ffebhpt9LQ");
+
+        CommonButton btn23 = new CommonButton();
+        btn23.setName("行李标准");
+        btn23.setType("view");
+        btn23.setUrl("https://mp.weixin.qq.com/s/LYVTRydiJKsSyoFFgq0p-Q");
+
+        CommonButton btn24 = new CommonButton();
+        btn24.setName("商务合作");
+        btn24.setType("click");
+        btn24.setKey("tojoin");
+
+
+
+        /**
+         * 微信：  mainBtn1,mainBtn2,mainBtn3底部的一级菜单。
+         */
+        MiniprogramButton btn11 = new MiniprogramButton();
+        btn11.setName("行李寄送");
+        btn11.setType("miniprogram");
+        btn11.setUrl("http://mp.weixin.qq.com");
+        btn11.setAppid("wxa537bb199a6a1045");// 小程序ID
+        btn11.setPagepath("pages/view/index/index");
+
+        CommonButton btn12 = new CommonButton();
+        btn12.setName("行李寄存");
+        btn12.setType("view");
+        btn12.setUrl("http://"+ domainurl +"/wx/consign/html/consign.html");
+
+        CommonButton btn13 = new CommonButton();
+        btn13.setName("行李门到门");
+        btn13.setType("view");
+        btn13.setUrl("http://"+ domainurl +"/MU/specialcar/specialcar.html");
+
+        ComplexButton mainBtn1 = new ComplexButton();
+        mainBtn1.setName("我要下单");
+        mainBtn1.setSub_button(new Button[] {btn13});
+
+        ComplexButton mainBtn2 = new ComplexButton();
+        mainBtn2.setName("服务介绍");
+        mainBtn2.setSub_button(new CommonButton[] { btn21, btn22, btn23, btn24});
+
+        ComplexButton mainBtn3 = new ComplexButton();
+        mainBtn3.setName("个人中心");
+        mainBtn3.setSub_button(new CommonButton[] {btn33, btn34});
+
+        /**
+         * 封装整个菜单
+         */
+        Menu menu = new Menu();
+        menu.setButton(new Button[] { mainBtn1, mainBtn2, mainBtn3 });
+
+
+
+        return menu;
+    }
+
     /**
      * 创建菜单
      * 
@@ -48,6 +151,7 @@ public class WeixinUtil {
         String url = menu_create_url.replace("ACCESS_TOKEN", accessToken);
         // 将菜单对象转换成json字符串
         String jsonMenu = JSONObject.fromObject(menu).toString();
+        System.out.println("req:" + jsonMenu);
         // 调用接口创建菜单
         JSONObject jsonObject = httpRequest(url, "POST", jsonMenu);
         if (null != jsonObject) {

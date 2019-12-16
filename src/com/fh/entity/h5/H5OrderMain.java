@@ -1,6 +1,8 @@
 package com.fh.entity.h5;
 
 
+import com.fh.entity.customer.CusInfo;
+
 public class H5OrderMain {
 	/** 订单信息 */
 	private H5OrderInfo orderMain;
@@ -14,6 +16,16 @@ public class H5OrderMain {
 	private H5OrderNotesInfo h5OrderNotesInfo;
 	/** 优惠卷信息 */
 	private H5Counponinfo h5Counponinfo;
+	/* 客户信息 */
+	private CusInfo cusInfo;
+
+	public CusInfo getCusInfo() {
+		return cusInfo;
+	}
+
+	public void setCusInfo(CusInfo cusInfo) {
+		this.cusInfo = cusInfo;
+	}
 
 	public H5OrderSenderReceiver getSenderReceiver() {
 		return senderReceiver;
