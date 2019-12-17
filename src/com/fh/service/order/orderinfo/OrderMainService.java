@@ -779,7 +779,18 @@ public String saveAppOrder(AppSaveOrderInfoReqData saveOrderInfoReqBean)throws E
         pd.put( "isvalid", ISVALID_TYPE.VALID.getValue());
         return (List<H5OrderInfoBean>) dao.findForList("OrderMainMapper.queryOrderListByCusId", pd);
     }
-	
+
+	/**
+	 * @DESC 查询订单列表
+	 * @author sunqp
+	 * @history 2018年04月10日
+	 */
+	@SuppressWarnings("unchecked")
+	public List<H5OrderInfoBean> queryOrderListByCusMobile( String mobile ) throws Exception {
+		return (List<H5OrderInfoBean>) dao.findForList("OrderMainMapper.queryOrderListByCusMobile", mobile);
+	}
+
+
 	/**
 	 * @DESC 查询未支付订单列表
 	 * @author sunqp

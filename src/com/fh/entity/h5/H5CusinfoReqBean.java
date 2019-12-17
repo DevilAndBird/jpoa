@@ -6,6 +6,8 @@ public class H5CusinfoReqBean {
 	/** 客户id */
 	private Integer cusid;
 
+	private String mobile;
+
 	public Integer getCusid() {
 		return cusid;
 	}
@@ -21,5 +23,12 @@ public class H5CusinfoReqBean {
 	public void setOpenid(String openid) {
 		this.openid = openid;
 	}
-	
+
+	public String getMobile() {
+		return mobile;
+	}
+
+	public void setMobile(String mobile) {
+		this.mobile = mobile;
+	}
 }

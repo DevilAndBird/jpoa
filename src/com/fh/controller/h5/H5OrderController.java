@@ -490,6 +490,7 @@ public class H5OrderController extends BaseController{
 	@ResponseBody
 	@RequestMapping(value="/doortododrsavaorder", produces = "application/json;charset=UTF-8" )
 	public String doortododrSavaOrder( @RequestBody AppRequestBean reqParm ){
+		logger.info("doortoddorsavaorderreq:" + reqParm.getData());
         AppResponseBean rtBean = new AppResponseBean();
         rtBean.setCode(APP_RESPONSE_CODE.SUCCESS.getValue());
         rtBean.setMsg( "接口调用成功!" );
@@ -600,8 +601,41 @@ public class H5OrderController extends BaseController{
 		String json = new Gson().toJson(rtBean);
 		
 		return json;
-	}	
-	
+	}
+
+	/**
+	 * @desc 根据客户手机号查询客户订单
+	 * @auther zhangjj
+	 * @history 2019年10月11日
+	 */
+	@ResponseBody
+	@RequestMapping(value="/queryOrderListByCusMobile", produces = "application/json;charset=UTF-8" )
+	public String queryOrderListByCusMobile( @RequestBody AppRequestBean reqParm ){
+		AppResponseBean rtBean = doH5Validate(reqParm);
+		String data = reqParm.getData();
+		Gson gson = new Gson();
+		H5CusinfoReqBean reqBean = (H5CusinfoReqBean)gson.fromJson( data, H5CusinfoReqBean.class );
+
+		if( reqBean == null){
+			rtBean.setCode( APP_RESPONSE_CODE.FAIL.getValue() );
+			rtBean.setMsg( "查询请求失败" );
+			return new Gson().toJson(rtBean);
+		}
+
+		try {
+			List<H5OrderInfoBean> list = orderMainService.queryOrderListByCusMobile(reqBean.getMobile());
+
+			rtBean.setJsonData( new Gson().toJson( list ) );
+		} catch (Exception ex) {
+			logger.error("查询订单接口异常:" + ex.getLocalizedMessage());
+			rtBean.setCode( APP_RESPONSE_CODE.FAIL.getValue() );
+			rtBean.setMsg( "查询订单接口异常" );
+		}
+		String json = new Gson().toJson(rtBean);
+
+		return json;
+	}
+
 	/**
 	 * @desc 查询未支付订单列表（根据客户id）
      * @auther sunqp

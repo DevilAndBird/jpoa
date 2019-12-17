@@ -889,7 +889,7 @@
 
 	<!-- 
 	     根据订单id更新订单状
-	  zhangjj
+
 	-->
 	<update id="updateStatusByOrderid" parameterType="pd">
 		update
@@ -1251,6 +1251,38 @@
 		AND omain.isvalid = #{isvalid}		
 		AND omain.cusid = #{cusid}
 	<!-- 	AND omain.status != 'CANCELLED'	 -->	
+		order by omain.addtime desc
+	</select>
+
+	<!-- 查询订单列表-->
+	<select id="queryOrderListByCusMobile" parameterType="String" resultType="H5OrderInfoBean" useCache="false">
+		SELECT
+			omain.id,
+			omain.orderno,
+			omain.actualmoney,
+			omain.num,
+			omain.mailingway,
+			omain.neadinvoice,
+			omain.channel,
+			date_format(omain.taketime,'%Y-%m-%d %H:%i') taketime,
+			date_format(omain.sendtime,'%Y-%m-%d %H:%i') sendtime,
+			address.srcaddrtype,
+			address.scrlandmark,
+			address.srcaddress,
+			address.destaddrtype,
+			address.destlandmark,
+			address.destaddress,
+			address.remark,
+			(SELECT bc.remark FROM base_config bc WHERE bc.codetype ='orderStatus' AND bc.code = omain.status) orderstatusType
+		FROM
+			order_main omain,
+			cus_info ci,
+			order_address address
+		WHERE 1=1
+			AND omain.cusid = ci.id
+			AND omain.id = address.orderid
+			AND omain.isvalid = 'Y'
+			AND ci.mobile = #{mobile}
 		order by omain.addtime desc
 	</select>
 

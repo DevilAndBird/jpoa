@@ -12,3 +12,5 @@ public class BaseTest extends AbstractJUnit4SpringContextTests {
     public Log logger = LogFactory.getLog(getClass());
     
 }
+
+
