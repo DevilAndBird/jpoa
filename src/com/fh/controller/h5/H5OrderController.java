@@ -186,7 +186,7 @@ public class H5OrderController extends BaseController{
 
 			// 图片上传
 
-			BufferedImage bufferedImage = Thumbnails.of(file.getInputStream()).outputQuality(0.3f).asBufferedImage();
+			Thumbnails.of(file.getInputStream()).scale(1f).outputQuality(0.3f);
 
 			// 上传字符串
 			String imgname = System.currentTimeMillis() + "." + file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf(".") + 1);
