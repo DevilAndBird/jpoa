@@ -240,6 +240,7 @@ $('#lookCusLugPhoto').click(function() {
 	alert(remark);
 	if(remark !=null || remark.trim().length != 0) {
 		var list = remark.split(',');
+		console.info(list);
 
 		var json = "{" +
 			"'title':'收取行李'," + //相册标题
@@ -249,6 +250,7 @@ $('#lookCusLugPhoto').click(function() {
 
 		for(var i = 0; i< list.length; i++) {
 			var coolectvalue = list[i];
+			console.info(coolectvalue);
 			json = json + "{" +
 				"'alt': '"+ i +"'," +
 				"'pid': "+ i +"," +//图片id

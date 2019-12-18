@@ -246,7 +246,7 @@
 				<tbody>
 					<tr>
 						<td class="center">
-							<input type="hidden" class="remark" value='${remark}' />
+							<input type="hidden" class="remark" value='${resDetails.remark}' />
 							<button class='btn btn-mini btn-info' id="lookCusLugPhoto">查看</button>
 						</td>
 					</tr>
