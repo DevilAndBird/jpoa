@@ -4,6 +4,7 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -174,6 +175,7 @@ public class H5OrderController extends BaseController{
 	@ResponseBody
 	@RequestMapping(value="/uploadImg", produces = "application/json;charset=UTF-8")
 	public Map<String, Object> uploadImg(@RequestParam("file") MultipartFile file) throws Exception{
+		logger.info("uploadImagStart");
 		Map<String, Object> modelMap = new HashMap<String, Object>();
 
             OSSClient ossClient = null;
@@ -181,6 +183,10 @@ public class H5OrderController extends BaseController{
 		try{
 			// 创建OSSClient实例。
 			ossClient = new OSSClient(env_Aliyun_oss_url, env_AliyunOSSKey, env_AliyunOSSSecret);
+
+			// 图片上传
+
+			BufferedImage bufferedImage = Thumbnails.of(file.getInputStream()).outputQuality(0.3f).asBufferedImage();
 
 			// 上传字符串
 			String imgname = System.currentTimeMillis() + "." + file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf(".") + 1);

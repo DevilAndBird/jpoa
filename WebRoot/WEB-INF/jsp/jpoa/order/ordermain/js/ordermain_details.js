@@ -149,13 +149,36 @@ function backfillOrderTaketimeAndSendTime(time, timeType) {
 	}
 }
 
+$('#sms0').click(function() {
+	layer.confirm('是否发送？', {
+		btn: ['发送'] //按钮
+	}, function(){
+		var map = {
+			smscode : 'X028',
+			mobile: $('.cusmobile').html()
+		}
+		// 发送
+		$.ajax({
+			url : "./sms/smsSend_in/",
+			data : {
+				req : JSON.stringify(map)
+			},
+			dataType : "json",
+			type : "POST",
+			success : function(data) {
+				alert(data.resMag);
+			}
+		});
+	}, function(){
+
+	});
+});
 
 $('#sms1').click(function() {
 	layer.confirm('是否发送？', {
 		btn: ['发送'] //按钮
 	}, function(){
 		var map = {
-				header : '包给我',
 				smscode : 'X024',
 			    orderno: $('.orderno').html(),
 				mobile: $('.cusmobile').html()
@@ -183,7 +206,6 @@ $('#sms2').click(function() {
 		btn: ['发送'] //按钮
 	}, function(){
 		var map = {
-			header : '包给我',
 			smscode : 'X025',
 			orderno: $('.orderno').html(),
 			mobile: $('.cusmobile').html()
@@ -210,12 +232,38 @@ $('#sms3').click(function() {
 		btn: ['发送'] //按钮
 	}, function(){
 		var map =  {
-				header : '包给我',
-				smscode : 'X026',
-			    orderno: $('.orderno').html(),
-				mobile: $('.cusmobile').html(),
-				destlandmark:  $('.destlandmark').html()
+			smscode : 'X026',
+			orderno: $('.orderno').html(),
+			mobile: $('.cusmobile').html(),
+			destlandmark:  $('.destlandmark').html()
+		}
+		// 发送
+		$.ajax({
+			url : "./sms/smsSend_in",
+			data : {
+				req : JSON.stringify(map)
+			},
+			dataType : "json",
+			type : "POST",
+			success : function(data) {
+				alert(data.resMag);
 			}
+		});
+
+	}, function(){
+
+	});
+});
+
+$('#sms4').click(function() {
+	layer.confirm('是否发送？', {
+		btn: ['发送'] //按钮
+	}, function(){
+		var map =  {
+			header : '包给我',
+			smscode : 'X029',
+			mobile: $('.cusmobile').html()
+		}
 		// 发送
 		$.ajax({
 			url : "./sms/smsSend_in",
@@ -270,4 +318,4 @@ $('#lookCusLugPhoto').click(function() {
 			,anim: 5 //0-6的选择，指定弹出图片动画类型，默认随机
 		});
 	}
-});;
+});

@@ -290,8 +290,10 @@
 	<table id="table_report" class="table table-striped table-bordered table-hover">
 		<thead>
 		<tr>
+			<th class="center">取件成功</th>
 			<th class="center">送达深圳机场</th>
 			<th class="center">从上海机场取到行李</th>
+			<th class="center">开始配送行李</th>
 			<th class="center">行李送达到客户</th>
 		</tr>
 		</thead>
@@ -300,10 +302,16 @@
 			<c:when test="${not empty resDetails.orderPriceDetatils}">
 				<tr>
 					<td class="center">
+						<button class='btn btn-mini btn-info' id="sms0">发送短信</button>
+					</td>
+					<td class="center">
 						<button class='btn btn-mini btn-info' id="sms1">发送短信</button>
 					</td>
 					<td class="center">
 						<button class='btn btn-mini btn-info' id="sms2">发送短信</button>
+					</td>
+					<td class="center">
+						<button class='btn btn-mini btn-info' id="sms4">发送短信</button>
 					</td>
 					<td class="center">
 						<button class='btn btn-mini btn-info' id="sms3">发送短信</button>

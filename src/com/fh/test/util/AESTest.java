@@ -10,7 +10,9 @@ import sun.misc.BASE64Encoder;
 import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class AESTest {
@@ -23,21 +25,64 @@ public class AESTest {
 	 */
 	@Test
 	public void aesMethodsTest() throws Exception {
+		String temp1 = "12-19,MU5352,17:30,19:55,30,夏一,13916540070,330326199501020102,3781185056";
+		String temp2 = "12-19,MU5354,18:30,21:00,30,王二,13916088306,330326199501020203,3781303184";
+		String temp3 = "12-18,MU5356,19:30,21:50,20,蒋三,18381079158,330326199501020304,3781629310";
+		String temp4 = "12-18,MU5358,20:30,22:35,20,袁四,17717890290,330326199501020405,3781847187";
+		String temp5 = "12-18,MU5362,21:30,23:50,20,乔五,13817586253,330326199501020506,3781243928";
+
+		List<String> list = new ArrayList<String>();
+		list.add(temp1);
+		list.add(temp2);
+		list.add(temp3);
+		list.add(temp4);
+		list.add(temp5);
+
+		for(int i= 0; i< list.size(); i++) {
+			String temp = list.get(i);
+			String[] data = temp.split(",");
+
+			Map<String, String> map = new HashMap<String, String>();
+			map.put("flightno", data[1]);
+			map.put("flight_take_off", "2019-"+ data[0] + " " + data[2]);
+			map.put("flight_fall_time","2019-"+ data[0] + " " + data[3]);
+			map.put("cusname", data[5]);
+			map.put("cusidno", data[7]);
+			map.put("cusiphone",  data[6]);
+			map.put("consignweight", data[4]);
+			map.put("lugnum", data[8]);
+			// json 数据
+			String plainText = new Gson().toJson(map);
+//			System.out.println(plainText);
+
+			// 加密
+			String url = "http://mu.porterme.cn/MU/doortodoor/html/doortodoor.html?param=";
+			System.out.println(url + encryptAES(plainText));
+		}
+	}
+
+
+	/**
+	 *
+	 */
+	@Test
+	public void soloTest() throws Exception {
 		Map<String, String> map = new HashMap<String, String>();
-		map.put("flightno", "MU5349");
-		map.put("flight_take_off", "2019-12-18 17:30");
-		map.put("flight_fall_time", "2019-12-18 18:30");
+		map.put("flightno", "MU1234");
+		map.put("flight_take_off", "2019-12-19 11:30");
+		map.put("flight_fall_time", "2019-12-19 19:30");
 		map.put("cusname", "戴恩");
-		map.put("cusidno", "330326199501020409");
+		map.put("cusidno", "342401199401137913");
 		map.put("cusiphone", "18752066145");
-		map.put("consignweight", "45");
-		map.put("lugnum", "378184718711");
+		map.put("consignweight", "30");
+		map.put("lugnum", "5545534456656");
 		// json 数据
 		String plainText = new Gson().toJson(map);
-		// {"flightno":"MU1234","cusiphone":"13035421800","flight_take_off":"2019-12-17 19:35","cusidno":"342401199401137913","consignweight":"30","cusname":"戴恩","flight_fall_time":"2019-12-17 18:00"}
+//			System.out.println(plainText);
 
-		// 加密,
-		System.out.println(encryptAES(plainText));
+		// 加密
+		String url = "http://mu.porterme.cn/MU/doortodoor/html/doortodoor.html?param=";
+		System.out.println(url + encryptAES(plainText));
 	}
 
 	// 加密
