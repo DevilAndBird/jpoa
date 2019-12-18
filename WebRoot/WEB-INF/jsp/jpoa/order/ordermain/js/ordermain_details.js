@@ -148,3 +148,124 @@ function backfillOrderTaketimeAndSendTime(time, timeType) {
 		$('.sendtime').html(time);
 	}
 }
+
+
+$('#sms1').click(function() {
+	layer.confirm('是否发送？', {
+		btn: ['发送'] //按钮
+	}, function(){
+		var map = {
+				header : '包给我',
+				smscode : 'X024',
+			    orderno: $('.orderno').html(),
+				mobile: $('.cusmobile').html()
+			}
+		// 发送
+		$.ajax({
+			url : "./sms/smsSend_in/",
+			data : {
+				req : JSON.stringify(map)
+			},
+			dataType : "json",
+			type : "POST",
+			success : function(data) {
+				alert(data.resMag);
+			}
+		});
+	}, function(){
+
+	});
+});
+
+
+$('#sms2').click(function() {
+	layer.confirm('是否发送？', {
+		btn: ['发送'] //按钮
+	}, function(){
+		var map = {
+			header : '包给我',
+			smscode : 'X025',
+			orderno: $('.orderno').html(),
+			mobile: $('.cusmobile').html()
+		}
+		// 发送
+		$.ajax({
+			url : "./sms/smsSend_in",
+			data : {
+				req : JSON.stringify(map)
+			},
+			dataType : "json",
+			type : "POST",
+			success : function(data) {
+				alert(data.resMag);
+			}
+		});
+	}, function(){
+
+	});
+});
+
+$('#sms3').click(function() {
+	layer.confirm('是否发送？', {
+		btn: ['发送'] //按钮
+	}, function(){
+		var map =  {
+				header : '包给我',
+				smscode : 'X026',
+			    orderno: $('.orderno').html(),
+				mobile: $('.cusmobile').html(),
+				destlandmark:  $('.destlandmark').html()
+			}
+		// 发送
+		$.ajax({
+			url : "./sms/smsSend_in",
+			data : {
+				req : JSON.stringify(map)
+			},
+			dataType : "json",
+			type : "POST",
+			success : function(data) {
+				alert(data.resMag);
+			}
+		});
+
+	}, function(){
+
+	});
+});
+
+
+$('#lookCusLugPhoto').click(function() {
+	var remark = $('.remark').val();
+	alert(remark);
+	if(remark !=null || remark.trim().length != 0) {
+		var list = remark.split(',');
+
+		var json = "{" +
+			"'title':'收取行李'," + //相册标题
+			"'id': 112," +//相册id
+			"'start': 0," + //初始显示的图片序号，默认0
+			"'data': [" ;   //相册包含的图片，数组格式
+
+		for(var i = 0; i< list.length; i++) {
+			var coolectvalue = list[i];
+			json = json + "{" +
+				"'alt': '"+ i +"'," +
+				"'pid': "+ i +"," +//图片id
+				"'src': '"+ coolectvalue +"'," +//原图地址
+				"'thumb': ''" +//缩略图地址
+				"},";
+		}
+
+		json = json + "]" +
+			"}";
+
+
+		var json_temp = eval('(' + json + ')');
+
+		layer.photos({
+			photos: json_temp //格式见API文档手册页
+			,anim: 5 //0-6的选择，指定弹出图片动画类型，默认随机
+		});
+	}
+});;

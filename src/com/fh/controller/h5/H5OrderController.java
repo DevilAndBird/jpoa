@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Random;
 
 import com.aliyun.oss.OSSClient;
+import com.aliyun.oss.model.PutObjectResult;
 import com.fh.util.HttpUtils;
 import net.coobird.thumbnailator.Thumbnails;
 import oracle.net.aso.h;
@@ -181,10 +182,10 @@ public class H5OrderController extends BaseController{
 			// 创建OSSClient实例。
 			ossClient = new OSSClient(env_Aliyun_oss_url, env_AliyunOSSKey, env_AliyunOSSSecret);
 
-			BufferedImage thumbnail = Thumbnails.of(new ByteArrayInputStream(file.getBytes())).outputQuality(0.3f).asBufferedImage();
-
 			// 上传字符串
 			String imgname = System.currentTimeMillis() + "." + file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf(".") + 1);
+
+			ossClient.putObject(env_MyBucketName, imgname, new ByteArrayInputStream(file.getBytes()));
 
 			modelMap.put("success", true);
 			modelMap.put("errMsg", "照片批量上传成功");

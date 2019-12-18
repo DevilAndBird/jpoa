@@ -49,7 +49,7 @@
 		        <c:when test="${not empty resDetails.cusInfo}">
 					<tr>
 						<td class="center">${resDetails.cusInfo.name}</td>
-						<td class="center">${resDetails.cusInfo.mobile}</td>
+						<td class="center cusmobile">${resDetails.cusInfo.mobile}</td>
 						<td class="center">${resDetails.cusInfo.idno}</td>
 					</tr>
 				</c:when>
@@ -187,7 +187,8 @@
 			</c:choose>
 		</tbody>
   	 </table>
-	   
+
+       <c:if test="${ resDetails.channel ne 'MU_doortoddoor'}">
 	   <span style="font-weight: bold;font-size: 20px;">行李QR码 + 行李照片</span>
        <table id="table_report" class="table table-striped table-bordered table-hover">
 			<thead>
@@ -232,7 +233,27 @@
 				</c:choose>
 			</tbody>
 		</table>
-	   			
+	   </c:if>
+
+		<c:if test="${ resDetails.channel eq 'MU_doortoddoor'}">
+			<span style="font-weight: bold;font-size: 20px;">查看客户上传行李照片</span>
+			<table id="table_report" class="table table-striped table-bordered table-hover">
+				<thead>
+				<tr>
+					<th class="center">上传照片</th>
+				</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td class="center">
+							<input type="hidden" class="remark" value='${remark}' />
+							<button class='btn btn-mini btn-info' id="lookCusLugPhoto">查看</button>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</c:if>
+
       <span style="font-weight: bold;font-size: 20px;">订单备注(<a class="btn btn-small btn-success" id="saveNotes">新增备注</a>)</span>
       <table id="table_report" class="table table-striped table-bordered table-hover">
 		<thead>
@@ -263,34 +284,66 @@
 			</c:choose>
 		</tbody>
   	 </table>
-  	 
-  	 <span style="font-weight: bold;font-size: 20px;">价格明细</span>
-      <table id="table_report" class="table table-striped table-bordered table-hover">
+
+<c:if test="${ resDetails.channel eq 'MU_doortoddoor'}">
+	<span style="font-weight: bold;font-size: 20px;">行李门到门短信发送</span>
+	<table id="table_report" class="table table-striped table-bordered table-hover">
 		<thead>
-			<tr>
-				<th class="center">基础运费</th>
-				<th class="center">保价费</th>
-				<th class="center">其他费用</th>
-				<th class="center">合计</th>
-				<th class="center">优惠金额</th>
-				<th class="center">实收</th>
-			</tr>
+		<tr>
+			<th class="center">送达深圳机场</th>
+			<th class="center">从上海机场取到行李</th>
+			<th class="center">行李送达到客户</th>
+		</tr>
 		</thead>
 		<tbody>
-			<c:choose>
-		        <c:when test="${not empty resDetails.orderPriceDetatils}">
-					<tr>
-						<td class="center">${resDetails.orderPriceDetatils.baseMoney}</td>
-						<td class="center">${resDetails.orderPriceDetatils.prem}</td>
-						<td class="center">${resDetails.orderPriceDetatils.extraMoney}</td>
-						<td class="center">${resDetails.orderPriceDetatils.totalMoney}</td>
-						<td class="center">${resDetails.orderPriceDetatils.cutMoney}</td>
-						<td class="center" style="color: #D21736">${resDetails.orderPriceDetatils.actualMoney}</td>
-					</tr>
-				</c:when>
-			</c:choose>
+		<c:choose>
+			<c:when test="${not empty resDetails.orderPriceDetatils}">
+				<tr>
+					<td class="center">
+						<button class='btn btn-mini btn-info' id="sms1">发送短信</button>
+					</td>
+					<td class="center">
+						<button class='btn btn-mini btn-info' id="sms2">发送短信</button>
+					</td>
+					<td class="center">
+						<button class='btn btn-mini btn-info' id="sms3">发送短信</button>
+					</td>
+				</tr>
+			</c:when>
+		</c:choose>
 		</tbody>
-  	 </table>
+	</table>
+</c:if>
+
+		<c:if test="${ resDetails.channel ne 'MU_doortoddoor'}">
+			 <span style="font-weight: bold;font-size: 20px;">价格明细</span>
+			  <table id="table_report" class="table table-striped table-bordered table-hover">
+				<thead>
+					<tr>
+						<th class="center">基础运费</th>
+						<th class="center">保价费</th>
+						<th class="center">其他费用</th>
+						<th class="center">合计</th>
+						<th class="center">优惠金额</th>
+						<th class="center">实收</th>
+					</tr>
+				</thead>
+				<tbody>
+					<c:choose>
+						<c:when test="${not empty resDetails.orderPriceDetatils}">
+							<tr>
+								<td class="center">${resDetails.orderPriceDetatils.baseMoney}</td>
+								<td class="center">${resDetails.orderPriceDetatils.prem}</td>
+								<td class="center">${resDetails.orderPriceDetatils.extraMoney}</td>
+								<td class="center">${resDetails.orderPriceDetatils.totalMoney}</td>
+								<td class="center">${resDetails.orderPriceDetatils.cutMoney}</td>
+								<td class="center" style="color: #D21736">${resDetails.orderPriceDetatils.actualMoney}</td>
+							</tr>
+						</c:when>
+					</c:choose>
+				</tbody>
+			 </table>
+		</c:if>
 
 	<c:choose>
 		<c:when test="${not empty resDetails.actiondetail}">

@@ -185,9 +185,18 @@ public class OrderMainService
 	 * @date 2018年4月18日
 	 */
 	public String doortodoorSavaOrder( H5OrderMain order)throws Exception {
-		// 保存客户信息
-		CusInfo cusInfo = order.getCusInfo();
-		dao.save("CusInfoMapper.insert", cusInfo);
+		// 保存客户信息=======================================================
+		CusInfo cusInfo = null;
+		synchronized (order.getCusInfo().getMobile()) {
+			// 客户信息只能是一条
+			cusInfo = (CusInfo) dao.findForObject("CusInfoMapper.findByMobile", order.getCusInfo().getMobile());
+
+			if (cusInfo == null) {
+				cusInfo = order.getCusInfo();
+				dao.save("CusInfoMapper.insert", cusInfo);
+			}
+		}
+
 		// 保存订单信息=======================================================
 		OrderMainSpec orderMain = new OrderMainSpec();
 		BeanUtils.copyProperties(order.getOrderMain(), orderMain);
@@ -392,7 +401,6 @@ public String saveAppOrder(AppSaveOrderInfoReqData saveOrderInfoReqBean)throws E
 		orderRole.setActionfinishtime(DateUtil.format(new Date(), "yyyy-MM-dd HH:mm"));
 		dao.save("OrderRoleMapper.insert", orderRole);
 	}
-
 
     return orderno;
 }
