@@ -188,7 +188,6 @@
 		</tbody>
   	 </table>
 
-       <c:if test="${ resDetails.channel ne 'MU_doortoddoor'}">
 	   <span style="font-weight: bold;font-size: 20px;">行李QR码 + 行李照片</span>
        <table id="table_report" class="table table-striped table-bordered table-hover">
 			<thead>
@@ -233,9 +232,7 @@
 				</c:choose>
 			</tbody>
 		</table>
-	   </c:if>
 
-		<c:if test="${ resDetails.channel eq 'MU_doortoddoor'}">
 			<span style="font-weight: bold;font-size: 20px;">查看客户上传行李照片</span>
 			<table id="table_report" class="table table-striped table-bordered table-hover">
 				<thead>
@@ -252,7 +249,6 @@
 					</tr>
 				</tbody>
 			</table>
-		</c:if>
 
       <span style="font-weight: bold;font-size: 20px;">订单备注(<a class="btn btn-small btn-success" id="saveNotes">新增备注</a>)</span>
       <table id="table_report" class="table table-striped table-bordered table-hover">

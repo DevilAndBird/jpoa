@@ -28,8 +28,8 @@ function showImg_coolect(param) {
 	var json_temp = eval('(' + json + ')');
 	
 	 layer.photos({
-	    photos: json_temp //格式见API文档手册页
-	    ,anim: 5 //0-6的选择，指定弹出图片动画类型，默认随机
+		photos: json_temp //格式见API文档手册页
+		,anim: 5 //0-6的选择，指定弹出图片动画类型，默认随机
 	 });
 }
 
@@ -159,14 +159,17 @@ $('#sms0').click(function() {
 		}
 		// 发送
 		$.ajax({
-			url : "./sms/smsSend_in/",
-			data : {
-				req : JSON.stringify(map)
-			},
+			url : "./MUDTO/smsSend_in/",
+			data : JSON.stringify(map),
 			dataType : "json",
 			type : "POST",
+			contentType: 'application/json',
 			success : function(data) {
-				alert(data.resMag);
+				if(data.resMag) {
+					layer.msg('短信发送成功', {time: 2000});
+				} else {
+					layer.msg('短信发送失败', {time: 2000});
+				}
 			}
 		});
 	}, function(){
@@ -185,14 +188,17 @@ $('#sms1').click(function() {
 			}
 		// 发送
 		$.ajax({
-			url : "./sms/smsSend_in/",
-			data : {
-				req : JSON.stringify(map)
-			},
+			url : "./MUDTO/smsSend_in/",
+			data : JSON.stringify(map),
 			dataType : "json",
 			type : "POST",
+			contentType: 'application/json',
 			success : function(data) {
-				alert(data.resMag);
+				if(data.resMag) {
+					layer.msg('短信发送成功', {time: 2000});
+				} else {
+					layer.msg('短信发送失败', {time: 2000, });
+				}
 			}
 		});
 	}, function(){
@@ -212,14 +218,17 @@ $('#sms2').click(function() {
 		}
 		// 发送
 		$.ajax({
-			url : "./sms/smsSend_in",
-			data : {
-				req : JSON.stringify(map)
-			},
+			url : "./MUDTO/smsSend_in",
+			data : JSON.stringify(map),
 			dataType : "json",
 			type : "POST",
+			contentType: 'application/json',
 			success : function(data) {
-				alert(data.resMag);
+				if(data.resMag) {
+					layer.msg('短信发送成功', {time: 2000});
+				} else {
+					layer.msg('短信发送失败', {time: 2000, });
+				}
 			}
 		});
 	}, function(){
@@ -239,14 +248,17 @@ $('#sms3').click(function() {
 		}
 		// 发送
 		$.ajax({
-			url : "./sms/smsSend_in",
-			data : {
-				req : JSON.stringify(map)
-			},
+			url : "./MUDTO/smsSend_in",
+			data : JSON.stringify(map),
 			dataType : "json",
 			type : "POST",
+			contentType: 'application/json',
 			success : function(data) {
-				alert(data.resMag);
+				if(data.resMag) {
+					layer.msg('短信发送成功', {time: 2000});
+				} else {
+					layer.msg('短信发送失败', {time: 2000, });
+				}
 			}
 		});
 
@@ -266,14 +278,17 @@ $('#sms4').click(function() {
 		}
 		// 发送
 		$.ajax({
-			url : "./sms/smsSend_in",
-			data : {
-				req : JSON.stringify(map)
-			},
+			url : "./MUDTO/smsSend_in",
+			data : JSON.stringify(map),
 			dataType : "json",
 			type : "POST",
+			contentType: 'application/json',
 			success : function(data) {
-				alert(data.resMag);
+				if(data.resMag) {
+					layer.msg('短信发送成功', {time: 2000});
+				} else {
+					layer.msg('短信发送失败', {time: 2000, });
+				}
 			}
 		});
 
@@ -285,7 +300,6 @@ $('#sms4').click(function() {
 
 $('#lookCusLugPhoto').click(function() {
 	var remark = $('.remark').val();
-	alert(remark);
 	if(remark !=null || remark.trim().length != 0) {
 		var list = remark.split(',');
 		console.info(list);
@@ -317,5 +331,7 @@ $('#lookCusLugPhoto').click(function() {
 			photos: json_temp //格式见API文档手册页
 			,anim: 5 //0-6的选择，指定弹出图片动画类型，默认随机
 		});
+	} else {
+		layer.msg('无照片', {time: 2000});
 	}
 });

@@ -63,27 +63,24 @@ public class AESTest {
 		}
 	}
 
-
-	/**
-	 *
-	 */
 	@Test
 	public void soloTest() throws Exception {
 		Map<String, String> map = new HashMap<String, String>();
 		map.put("flightno", "MU1234");
-		map.put("flight_take_off", "2019-12-19 11:30");
-		map.put("flight_fall_time", "2019-12-19 19:30");
+		map.put("flight_take_off", "2019-12-21 15:30");
+		map.put("flight_fall_time", "2019-12-21 17:30");
 		map.put("cusname", "戴恩");
 		map.put("cusidno", "342401199401137913");
 		map.put("cusiphone", "18752066145");
 		map.put("consignweight", "30");
 		map.put("lugnum", "5545534456656");
+        map.put("checkserial_BN", "7894561223");
 		// json 数据
 		String plainText = new Gson().toJson(map);
 //			System.out.println(plainText);
 
 		// 加密
-		String url = "http://mu.porterme.cn/MU/doortodoor/html/doortodoor.html?param=";
+		String url = "http://wx.porterme.cn/MU/doortodoor/html/doortodoor.html?param=";
 		System.out.println(url + encryptAES(plainText));
 	}
 

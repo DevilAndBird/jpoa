@@ -70,31 +70,6 @@ public class SmsSendContrller extends BaseController {
 		}
 		return smsRespStr;
 	}
-
-	/**
-	 * @desc 短信
-	 * @auther tangqm
-	 * @date 2018年6月2日 21点16分
-	 */
-	@RequestMapping(value = "/smsSend_in")
-	@ResponseBody
-	public Map<String, Object> smsSend_in(String req) {
-		logger.error("发送短信请求入参："+ req);
-		// 更改订单状态
-		HashMap<String, Object> res = new HashMap<String, Object>();
-
-		String smsRespStr = null;
-		try {
-			smsRespStr = smsSendService.smsTemplateSend1(req);
-			logger.error(smsRespStr);
-			res.put("success", true);
-			res.put("resMag", smsRespStr);
-		} catch (Exception e) {
-			res.put("success", false);
-			res.put("resMag", e.getMessage());
-		}
-		return res;
-	}
 	
 	public String acceptJSON(HttpServletRequest request) {
 		String acceptjson = "";

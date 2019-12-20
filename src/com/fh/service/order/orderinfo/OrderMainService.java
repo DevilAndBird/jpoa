@@ -178,6 +178,114 @@ public class OrderMainService
 		return orderno;
 	}
 
+	/**
+	 * @desc 生成app的订单
+	 * @auther zhangjj
+	 * @date 2018年4月18日
+	 */
+	public String consignSaveOrder( H5OrderMain order)throws Exception {
+		// 保存客户信息=======================================================
+		CusInfo cusInfo = null;
+		synchronized (order.getCusInfo().getMobile()) {
+			// 客户信息只能是一条
+			cusInfo = (CusInfo) dao.findForObject("CusInfoMapper.findByMobile", order.getCusInfo().getMobile());
+
+			if (cusInfo == null) {
+				cusInfo = order.getCusInfo();
+				dao.save("CusInfoMapper.insert", cusInfo);
+			}
+		}
+
+		// 保存订单信息=======================================================
+		OrderMainSpec orderMain = new OrderMainSpec();
+		BeanUtils.copyProperties(order.getOrderMain(), orderMain);
+		orderMain.setCusid(cusInfo.getId() + "");
+		// 订单id生成
+		IdWorker worker = IdWorker.getInstance();
+		String orderno = "JPWX" + worker.getDefaultFormatId();
+		orderMain.setOrderno( orderno );
+		//2018年12月25日 待支付调整为待收取
+		orderMain.setStatus( ORDER_STATUS.WAITPICK.getValue());
+		// 订单类型
+		orderMain.setType(order.getOrderAddr().getSrcaddrtype() + "TO" + order.getOrderAddr().getDestaddrtype());
+		// 提取码
+		String fetchcode = (String) dao.findForObject("FetchcodeStoreMapper.findFetchcode", null);
+		orderMain.setFetchcode(fetchcode);
+		dao.save( "OrderMainMapper.insert", orderMain);
+		int orderId = orderMain.getId();
+		// 提取码失效处理
+		dao.update("FetchcodeStoreMapper.updateIsvalid_INVALID", fetchcode);
+		// ================================================================
+
+		// 保险信息保存=======================================================
+		OrderInsureInfo orderInsure = new OrderInsureInfo();
+		orderInsure.setOrderid( orderId );
+		orderInsure.setInsurecode(order.getOrderInsure().getInsureCode());
+		dao.save( "OrderInsureInfoMapper.insert", orderInsure );
+		// ================================================================
+
+		// 地址信息==========================================================
+		OrderAddress orderAddr = new OrderAddress();
+		BeanUtils.copyProperties( order.getOrderAddr(), orderAddr );
+		orderAddr.setOrderid( orderId );
+		// 特殊处理 高德坐标转换成百度坐标系
+		if(order.getOrderAddr().getSrcistransitgps()) {
+			// 搞得地图坐标获取
+			JSONObject gaode_json = JSONObject.fromObject(order.getOrderAddr().getSrcgps());
+			Point point = new Point(Double.parseDouble((String) gaode_json.get("lng")), Double.parseDouble((String) gaode_json.get("lat")));
+			// 高德转换百度
+			orderAddr.setSrcgps(MapUtil.GD_TRANS_BD(point).toEntity());
+		}
+		if(order.getOrderAddr().getDestistransitgps()) {
+			// 搞得地图坐标获取
+			JSONObject gaode_json = JSONObject.fromObject(order.getOrderAddr().getDestgps());
+			Point point = new Point(Double.parseDouble((String) gaode_json.get("lng")), Double.parseDouble((String) gaode_json.get("lat")));
+			// 高德转换百度
+			orderAddr.setDestgps(MapUtil.GD_TRANS_BD(point).toEntity());
+		}
+		dao.save( "orderAddressMapper.insert", orderAddr );
+		// ================================================================
+
+		// 寄件人收件人信息====================================================
+		OrderSenderReceiver sr = new OrderSenderReceiver();
+		BeanUtils.copyProperties( order.getSenderReceiver(), sr );
+		sr.setOrderid( orderId );
+		dao.save( "OrderSenderReceiverMapper.insert", sr );
+		// ================================================================
+
+		// 备注=============================================================
+		if(StringUtils.isNotBlank(order.getH5OrderNotesInfo().getNotes())) {
+			OrderNotesInfo orderNotesInfo = new OrderNotesInfo();
+			orderNotesInfo.setOrderid(orderId);
+			BeanUtils.copyProperties( order.getH5OrderNotesInfo(), orderNotesInfo );
+			dao.save( "orderNotesInfoMapper.insert",  orderNotesInfo);
+		}
+		// ================================================================
+
+		// 优惠卷信息=============================================================
+		if (order.getH5Counponinfo() != null && StringUtils.isNotBlank(order.getH5Counponinfo().getCouponcode())) {
+			CusCouponInfo couponInfo = new CusCouponInfo();
+			couponInfo.setCouponcode(order.getH5Counponinfo().getCouponcode());
+			couponInfo.setCusid(Integer.valueOf(order.getOrderMain().getCusid()));
+			couponInfo.setOrderid(orderId);
+			dao.save( "CusCouponInfoMapper.insert",  couponInfo);
+		}
+		// ================================================================
+
+		// 2018年12月25日 增加支付状态 start
+		OrderPayInfo orderPayInfo = new OrderPayInfo();
+		orderPayInfo.setOrderid(orderId);
+		orderPayInfo.setStatus(ORDER_PAY_STUTAS.WAITPAY.getValue());
+		orderPayInfo.setType(ORDER_PAY_TYPE.WEIXIN.getValue());
+		orderPayInfo.setMoney(orderMain.getActualmoney());
+		dao.save( "OrderPayInfoMapper.insertOrderPayInfo",  orderPayInfo);
+		// end
+
+
+
+		return orderno;
+	}
+
 
 	/**
 	 * @desc 行李门道门

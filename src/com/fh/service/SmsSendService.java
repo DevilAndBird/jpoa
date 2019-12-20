@@ -85,17 +85,14 @@ public class SmsSendService {
      * 木桐
      * 2018年1月10日15:21:50
      */
-    public String smsTemplateSend1( String reqStr ) throws Exception{
-        AppResponseBean rtBean = new AppResponseBean();
-        Gson gson = new Gson();
-        Map<String, String> root = gson.fromJson( reqStr, new TypeToken<Map<String, String>>() { }.getType());
-        String smscode = (String) root.get("smscode");
-        String mobile = (String) root.get("mobile");
-        String orderno = (String) root.get("orderno");
-        if( StringUtils.isEmptyOrWhitespaceOnly(smscode) || StringUtils.isEmptyOrWhitespaceOnly(mobile) ){
-            rtBean.setCode( APP_RESPONSE_CODE.FAIL.getValue());
-            rtBean.setMsg( "模版编号或者手机号码不能为空" );
+    public Boolean smsTemplateSend1( Map<String, String> req ) throws Exception{
+        String smscode = req.get("smscode");
+        String mobile =  req.get("mobile");
+        String orderno = req.get("orderno");
+        if(StringUtils.isEmptyOrWhitespaceOnly(smscode) || StringUtils.isEmptyOrWhitespaceOnly(mobile) ){
+           return false;
         }
+
         PageData pd = new PageData();
         pd.put("smscode", smscode);
         SMSTemplate smsTemplate = (SMSTemplate)dao.findForObject("SMSTemplateMapper.queryBySmsCode",pd);
@@ -103,23 +100,21 @@ public class SmsSendService {
         Configuration cfg = new Configuration();
         StringTemplateLoader stringLoader = new StringTemplateLoader();
         String templateContent=smsTemplate.getTemplate();
-        log.error("订单："+orderno+" 的模版===》"+templateContent);
+        log.info("订单："+orderno+" 的模版===》"+templateContent);
         stringLoader.putTemplate("myTemplate",templateContent);
         cfg.setTemplateLoader(stringLoader);
         Template template = cfg.getTemplate("myTemplate","utf-8");
         StringWriter writer = new StringWriter();
-        template.process(root, writer);
-        log.error("订单："+orderno+" 的模版转换之后的需要发送的内容===》"+writer.toString());
+        template.process(req, writer);
+        log.info("订单："+orderno+" 的模版转换之后的需要发送的内容===》"+writer.toString());
 
         DSResult smsStr = sendSms(writer.toString(), mobile);
+
         if( smsStr.getStatus() == 200 ){
-            rtBean.setCode( APP_RESPONSE_CODE.SUCCESS.getValue());
-            rtBean.setMsg( "订单："+orderno+" 短信发送成功  "+"电话号码："+ mobile);
-        }else{
-            rtBean.setCode( APP_RESPONSE_CODE.FAIL.getValue());
-            rtBean.setMsg( "订单："+orderno+" 短信发送失败  "+" 电话号码："+ mobile);
-        }
-        return rtBean.getMsg();
+			return true;
+		}else{
+			return false;
+		}
     }
 	
 	public static DSResult sendSms(String content,String mobile)

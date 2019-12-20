@@ -18,8 +18,8 @@ public class PropertiesUtils  {
             properties = new Properties();
             InputStreamReader reader = null;
             try{
-//                reader = new InputStreamReader(PropertiesUtils.class.getClassLoader().getResourceAsStream("overallconfig_prd.properties"),"utf-8");
-                reader = new InputStreamReader(PropertiesUtils.class.getClassLoader().getResourceAsStream("overallconfig_dev.properties"),"utf-8");
+                reader = new InputStreamReader(PropertiesUtils.class.getClassLoader().getResourceAsStream("overallconfig_prd.properties"),"utf-8");
+//                reader = new InputStreamReader(PropertiesUtils.class.getClassLoader().getResourceAsStream("overallconfig_dev.properties"),"utf-8");
                 properties.load(reader);
                 reader.close();
             }catch (Exception e){

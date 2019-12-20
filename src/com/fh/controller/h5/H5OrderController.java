@@ -2,6 +2,7 @@ package com.fh.controller.h5;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -84,6 +85,8 @@ import com.fh.util.RulesCheckedException;
 import com.google.gson.Gson;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.imageio.ImageIO;
+
 /**
  * @author zhangjj
  * 微信公众号下单所有接口
@@ -118,11 +121,6 @@ public class H5OrderController extends BaseController{
 	private ServiceCenterService serviceCenterService;
 	@Autowired
 	private CouponInfoService couponInfoService;
-	private String env_Aliyun_oss_url = "http://oss-cn-hangzhou.aliyuncs.com";
-	private String env_AliyunOSSKey = "LTAIg8xwvCWb7Trj";
-	private String env_AliyunOSSSecret = "ui9Wtn1VtAZRzQqm0YGitOrPk6weMm";
-	private String env_MyBucketName = "jingpeioss";
-	private String env_imgaliyunpath = "http://jingpeioss.oss-cn-hangzhou.aliyuncs.com";
 	
  	/**
 	 * @desc 取消订单接口
@@ -165,49 +163,6 @@ public class H5OrderController extends BaseController{
 		}
 		
 		return new Gson().toJson( rtBean );
-	}
-
-	/**
-	 * @desc 上传照片
-	 * @auther zhangjj
-	 * @date 2018年10月26日
-	 */
-	@ResponseBody
-	@RequestMapping(value="/uploadImg", produces = "application/json;charset=UTF-8")
-	public Map<String, Object> uploadImg(@RequestParam("file") MultipartFile file) throws Exception{
-		logger.info("uploadImagStart");
-		Map<String, Object> modelMap = new HashMap<String, Object>();
-
-            OSSClient ossClient = null;
-
-		try{
-			// 创建OSSClient实例。
-			ossClient = new OSSClient(env_Aliyun_oss_url, env_AliyunOSSKey, env_AliyunOSSSecret);
-
-			// 图片上传
-
-			Thumbnails.of(file.getInputStream()).scale(1f).outputQuality(0.3f);
-
-			// 上传字符串
-			String imgname = System.currentTimeMillis() + "." + file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf(".") + 1);
-
-			ossClient.putObject(env_MyBucketName, imgname, new ByteArrayInputStream(file.getBytes()));
-
-			modelMap.put("success", true);
-			modelMap.put("errMsg", "照片批量上传成功");
-			modelMap.put("imgurl", env_imgaliyunpath+ "/" + imgname);
-		} catch (Exception e) {
-			logger.error("照片批量上传失败："+e.getLocalizedMessage());
-			modelMap.put("success", false);
-			modelMap.put("errMsg", "照片批量上传失败");
-		} finally {
-			if(ossClient != null) {
-				// 关闭OSSClient。
-				ossClient.shutdown();
-			}
-		}
-
-		return modelMap;
 	}
 	
 	/**
@@ -495,12 +450,9 @@ public class H5OrderController extends BaseController{
 	 * @date 2018年4月17日
 	 */
 	@ResponseBody
-	@RequestMapping(value="/doortododrsavaorder", produces = "application/json;charset=UTF-8" )
-	public String doortododrSavaOrder( @RequestBody AppRequestBean reqParm ){
-		logger.info("doortoddorsavaorderreq:" + reqParm.getData());
-        AppResponseBean rtBean = new AppResponseBean();
-        rtBean.setCode(APP_RESPONSE_CODE.SUCCESS.getValue());
-        rtBean.setMsg( "接口调用成功!" );
+	@RequestMapping(value="/consignsaveorder", produces = "application/json;charset=UTF-8" )
+	public String consignsaveorder( @RequestBody AppRequestBean reqParm ){
+		AppResponseBean rtBean = doH5Validate(reqParm);
 		H5OrderMain orderMain = (H5OrderMain)new Gson().fromJson( reqParm.getData(), H5OrderMain.class );
 		if( orderMain == null){
 			rtBean.setCode(APP_RESPONSE_CODE.FAIL.getValue());
@@ -509,8 +461,10 @@ public class H5OrderController extends BaseController{
 		}
 
 		try {
+			// TODO 基础校验
+
 			// 保存基本信息
-			String orderno = orderMainService.doortodoorSavaOrder(orderMain);
+			String orderno = orderMainService.consignSaveOrder(orderMain);
 
 			H5OrderNoBean bean = new H5OrderNoBean();
 			bean.setOrderno( orderno );
@@ -607,39 +561,6 @@ public class H5OrderController extends BaseController{
 		}
 		String json = new Gson().toJson(rtBean);
 		
-		return json;
-	}
-
-	/**
-	 * @desc 根据客户手机号查询客户订单
-	 * @auther zhangjj
-	 * @history 2019年10月11日
-	 */
-	@ResponseBody
-	@RequestMapping(value="/queryOrderListByCusMobile", produces = "application/json;charset=UTF-8" )
-	public String queryOrderListByCusMobile( @RequestBody AppRequestBean reqParm ){
-		AppResponseBean rtBean = doH5Validate(reqParm);
-		String data = reqParm.getData();
-		Gson gson = new Gson();
-		H5CusinfoReqBean reqBean = (H5CusinfoReqBean)gson.fromJson( data, H5CusinfoReqBean.class );
-
-		if( reqBean == null){
-			rtBean.setCode( APP_RESPONSE_CODE.FAIL.getValue() );
-			rtBean.setMsg( "查询请求失败" );
-			return new Gson().toJson(rtBean);
-		}
-
-		try {
-			List<H5OrderInfoBean> list = orderMainService.queryOrderListByCusMobile(reqBean.getMobile());
-
-			rtBean.setJsonData( new Gson().toJson( list ) );
-		} catch (Exception ex) {
-			logger.error("查询订单接口异常:" + ex.getLocalizedMessage());
-			rtBean.setCode( APP_RESPONSE_CODE.FAIL.getValue() );
-			rtBean.setMsg( "查询订单接口异常" );
-		}
-		String json = new Gson().toJson(rtBean);
-
 		return json;
 	}
 

@@ -43,7 +43,7 @@ public class SMSTemplateService {
 	private static String sendTime = "";
     private static String extno ="";
 	
-	/**
+	/**smsSend
 	 * 短信内容整合发送
 	 * 木桐
 	 * 2018年1月10日15:21:50
