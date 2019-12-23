@@ -67,8 +67,8 @@ public class AESTest {
 	public void soloTest() throws Exception {
 		Map<String, String> map = new HashMap<String, String>();
 		map.put("flightno", "MU1234");
-		map.put("flight_take_off", "2019-12-21 15:30");
-		map.put("flight_fall_time", "2019-12-21 17:30");
+		map.put("flight_take_off", "2019-12-23 22:30");
+		map.put("flight_fall_time", "2019-12-23 23:30");
 		map.put("cusname", "戴恩");
 		map.put("cusidno", "342401199401137913");
 		map.put("cusiphone", "18752066145");

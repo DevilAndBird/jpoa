@@ -1,24 +1,29 @@
 package com.fh.controller.MUDTD;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.aliyun.oss.OSSClient;
 import com.fh.common.constant_enum.APP_RESPONSE_CODE;
+import com.fh.common.constant_enum.IMGURL_BUSINESS_TYPE;
 import com.fh.common.constant_enum.ORDER_STATUS;
+import com.fh.common.constant_enum.QUERY_ORERYDETAILS_TYPE;
 import com.fh.controller.base.BaseController;
+import com.fh.entity.Page;
 import com.fh.entity.app.AppRequestBean;
 import com.fh.entity.app.AppResponseBean;
+import com.fh.entity.app.order.AppOrderDetailsReqData;
+import com.fh.entity.app.order.AppOrderDetailsResData;
 import com.fh.entity.app.order.AppOrderReqData;
 import com.fh.entity.customer.*;
 import com.fh.entity.h5.*;
-import com.fh.entity.order.FetchcodeStore;
-import com.fh.entity.order.OrderInvoiceInfo;
-import com.fh.entity.order.OrderRole;
-import com.fh.entity.order.OrderRoleResBean;
+import com.fh.entity.order.*;
 import com.fh.service.SmsSendService;
 import com.fh.service.auxiliary.coupon.CouponInfoService;
 import com.fh.service.customer.*;
 import com.fh.service.delivery.ServiceCenterService;
 import com.fh.service.order.OrderAddressService;
 import com.fh.service.order.orderinfo.FetchcodeStoreService;
+import com.fh.service.order.orderinfo.OrderInfoService;
 import com.fh.service.order.orderinfo.OrderInvoiceService;
 import com.fh.service.order.orderinfo.OrderMainService;
 import com.fh.util.ExceptionUtil;
@@ -30,6 +35,7 @@ import javafx.scene.CacheHint;
 import net.coobird.thumbnailator.Thumbnails;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -38,15 +44,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.ModelAndView;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
 @Controller
 @RequestMapping(value="MUDTO")
@@ -55,6 +59,8 @@ public class MUController extends BaseController{
 	private OrderMainService orderMainService;
 	@Autowired
 	private SmsSendService smsSendService;
+	@Autowired
+	private OrderInfoService orderInfoService;
 
 	private String env_Aliyun_oss_url = "http://oss-cn-hangzhou.aliyuncs.com";
 	private String env_AliyunOSSKey = "LTAIg8xwvCWb7Trj";
@@ -171,6 +177,94 @@ public class MUController extends BaseController{
 		}
 
 		return modelMap;
+	}
+
+	// 后台
+	/**
+	 *
+	 * @Title: listOrderInfo
+	 * @Description: 查询订单列表
+	 * @param page
+	 * @return
+	 */
+	@RequestMapping(value = "listOrderInfo_dtd")
+	public ModelAndView listOrderInfo(Page page) throws Exception {
+		ModelAndView mv = new ModelAndView();
+		PageData pd = this.getPageData();
+		page.setPd(pd);
+		List<PageData> orderInfoList = orderInfoService.orderMainlistPage(page);
+		if (CollectionUtils.isNotEmpty(orderInfoList)) {
+			mv.addObject("orderInfoList", orderInfoList);
+		}
+		mv.addObject("pd", pd);
+		mv.setViewName("jpoa/order/ordermain/jsp/ordermain_list_dtd");
+		return mv;
+	}
+
+	/**
+	 * @desc 后台明细页面
+	 * @auther zhangjj
+	 * @date 2018年8月24日
+	 */
+	@RequestMapping({ "listOrderDetail_dtd" } )
+	public ModelAndView listOrderDetail() throws Exception {
+		PageData pd = this.getPageData();
+
+		//组装参数
+		AppOrderDetailsReqData reqDetails = new AppOrderDetailsReqData();
+		Float.parseFloat((String)pd.get("id"));
+		reqDetails.setOrderid(Integer.parseInt((String)pd.get("id")));
+		List<String> queryDetailsType = new ArrayList<String>();
+		// 客户信息
+		queryDetailsType.add(QUERY_ORERYDETAILS_TYPE.ORDERCUS.getValue());
+		// 地址
+		queryDetailsType.add(QUERY_ORERYDETAILS_TYPE.ORDERADDRESS.getValue());
+		// 行李qr码
+		queryDetailsType.add(QUERY_ORERYDETAILS_TYPE.ORDERBAGAGE.getValue());
+		// 寄件收件
+		queryDetailsType.add(QUERY_ORERYDETAILS_TYPE.ORDERSENDERRECEIVER.getValue());
+		// 备注
+		queryDetailsType.add(QUERY_ORERYDETAILS_TYPE.ORDERNOTES.getValue());
+		// 订单价格详情
+		queryDetailsType.add(QUERY_ORERYDETAILS_TYPE.ORDER_PRICE_DETAIL.getValue());
+		// 动作类型详情
+		queryDetailsType.add(QUERY_ORERYDETAILS_TYPE.ACTION_DETAILS.getValue());
+		reqDetails.setQueryDetailsType(queryDetailsType);
+		// 查询订单详情
+		AppOrderDetailsResData resDetails = orderInfoService.findAppAppOrderDetails(reqDetails);
+
+		// mv 返回
+		ModelAndView mv = new ModelAndView();
+		// 订单上传图片特殊处理
+		List<OrderBaggage> orderBaggageList = resDetails.getOrderBaggageList();
+		if(CollectionUtils.isNotEmpty(orderBaggageList)) {
+			List<Map<String, Object>> lugQRAndImginfo = new ArrayList<Map<String, Object>>();
+			for (OrderBaggage luginfo : orderBaggageList) {
+				Map<String, Object> map = new HashMap<String, Object>();
+				map.put("QR", luginfo.getBaggageid());
+				if(StringUtils.isNotBlank(luginfo.getImgurl())) {
+					Map<String, Object> parseObject = JSONObject.parseObject(luginfo.getImgurl(), Map.class);
+
+					Iterator<String> iterator = parseObject.keySet().iterator();
+					while (iterator.hasNext()) {
+						String key = iterator.next();
+
+						if(IMGURL_BUSINESS_TYPE.COOLECT.getValue().equals(key) || IMGURL_BUSINESS_TYPE.RELEASE.getValue().equals(key)) {
+							String value = parseObject.get(key).toString();
+							map.put(key, JSONArray.parseArray(value, String.class));
+						}
+					}
+				}
+
+				lugQRAndImginfo.add(map);
+			}
+			mv.addObject("lugQRAndImginfo", lugQRAndImginfo);
+		}
+
+		mv.addObject("resDetails", resDetails);
+		mv.addObject("pd", pd);
+		mv.setViewName("jpoa/order/ordermain/jsp/ordermain_detail_dtd");
+		return mv;
 	}
 
 
